@@ -112,13 +112,9 @@ def analyze(
 
         reasons: list[str] = []
         if not gap_ok:
-            reasons.append(
-                f"max_gap={max_gap:.2f}s exceeds {gap_limit}s"
-            )
+            reasons.append(f"max_gap={max_gap:.2f}s exceeds {gap_limit}s")
         if not ratio_ok:
-            reasons.append(
-                f"silence_ratio={silence_ratio:.3f} exceeds {ratio_limit}"
-            )
+            reasons.append(f"silence_ratio={silence_ratio:.3f} exceeds {ratio_limit}")
 
         # Report the metric that actually failed (or max_gap if both pass)
         if not gap_ok:

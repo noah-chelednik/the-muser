@@ -32,6 +32,7 @@ BAND_NAMES = ["sub", "bass", "low_mid", "high_mid", "presence", "air"]
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _band_stats(values: list[float]) -> BandStats:
     """Compute mean and std from a list of floats."""
     if not values:
@@ -43,6 +44,7 @@ def _band_stats(values: list[float]) -> BandStats:
 # ---------------------------------------------------------------------------
 # From full analysis results
 # ---------------------------------------------------------------------------
+
 
 def build_corpus_profiles(
     candidates: list[tuple[CandidateAnalysis, str]],
@@ -88,7 +90,9 @@ def build_corpus_profiles(
             # Evolution raw metrics
             ev = ca.dimensions.get("evolution")
             if ev and ev.raw_metrics:
-                dist = ev.raw_metrics.get("mean_distance") or ev.raw_metrics.get("evolution_distance")
+                dist = ev.raw_metrics.get("mean_distance") or ev.raw_metrics.get(
+                    "evolution_distance"
+                )
                 if dist is not None:
                     evolution_distances.append(float(dist))
 
@@ -103,7 +107,9 @@ def build_corpus_profiles(
             for dim_name in ("freq_balance", "harmony", "structure"):
                 dim = ca.dimensions.get(dim_name)
                 if dim and dim.raw_metrics:
-                    sc = dim.raw_metrics.get("spectral_centroid") or dim.raw_metrics.get("mean_spectral_centroid")
+                    sc = dim.raw_metrics.get("spectral_centroid") or dim.raw_metrics.get(
+                        "mean_spectral_centroid"
+                    )
                     if sc is not None:
                         spectral_centroids.append(float(sc))
                         break
@@ -119,7 +125,9 @@ def build_corpus_profiles(
 
         logger.info(
             "Corpus profile for %s: %d tracks, %d bands populated",
-            genre, len(analyses), sum(1 for v in freq_bands.values() if v),
+            genre,
+            len(analyses),
+            sum(1 for v in freq_bands.values() if v),
         )
 
     return profiles
@@ -128,6 +136,7 @@ def build_corpus_profiles(
 # ---------------------------------------------------------------------------
 # Fast feature extraction (pre-analysis pass)
 # ---------------------------------------------------------------------------
+
 
 def _extract_features_fast(wav_path: str) -> dict:
     """Extract lightweight features for corpus profiling.
@@ -203,8 +212,8 @@ def _extract_features_fast(wav_path: str) -> dict:
                 right = y_stereo[1]
                 mid = (left + right) / 2.0
                 side = (left - right) / 2.0
-                mid_energy = float(np.mean(mid ** 2))
-                side_energy = float(np.mean(side ** 2))
+                mid_energy = float(np.mean(mid**2))
+                side_energy = float(np.mean(side**2))
                 if mid_energy > 1e-10:
                     result["stereo_width"] = side_energy / mid_energy
                 else:
@@ -259,10 +268,7 @@ def build_profiles_fast(
 
     try:
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            futures = {
-                executor.submit(_extract_wrapper, item): item
-                for item in wav_paths
-            }
+            futures = {executor.submit(_extract_wrapper, item): item for item in wav_paths}
             for future in as_completed(futures):
                 try:
                     result = future.result()
@@ -319,7 +325,8 @@ def build_profiles_fast(
 
         logger.info(
             "Fast profile for %s: %d files, centroid_mean=%.1f, width_mean=%.4f",
-            genre, len(feature_list),
+            genre,
+            len(feature_list),
             profiles[genre].spectral_centroid.mean,
             profiles[genre].stereo_width.mean,
         )

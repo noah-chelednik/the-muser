@@ -26,7 +26,6 @@ Usage::
 
 from __future__ import annotations
 
-import gc
 import json
 import logging
 import os
@@ -37,8 +36,6 @@ from typing import Any
 
 from src.orchestrator.config import (
     DIFFSINGER_DIR,
-    VOICES_DIR,
-    SAMPLE_RATE,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,15 +52,58 @@ DS_MEL_BINS = 128
 # Phoneme inventory for English (DiffSinger ARPAbet variant)
 # These are the standard phonemes used by DiffSinger English models.
 _ARPABET_VOWELS = {
-    "AA", "AE", "AH", "AO", "AW", "AX", "AXR", "AY",
-    "EH", "ER", "EY", "IH", "IX", "IY",
-    "OW", "OY", "UH", "UW", "UX",
+    "AA",
+    "AE",
+    "AH",
+    "AO",
+    "AW",
+    "AX",
+    "AXR",
+    "AY",
+    "EH",
+    "ER",
+    "EY",
+    "IH",
+    "IX",
+    "IY",
+    "OW",
+    "OY",
+    "UH",
+    "UW",
+    "UX",
 }
 _ARPABET_CONSONANTS = {
-    "B", "CH", "D", "DH", "DX", "EL", "EM", "EN",
-    "F", "G", "HH", "JH", "K", "L", "M", "N", "NG",
-    "NX", "P", "Q", "R", "S", "SH", "T", "TH",
-    "V", "W", "WH", "Y", "Z", "ZH",
+    "B",
+    "CH",
+    "D",
+    "DH",
+    "DX",
+    "EL",
+    "EM",
+    "EN",
+    "F",
+    "G",
+    "HH",
+    "JH",
+    "K",
+    "L",
+    "M",
+    "N",
+    "NG",
+    "NX",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "SH",
+    "T",
+    "TH",
+    "V",
+    "W",
+    "WH",
+    "Y",
+    "Z",
+    "ZH",
 }
 _SILENCE_PHONEMES = {"SP", "AP", ""}
 
@@ -122,7 +162,9 @@ def synthesize_singing(
 
     logger.info(
         "Synthesizing singing: %s with model %s -> %s",
-        musicxml_path, voice_model_dir, output_path,
+        musicxml_path,
+        voice_model_dir,
+        output_path,
     )
 
     # Step 1: Extract vocal data from MusicXML
@@ -133,7 +175,8 @@ def synthesize_singing(
 
     logger.info(
         "Extracted %d notes, total duration %.1fs",
-        len(vocal_data["notes"]), vocal_data["total_duration_s"],
+        len(vocal_data["notes"]),
+        vocal_data["total_duration_s"],
     )
 
     # Step 2: Build phoneme sequence from lyrics
@@ -291,8 +334,7 @@ def _extract_vocal_data(musicxml_path: str) -> dict[str, Any]:
         import music21
     except ImportError:
         raise RuntimeError(
-            "music21 is required for MusicXML parsing. "
-            "Install with: pip install music21"
+            "music21 is required for MusicXML parsing. Install with: pip install music21"
         )
 
     score = music21.converter.parse(musicxml_path)
@@ -332,13 +374,15 @@ def _extract_vocal_data(musicxml_path: str) -> dict[str, Any]:
     notes_data: list[dict[str, Any]] = []
     for element in vocal_part.flatten().notesAndRests:
         if element.isRest:
-            notes_data.append({
-                "midi": 0,
-                "duration_beats": float(element.quarterLength),
-                "offset_beats": float(element.offset),
-                "lyric": "",
-                "is_rest": True,
-            })
+            notes_data.append(
+                {
+                    "midi": 0,
+                    "duration_beats": float(element.quarterLength),
+                    "offset_beats": float(element.offset),
+                    "lyric": "",
+                    "is_rest": True,
+                }
+            )
         elif hasattr(element, "pitch"):
             # Get lyrics
             lyric_text = ""
@@ -349,14 +393,16 @@ def _extract_vocal_data(musicxml_path: str) -> dict[str, Any]:
                         lyric_parts.append(lyr.text)
                 lyric_text = " ".join(lyric_parts)
 
-            notes_data.append({
-                "midi": element.pitch.midi,
-                "duration_beats": float(element.quarterLength),
-                "offset_beats": float(element.offset),
-                "lyric": lyric_text,
-                "is_rest": False,
-                "pitch_name": element.pitch.nameWithOctave,
-            })
+            notes_data.append(
+                {
+                    "midi": element.pitch.midi,
+                    "duration_beats": float(element.quarterLength),
+                    "offset_beats": float(element.offset),
+                    "lyric": lyric_text,
+                    "is_rest": False,
+                    "pitch_name": element.pitch.nameWithOctave,
+                }
+            )
         elif hasattr(element, "pitches") and element.pitches:
             # Chord: use the highest note (melody)
             top_pitch = max(element.pitches, key=lambda p: p.midi)
@@ -368,14 +414,16 @@ def _extract_vocal_data(musicxml_path: str) -> dict[str, Any]:
                         lyric_parts.append(lyr.text)
                 lyric_text = " ".join(lyric_parts)
 
-            notes_data.append({
-                "midi": top_pitch.midi,
-                "duration_beats": float(element.quarterLength),
-                "offset_beats": float(element.offset),
-                "lyric": lyric_text,
-                "is_rest": False,
-                "pitch_name": top_pitch.nameWithOctave,
-            })
+            notes_data.append(
+                {
+                    "midi": top_pitch.midi,
+                    "duration_beats": float(element.quarterLength),
+                    "offset_beats": float(element.offset),
+                    "lyric": lyric_text,
+                    "is_rest": False,
+                    "pitch_name": top_pitch.nameWithOctave,
+                }
+            )
 
     # Calculate total duration
     beats_per_second = tempo / 60.0
@@ -402,8 +450,17 @@ def _find_vocal_part(score: Any) -> Any:
     indicating a vocal instrument.
     """
     vocal_keywords = {
-        "vocal", "voice", "vocals", "sing", "soprano", "alto",
-        "tenor", "bass", "baritone", "mezzo", "choir",
+        "vocal",
+        "voice",
+        "vocals",
+        "sing",
+        "soprano",
+        "alto",
+        "tenor",
+        "bass",
+        "baritone",
+        "mezzo",
+        "choir",
     }
 
     for part in score.parts:
@@ -554,10 +611,7 @@ def _fallback_g2p(texts: list[str]) -> dict[str, Any]:
     Not accurate but ensures the pipeline can always proceed.
     Results should be manually reviewed.
     """
-    logger.warning(
-        "Using fallback G2P. Install g2p_en for better results: "
-        "pip install g2p_en"
-    )
+    logger.warning("Using fallback G2P. Install g2p_en for better results: pip install g2p_en")
 
     phonemes_list: list[list[str]] = []
 
@@ -587,7 +641,7 @@ def _fallback_g2p(texts: list[str]) -> dict[str, Any]:
                 phoneme = word[i].upper()
                 # Common digraphs
                 if i + 1 < len(word):
-                    digraph = word[i:i + 2]
+                    digraph = word[i : i + 2]
                     if digraph in ("th", "sh", "ch", "ng", "wh", "zh"):
                         phoneme = digraph.upper()
                         i += 1
@@ -623,7 +677,6 @@ def _build_ds_project(
     (typically one utterance/phrase) with phoneme sequences, note information,
     and variance parameters.
     """
-    import numpy as np
 
     notes = vocal_data["notes"]
     phonemes_per_note = phoneme_data["notes"]
@@ -717,7 +770,9 @@ def _build_ds_project(
     )
     logger.info(
         "Built .ds project: %d phonemes, %d notes, %.1fs total",
-        len(ph_seq), len(note_seq), sum(ph_dur),
+        len(ph_seq),
+        len(note_seq),
+        sum(ph_dur),
     )
 
 
@@ -806,14 +861,12 @@ def _run_inference(
     # Determine available model formats
     has_onnx_acoustic = (model_dir_path / "acoustic.onnx").exists()
     has_onnx_variance = (model_dir_path / "variance.onnx").exists()
-    has_pt_acoustic = (
-        (model_dir_path / "acoustic.ckpt").exists()
-        or (model_dir_path / "acoustic.pt").exists()
-    )
-    has_pt_variance = (
-        (model_dir_path / "variance.ckpt").exists()
-        or (model_dir_path / "variance.pt").exists()
-    )
+    has_pt_acoustic = (model_dir_path / "acoustic.ckpt").exists() or (
+        model_dir_path / "acoustic.pt"
+    ).exists()
+    has_pt_variance = (model_dir_path / "variance.ckpt").exists() or (
+        model_dir_path / "variance.pt"
+    ).exists()
 
     # Try ONNX inference first
     if has_onnx_acoustic:
@@ -822,7 +875,8 @@ def _run_inference(
             return
         except Exception as exc:
             logger.warning(
-                "ONNX inference failed, falling back to PyTorch: %s", exc,
+                "ONNX inference failed, falling back to PyTorch: %s",
+                exc,
             )
 
     # Try PyTorch inference via ModelManager
@@ -832,7 +886,8 @@ def _run_inference(
             return
         except Exception as exc:
             logger.warning(
-                "PyTorch inference failed, falling back to CLI: %s", exc,
+                "PyTorch inference failed, falling back to CLI: %s",
+                exc,
             )
 
     # Last resort: CLI subprocess
@@ -885,21 +940,33 @@ def _run_onnx_inference(
     # Parse phoneme sequence and durations
     ph_seq = ds_data.get("ph_seq", "").split()
     ph_dur_str = ds_data.get("ph_dur", "").split()
-    ph_dur = np.array([float(d) for d in ph_dur_str], dtype=np.float32) if ph_dur_str else np.array([0.5], dtype=np.float32)
+    ph_dur = (
+        np.array([float(d) for d in ph_dur_str], dtype=np.float32)
+        if ph_dur_str
+        else np.array([0.5], dtype=np.float32)
+    )
 
     note_seq_str = ds_data.get("note_seq", "").split()
     note_dur_str = ds_data.get("note_dur", "").split()
 
     # Convert note names to MIDI numbers
-    note_midi = np.array(
-        [_note_name_to_midi(n) for n in note_seq_str],
-        dtype=np.float32,
-    ) if note_seq_str else np.zeros(1, dtype=np.float32)
+    note_midi = (
+        np.array(
+            [_note_name_to_midi(n) for n in note_seq_str],
+            dtype=np.float32,
+        )
+        if note_seq_str
+        else np.zeros(1, dtype=np.float32)
+    )
 
-    note_dur = np.array(
-        [float(d) for d in note_dur_str],
-        dtype=np.float32,
-    ) if note_dur_str else np.array([1.0], dtype=np.float32)
+    note_dur = (
+        np.array(
+            [float(d) for d in note_dur_str],
+            dtype=np.float32,
+        )
+        if note_dur_str
+        else np.array([1.0], dtype=np.float32)
+    )
 
     # Build encoder input (phoneme indices)
     # For ONNX models, phonemes are typically encoded as integer indices
@@ -920,7 +987,9 @@ def _run_onnx_inference(
     if variance_path.exists():
         try:
             var_session = ort.InferenceSession(
-                str(variance_path), sess_opts, providers=providers,
+                str(variance_path),
+                sess_opts,
+                providers=providers,
             )
             var_inputs = {
                 "ph_seq": ph_indices,
@@ -949,7 +1018,9 @@ def _run_onnx_inference(
 
     # Run acoustic model
     acoustic_session = ort.InferenceSession(
-        str(acoustic_path), sess_opts, providers=providers,
+        str(acoustic_path),
+        sess_opts,
+        providers=providers,
     )
 
     acoustic_inputs: dict[str, np.ndarray] = {
@@ -1021,6 +1092,7 @@ def _run_pytorch_inference(
             wav = result.wav if hasattr(result, "wav") else result.get("wav")
             if wav is not None:
                 import numpy as np
+
                 if not isinstance(wav, np.ndarray):
                     wav = wav.cpu().numpy()
                 _write_wav(wav, output_path, DS_SAMPLE_RATE)
@@ -1029,6 +1101,7 @@ def _run_pytorch_inference(
             # Some DiffSinger versions return (wav, sr)
             wav = result[0]
             import numpy as np
+
             if not isinstance(wav, np.ndarray):
                 wav = wav.cpu().numpy()
             _write_wav(wav, output_path, DS_SAMPLE_RATE)
@@ -1072,11 +1145,16 @@ def _run_cli_inference(
         config_path = DIFFSINGER_DIR / "configs" / "acoustic.yaml"
 
     cmd = [
-        "python3", str(infer_script),
-        "--config", str(config_path),
-        "--exp_name", "default",
-        "--infer_input", ds_path,
-        "--out", output_path,
+        "python3",
+        str(infer_script),
+        "--config",
+        str(config_path),
+        "--exp_name",
+        "default",
+        "--infer_input",
+        ds_path,
+        "--out",
+        output_path,
     ]
 
     # Add checkpoint path
@@ -1106,10 +1184,12 @@ def _diffsinger_python_available() -> bool:
     """Check if DiffSinger Python package is importable."""
     diffsinger_path = str(DIFFSINGER_DIR)
     import sys
+
     if diffsinger_path not in sys.path:
         sys.path.insert(0, diffsinger_path)
     try:
         from inference.ds_cascade import DiffSingerCascadeInfer  # type: ignore[import-untyped]
+
         return True
     except (ImportError, ModuleNotFoundError):
         return False
@@ -1166,13 +1246,16 @@ def _vocode_mel(
     if vocoder_onnx.exists():
         try:
             import onnxruntime as ort  # type: ignore[import-untyped]
+
             if providers is None:
                 providers = ["CPUExecutionProvider"]
             if sess_opts is None:
                 sess_opts = ort.SessionOptions()
 
             vocoder_session = ort.InferenceSession(
-                str(vocoder_onnx), sess_opts, providers=providers,
+                str(vocoder_onnx),
+                sess_opts,
+                providers=providers,
             )
 
             input_names = {inp.name for inp in vocoder_session.get_inputs()}
@@ -1191,10 +1274,17 @@ def _vocode_mel(
             outputs = vocoder_session.run(None, inputs)
             wav = outputs[0].squeeze()
 
-            license_tag = "CC-BY-NC-SA 4.0" if vocoder_name.replace("-", "_") in _NC_VOCODERS else "Apache 2.0"
+            license_tag = (
+                "CC-BY-NC-SA 4.0"
+                if vocoder_name.replace("-", "_") in _NC_VOCODERS
+                else "Apache 2.0"
+            )
             logger.info(
                 "Vocoder %s output: %d samples (%.1fs) [license: %s]",
-                vocoder_name, len(wav), len(wav) / DS_SAMPLE_RATE, license_tag,
+                vocoder_name,
+                len(wav),
+                len(wav) / DS_SAMPLE_RATE,
+                license_tag,
             )
             return wav
 
@@ -1217,8 +1307,7 @@ def _griffin_lim(mel: "np.ndarray", n_iter: int = 60) -> "np.ndarray":
         import librosa
     except ImportError:
         raise RuntimeError(
-            "librosa is required for Griffin-Lim vocoding. "
-            "Install with: pip install librosa"
+            "librosa is required for Griffin-Lim vocoding. Install with: pip install librosa"
         )
 
     # Squeeze batch dimension
@@ -1265,6 +1354,7 @@ def _write_wav(wav: "np.ndarray", path: str, sample_rate: int) -> None:
 
     try:
         import soundfile as sf
+
         # Ensure float32 and clip to valid range
         wav = np.clip(wav.astype(np.float32), -1.0, 1.0)
         # Squeeze any extra dimensions
@@ -1275,6 +1365,7 @@ def _write_wav(wav: "np.ndarray", path: str, sample_rate: int) -> None:
         # Fallback to scipy
         try:
             from scipy.io import wavfile
+
             wav_int16 = np.clip(wav * 32767, -32768, 32767).astype(np.int16)
             while wav_int16.ndim > 1:
                 wav_int16 = wav_int16.squeeze(0)
@@ -1293,16 +1384,23 @@ def _note_name_to_midi(note_name: str) -> float:
 
     try:
         import librosa
+
         return float(librosa.note_to_midi(note_name))
     except (ImportError, Exception):
         pass
 
     # Manual conversion
     note_map = {
-        "C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11,
+        "C": 0,
+        "D": 2,
+        "E": 4,
+        "F": 5,
+        "G": 7,
+        "A": 9,
+        "B": 11,
     }
     name = note_name.rstrip("0123456789-")
-    octave_str = note_name[len(name):]
+    octave_str = note_name[len(name) :]
 
     base = name[0].upper()
     if base not in note_map:
@@ -1366,17 +1464,57 @@ def _build_phoneme_vocab() -> None:
 
     # Standard ARPAbet + extras
     standard_phones = [
-        "SP", "AP",  # Silence, aspirate
-        "AA", "AE", "AH", "AO", "AW", "AX", "AXR", "AY",
-        "B", "CH", "D", "DH", "DX",
-        "EH", "EL", "EM", "EN", "ER", "EY",
-        "F", "G", "HH",
-        "IH", "IX", "IY",
-        "JH", "K", "L", "M", "N", "NG", "NX",
-        "OW", "OY",
-        "P", "Q", "R", "S", "SH",
-        "T", "TH",
-        "UH", "UW", "UX",
-        "V", "W", "WH", "Y", "Z", "ZH",
+        "SP",
+        "AP",  # Silence, aspirate
+        "AA",
+        "AE",
+        "AH",
+        "AO",
+        "AW",
+        "AX",
+        "AXR",
+        "AY",
+        "B",
+        "CH",
+        "D",
+        "DH",
+        "DX",
+        "EH",
+        "EL",
+        "EM",
+        "EN",
+        "ER",
+        "EY",
+        "F",
+        "G",
+        "HH",
+        "IH",
+        "IX",
+        "IY",
+        "JH",
+        "K",
+        "L",
+        "M",
+        "N",
+        "NG",
+        "NX",
+        "OW",
+        "OY",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "SH",
+        "T",
+        "TH",
+        "UH",
+        "UW",
+        "UX",
+        "V",
+        "W",
+        "WH",
+        "Y",
+        "Z",
+        "ZH",
     ]
     _PHONEME_VOCAB.update({ph: idx for idx, ph in enumerate(standard_phones)})

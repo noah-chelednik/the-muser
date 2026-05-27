@@ -4,8 +4,6 @@ Tests cover voice registry CRUD, RVC wrapper parameter validation,
 and Demucs wrapper parameter validation.
 """
 
-import os
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -48,7 +46,7 @@ class TestVoiceRegistry:
 
     def test_register_voice(self, tmp_path):
         """Can register a custom voice."""
-        from src.voice.voice_registry import register_voice, get_voice, remove_voice, _REGISTRY
+        from src.voice.voice_registry import register_voice, get_voice, remove_voice
 
         voice_id = "test-custom-voice"
         try:
@@ -165,7 +163,6 @@ class TestDemucsWrapper:
     def test_output_dir_creation(self, tmp_path):
         """Output directory is created if it doesn't exist."""
         # Just verify the path logic, actual separation requires the model
-        from pathlib import Path
 
         output_dir = tmp_path / "new_stems_dir"
         assert not output_dir.exists()
@@ -177,6 +174,7 @@ class TestDemucsWrapper:
         # Will fail at demucs import/execution but dir should be created
         try:
             from src.voice.demucs_wrapper import separate_stems
+
             separate_stems(
                 input_audio=str(input_file),
                 output_dir=str(output_dir),

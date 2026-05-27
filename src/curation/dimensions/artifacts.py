@@ -59,11 +59,11 @@ def analyze(
         pad = np.zeros(window_len, dtype=np.float32)
         padded = np.concatenate([pad, abs_diff])
         cs = np.cumsum(padded)
-        cs2 = np.cumsum(padded ** 2)
+        cs2 = np.cumsum(padded**2)
 
         n = window_len
         local_mean = (cs[n:] - cs[:-n]) / n
-        local_var = (cs2[n:] - cs2[:-n]) / n - local_mean ** 2
+        local_var = (cs2[n:] - cs2[:-n]) / n - local_mean**2
         local_var = np.clip(local_var, 0, None)
         local_std = np.sqrt(local_var)
 
@@ -87,7 +87,10 @@ def analyze(
 
         # ── Onset detection ───────────────────────────────────────────
         onset_frames = librosa.onset.onset_detect(
-            y=samples, sr=sr, units="samples", backtrack=True,
+            y=samples,
+            sr=sr,
+            units="samples",
+            backtrack=True,
         )
         onset_count = len(onset_frames)
 
@@ -122,7 +125,9 @@ def analyze(
                 passed=passed,
                 value=float(artifact_count),
                 threshold=float(max_allowed),
-                reason="" if passed else (
+                reason=""
+                if passed
+                else (
                     f"artifact_count={artifact_count} exceeds "
                     f"{max_allowed:.1f} (limit {config.get('artifact_count_per_min', 10)}/min)"
                 ),

@@ -52,6 +52,7 @@ def setup_logging(verbose: bool = False) -> None:
 # Phase helpers
 # ---------------------------------------------------------------------------
 
+
 def load_manifest(run_dir: Path) -> dict:
     """Load the production manifest."""
     manifest_path = run_dir / "production_manifest.json"
@@ -161,16 +162,8 @@ def run_selection(
     # Save selection report
     report_path = run_dir / "selection_report.json"
     report = {
-        "selected": {
-            tid: s.model_dump()
-            for tid, s in selections.items()
-            if not s.dropped
-        },
-        "dropped": {
-            tid: s.model_dump()
-            for tid, s in selections.items()
-            if s.dropped
-        },
+        "selected": {tid: s.model_dump() for tid, s in selections.items() if not s.dropped},
+        "dropped": {tid: s.model_dump() for tid, s in selections.items() if s.dropped},
         "duplicates": [d.model_dump() for d in duplicates],
         "stats": {
             "total_tracks": len(selections),
@@ -197,6 +190,7 @@ def run_mastering(
 ) -> dict[str, str]:
     """Phase 7: Master all selected tracks."""
     from src.curation.mastering import master_all
+
     return master_all(selections, output_dir, config)
 
 
@@ -229,6 +223,7 @@ def run_packaging(
 ) -> dict:
     """Phase 9: Package for all platforms."""
     from src.curation.packager import package_all
+
     return package_all(selections, metadata, mastered_paths, output_dir, config)
 
 
@@ -243,15 +238,22 @@ def run_report(
 ) -> Path:
     """Phase 10: Generate HTML report."""
     from src.curation.report import generate_report
+
     return generate_report(
-        selections, metadata, duplicates, mastered_paths,
-        package_summary, output_dir / "report.html", config,
+        selections,
+        metadata,
+        duplicates,
+        mastered_paths,
+        package_summary,
+        output_dir / "report.html",
+        config,
     )
 
 
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 def run_pipeline(args: argparse.Namespace) -> None:
     config = load_config(args.config, args.run)
@@ -273,8 +275,9 @@ def run_pipeline(args: argparse.Namespace) -> None:
     candidates = discover_candidates(run_dir, manifest)
 
     if args.dry_run:
-        log.info("DRY RUN — would analyze %d candidates from %d tracks.",
-                 len(candidates), len(manifest))
+        log.info(
+            "DRY RUN — would analyze %d candidates from %d tracks.", len(candidates), len(manifest)
+        )
         log.info("Output would go to: %s", output_dir)
         return
 
@@ -338,8 +341,13 @@ def run_pipeline(args: argparse.Namespace) -> None:
     log.info("PHASE 10: REPORT")
     log.info("=" * 60)
     report_path = run_report(
-        selections, metadata, duplicates, mastered_paths,
-        package_summary, output_dir, config,
+        selections,
+        metadata,
+        duplicates,
+        mastered_paths,
+        package_summary,
+        output_dir,
+        config,
     )
 
     elapsed = time.time() - start
@@ -354,6 +362,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
 # ---------------------------------------------------------------------------
 # Cache loaders
 # ---------------------------------------------------------------------------
+
 
 def _load_cached_analyses(run_dir: Path) -> dict[str, list[CandidateAnalysis]]:
     analysis_dir = run_dir / "analysis"
@@ -397,6 +406,7 @@ def _discover_mastered(output_dir: Path) -> dict[str, str]:
 
 def _load_cached_metadata(output_dir: Path) -> dict:
     from src.curation.models import TrackMetadata
+
     meta_dir = output_dir / "metadata"
     if not meta_dir.exists():
         return {}
@@ -414,25 +424,30 @@ def _load_cached_metadata(output_dir: Path) -> dict:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Muser Automated Curation & Release Packaging Pipeline",
     )
     parser.add_argument(
-        "--run", required=True,
+        "--run",
+        required=True,
         help="Production run ID (directory name under production_run/)",
     )
     parser.add_argument(
-        "--phase", choices=["analysis", "select", "package", "all"],
+        "--phase",
+        choices=["analysis", "select", "package", "all"],
         default="all",
         help="Run only a specific phase (default: all)",
     )
     parser.add_argument(
-        "--config", default=None,
+        "--config",
+        default=None,
         help="Path to curation_config.json (default: project root)",
     )
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="Print what would happen without writing files",
     )
     parser.add_argument(
@@ -440,7 +455,9 @@ def main() -> None:
         help="Comma-separated track IDs to re-analyze (e.g., P1-A01,P1-B02)",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true",
+        "-v",
+        "--verbose",
+        action="store_true",
         help="Enable debug logging",
     )
     args = parser.parse_args()

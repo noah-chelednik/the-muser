@@ -71,13 +71,18 @@ def analyze(
 
             # Spectral centroid
             cent = librosa.feature.spectral_centroid(
-                y=segment, sr=sr, hop_length=hop_length,
+                y=segment,
+                sr=sr,
+                hop_length=hop_length,
             )[0]
             cent_mean = float(np.mean(cent))
 
             # MFCCs
             mfcc = librosa.feature.mfcc(
-                y=segment, sr=sr, n_mfcc=13, hop_length=hop_length,
+                y=segment,
+                sr=sr,
+                n_mfcc=13,
+                hop_length=hop_length,
             )
             mfcc_means = mfcc.mean(axis=1).tolist()  # 13 values
 
@@ -132,7 +137,7 @@ def analyze(
         # Prevent zero sigma
         sigma = max(sigma, 0.01)
 
-        score = float(np.exp(-((evolution_distance - center) / sigma) ** 2))
+        score = float(np.exp(-(((evolution_distance - center) / sigma) ** 2)))
         score = float(np.clip(score, 0.0, 1.0))
 
         return DimensionResult(

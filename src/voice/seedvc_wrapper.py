@@ -63,9 +63,7 @@ def convert_voice_seedvc(
 
     # --- Determine output path ---
     if output_path is None:
-        output_path = str(
-            input_path.parent / f"{input_path.stem}_seedvc{input_path.suffix}"
-        )
+        output_path = str(input_path.parent / f"{input_path.stem}_seedvc{input_path.suffix}")
 
     logger.info(
         "Seed-VC conversion: %s -> %s (ref: %s, f0_cond: %s, steps: %d, len_adj: %.2f)",
@@ -160,12 +158,19 @@ def _convert_via_cli(
 ) -> str:
     """Convert using the Seed-VC CLI (subprocess fallback)."""
     cmd = [
-        "python", "-m", "seed_vc",
-        "--input", input_audio,
-        "--reference", reference_audio,
-        "--output", output_path,
-        "--steps", str(diffusion_steps),
-        "--length-adjust", str(length_adjust),
+        "python",
+        "-m",
+        "seed_vc",
+        "--input",
+        input_audio,
+        "--reference",
+        reference_audio,
+        "--output",
+        output_path,
+        "--steps",
+        str(diffusion_steps),
+        "--length-adjust",
+        str(length_adjust),
     ]
 
     if f0_conditioned:
@@ -182,14 +187,10 @@ def _convert_via_cli(
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Seed-VC CLI failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"Seed-VC CLI failed (exit {result.returncode}): {result.stderr}")
 
     if not Path(output_path).exists():
-        raise RuntimeError(
-            f"Seed-VC CLI completed but output file not found: {output_path}"
-        )
+        raise RuntimeError(f"Seed-VC CLI completed but output file not found: {output_path}")
 
     logger.info("Seed-VC conversion complete (CLI): %s", output_path)
     return output_path

@@ -15,7 +15,7 @@ import logging
 import re
 from typing import Any, Callable
 
-from src.orchestrator.llm_provider import chat, chat_stream, validate_tool_call, LLMResponse
+from src.orchestrator.llm_provider import chat, chat_stream, validate_tool_call
 from src.orchestrator.tool_validators import validate_arguments
 from src.orchestrator.composition_state import CompositionState
 from src.orchestrator.config import MAX_TOOL_ITERATIONS
@@ -117,7 +117,8 @@ def run_agent_turn(
                     composition_state.save_section(_pending_inline_section, musicxml)
                     logger.info(
                         "Captured inline MusicXML for section '%s' (%d chars)",
-                        _pending_inline_section, len(musicxml),
+                        _pending_inline_section,
+                        len(musicxml),
                     )
                 _pending_inline_section = None
             final_text = response.content
@@ -137,7 +138,7 @@ def run_agent_turn(
                     "function": {
                         "name": tc.name,
                         "arguments": json.dumps(tc.arguments),
-                    }
+                    },
                 }
                 for j, tc in enumerate(response.tool_calls)
             ]
@@ -159,11 +160,13 @@ def run_agent_turn(
                     _pending_inline_section = result.get("section_name", "unnamed")
 
                 # Add tool result to conversation
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tc.id or f"call_{iterations}_{j}",
-                    "content": json.dumps(result),
-                })
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc.id or f"call_{iterations}_{j}",
+                        "content": json.dumps(result),
+                    }
+                )
 
         # If response has no tool calls and no content, something went wrong
         if not response.tool_calls and not response.content:
@@ -180,13 +183,13 @@ def run_agent_turn(
     # Update conversation history
     conversation_history.clear()
     # Keep only user/assistant turns (not system prompt)
-    conversation_history.extend(
-        m for m in messages if m["role"] != "system"
-    )
+    conversation_history.extend(m for m in messages if m["role"] != "system")
     if final_text:
-        conversation_history.append({
-            "role": "assistant",
-            "content": final_text,
-        })
+        conversation_history.append(
+            {
+                "role": "assistant",
+                "content": final_text,
+            }
+        )
 
     return final_text

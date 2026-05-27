@@ -60,12 +60,12 @@ REGISTER_ORDER = {"chest": 0, "mixed": 1, "head": 2, "falsetto": 3}
 # Catalog helpers
 # ---------------------------------------------------------------------------
 
+
 def load_catalog() -> list[dict[str, Any]]:
     """Load the song catalog from YAML, returning a flat list of songs."""
     if not CATALOG_PATH.exists():
         console.print(
-            f"[red]Catalog not found:[/red] {CATALOG_PATH}\n"
-            "Create it first or check the path.",
+            f"[red]Catalog not found:[/red] {CATALOG_PATH}\nCreate it first or check the path.",
         )
         raise SystemExit(1)
 
@@ -103,6 +103,7 @@ def sort_for_recording(songs: list[dict]) -> list[dict]:
       2. Group by register so the vocalist stays in one area longer.
       3. Breathy / soft / falsetto songs toward the end.
     """
+
     def sort_key(s: dict) -> tuple:
         energy = ENERGY_ORDER.get(s.get("energy", "moderate"), 1)
         register = REGISTER_ORDER.get(s.get("register", "mixed"), 1)
@@ -115,6 +116,7 @@ def sort_for_recording(songs: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Session state management
 # ---------------------------------------------------------------------------
+
 
 def _list_session_files() -> list[Path]:
     """Return session JSON files sorted by number."""
@@ -177,10 +179,16 @@ def load_all_recordings() -> dict[str, dict]:
 # Display helpers
 # ---------------------------------------------------------------------------
 
+
 def _song_panel(song: dict, index: int, total: int) -> Panel:
     """Create a Rich panel displaying song info for the recording prompt."""
     energy_colors = {"powerful": "red", "moderate": "yellow", "soft": "green"}
-    register_colors = {"chest": "blue", "mixed": "magenta", "head": "cyan", "falsetto": "bright_cyan"}
+    register_colors = {
+        "chest": "blue",
+        "mixed": "magenta",
+        "head": "cyan",
+        "falsetto": "bright_cyan",
+    }
 
     energy = song.get("energy", "moderate")
     register = song.get("register", "mixed")
@@ -223,6 +231,7 @@ def _format_duration(seconds: float) -> str:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 @click.group()
 def cli():
     """The Muser -- Recording Session Manager.
@@ -236,6 +245,7 @@ def cli():
 # ---------------------------------------------------------------------------
 # start
 # ---------------------------------------------------------------------------
+
 
 @cli.command()
 @click.option(
@@ -255,10 +265,7 @@ def start(resume: bool, category: str | None) -> None:
     all_recordings = load_all_recordings()
 
     # Filter to unrecorded songs (or allow re-recording)
-    unrecorded = [
-        s for s in catalog
-        if song_id(s) not in all_recordings
-    ]
+    unrecorded = [s for s in catalog if song_id(s) not in all_recordings]
 
     if category:
         unrecorded = [s for s in unrecorded if s.get("category") == category]
@@ -356,21 +363,27 @@ def start(resume: bool, category: str | None) -> None:
         console.print(_song_panel(song, idx, total))
 
         # Prompt for action
-        action = console.input(
-            "\n[bold]Record this song, [s]kip, [q]uit, or [n]ote? "
-            "Press Enter when done recording:[/bold] "
-        ).strip().lower()
+        action = (
+            console.input(
+                "\n[bold]Record this song, [s]kip, [q]uit, or [n]ote? "
+                "Press Enter when done recording:[/bold] "
+            )
+            .strip()
+            .lower()
+        )
 
         if action == "q":
             console.print("[dim]Saving session and exiting...[/dim]")
             break
 
         if action == "s":
-            session["skipped"].append({
-                "song_id": song_id(song),
-                "title": song.get("title", ""),
-                "reason": "user_skip",
-            })
+            session["skipped"].append(
+                {
+                    "song_id": song_id(song),
+                    "title": song.get("title", ""),
+                    "reason": "user_skip",
+                }
+            )
             console.print(f"[dim]Skipped: {song.get('title', '')}[/dim]")
             _save_session(session)
             continue
@@ -388,9 +401,7 @@ def start(resume: bool, category: str | None) -> None:
 
         # Quality rating
         while True:
-            rating_str = console.input(
-                "  Quality rating [bold](1-5, 5=excellent)[/bold]: "
-            ).strip()
+            rating_str = console.input("  Quality rating [bold](1-5, 5=excellent)[/bold]: ").strip()
             try:
                 quality = int(rating_str)
                 if 1 <= quality <= 5:
@@ -401,10 +412,14 @@ def start(resume: bool, category: str | None) -> None:
 
         # Actual register
         register_default = song.get("register", "mixed")
-        register_input = console.input(
-            f"  Actual register used [bold](chest/mixed/head/falsetto)[/bold] "
-            f"[{register_default}]: "
-        ).strip().lower()
+        register_input = (
+            console.input(
+                f"  Actual register used [bold](chest/mixed/head/falsetto)[/bold] "
+                f"[{register_default}]: "
+            )
+            .strip()
+            .lower()
+        )
         actual_register = (
             register_input
             if register_input in ("chest", "mixed", "head", "falsetto")
@@ -424,9 +439,7 @@ def start(resume: bool, category: str | None) -> None:
         key_used = original_key if semitones == 0 else f"{original_key} {semitones:+d} semitones"
 
         # Notes
-        rec_notes = console.input(
-            "  Notes (optional, press Enter to skip): "
-        ).strip()
+        rec_notes = console.input("  Notes (optional, press Enter to skip): ").strip()
 
         recording = {
             "song_id": song_id(song),
@@ -477,6 +490,7 @@ def start(resume: bool, category: str | None) -> None:
 # ---------------------------------------------------------------------------
 # status
 # ---------------------------------------------------------------------------
+
 
 @cli.command()
 def status() -> None:
@@ -560,8 +574,7 @@ def status() -> None:
 
     console.print(table)
     console.print(
-        f"\n[bold]Estimated total remaining time:[/bold] "
-        f"{_format_duration(total_remaining_s)}"
+        f"\n[bold]Estimated total remaining time:[/bold] {_format_duration(total_remaining_s)}"
     )
 
     # Quality distribution
@@ -638,6 +651,7 @@ def status() -> None:
 # ---------------------------------------------------------------------------
 # export
 # ---------------------------------------------------------------------------
+
 
 @cli.command()
 @click.option(

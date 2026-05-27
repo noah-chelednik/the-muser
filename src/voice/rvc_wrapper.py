@@ -7,7 +7,6 @@ cross-gender conversion.
 
 import logging
 import subprocess
-import tempfile
 from pathlib import Path
 
 from src.orchestrator.config import APPLIO_DIR
@@ -65,34 +64,53 @@ def convert_voice(
         raise FileNotFoundError(f"RVC model not found: {model_path}")
 
     if output_path is None:
-        output_path = str(
-            input_path.parent / f"{input_path.stem}_rvc{input_path.suffix}"
-        )
+        output_path = str(input_path.parent / f"{input_path.stem}_rvc{input_path.suffix}")
 
     logger.info(
-        "RVC conversion: %s -> %s (model: %s, transpose: %d, f0: %s, "
-        "formant_shift: %s)",
-        input_audio, output_path, model.name, transpose, f0_method,
+        "RVC conversion: %s -> %s (model: %s, transpose: %d, f0: %s, formant_shift: %s)",
+        input_audio,
+        output_path,
+        model.name,
+        transpose,
+        f0_method,
         formant_shift,
     )
 
     # Try Python API first (if Applio is available as a module)
     try:
         return _convert_via_python_api(
-            input_audio, model_path, index_path,
-            transpose, f0_method, output_path, formant_shift,
-            formant_quefrency, formant_timbre,
-            index_rate, filter_radius, rms_mix_rate, protect,
+            input_audio,
+            model_path,
+            index_path,
+            transpose,
+            f0_method,
+            output_path,
+            formant_shift,
+            formant_quefrency,
+            formant_timbre,
+            index_rate,
+            filter_radius,
+            rms_mix_rate,
+            protect,
         )
     except ImportError:
         logger.info("Applio Python API not available, falling back to CLI")
 
     # Fall back to CLI invocation
     return _convert_via_cli(
-        input_audio, model_path, index_path,
-        transpose, f0_method, output_path, formant_shift,
-        formant_quefrency, formant_timbre,
-        index_rate, filter_radius, rms_mix_rate, protect,
+        input_audio,
+        model_path,
+        index_path,
+        transpose,
+        f0_method,
+        output_path,
+        formant_shift,
+        formant_quefrency,
+        formant_timbre,
+        index_rate,
+        filter_radius,
+        rms_mix_rate,
+        protect,
     )
 
 
@@ -113,6 +131,7 @@ def _convert_via_python_api(
 ) -> str:
     """Attempt conversion using Applio's Python API (VoiceConverter)."""
     import sys
+
     applio_path = str(APPLIO_DIR)
     if applio_path not in sys.path:
         sys.path.insert(0, applio_path)
@@ -167,40 +186,62 @@ def _convert_via_cli(
 ) -> str:
     """Attempt conversion using Applio CLI (core.py infer)."""
     cmd = [
-        "python", str(APPLIO_DIR / "core.py"), "infer",
-        "--input_path", input_audio,
-        "--output_path", output_path,
-        "--pth_path", model_path,
-        "--index_path", index_path or "",
-        "--pitch", str(transpose),
-        "--f0_method", f0_method,
-        "--index_rate", str(index_rate),
-        "--filter_radius", str(filter_radius),
-        "--volume_envelope", str(rms_mix_rate),
-        "--protect", str(protect),
-        "--export_format", "WAV",
-        "--split_audio", "true",
+        "python",
+        str(APPLIO_DIR / "core.py"),
+        "infer",
+        "--input_path",
+        input_audio,
+        "--output_path",
+        output_path,
+        "--pth_path",
+        model_path,
+        "--index_path",
+        index_path or "",
+        "--pitch",
+        str(transpose),
+        "--f0_method",
+        f0_method,
+        "--index_rate",
+        str(index_rate),
+        "--filter_radius",
+        str(filter_radius),
+        "--volume_envelope",
+        str(rms_mix_rate),
+        "--protect",
+        str(protect),
+        "--export_format",
+        "WAV",
+        "--split_audio",
+        "true",
     ]
 
     if formant_shift:
-        cmd.extend([
-            "--f0_autotune", "true",
-            "--f0_autotune_strength", "0.8",
-            "--formant_shifting", "true",
-            "--formant_qfrency", str(formant_quefrency),
-            "--formant_timbre", str(formant_timbre),
-        ])
+        cmd.extend(
+            [
+                "--f0_autotune",
+                "true",
+                "--f0_autotune_strength",
+                "0.8",
+                "--formant_shifting",
+                "true",
+                "--formant_qfrency",
+                str(formant_quefrency),
+                "--formant_timbre",
+                str(formant_timbre),
+            ]
+        )
 
     logger.info("Running RVC CLI: %s", " ".join(cmd))
     result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=300,
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=300,
         cwd=str(APPLIO_DIR),
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"RVC CLI failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"RVC CLI failed (exit {result.returncode}): {result.stderr}")
 
     logger.info("RVC conversion complete (CLI): %s", output_path)
     return output_path

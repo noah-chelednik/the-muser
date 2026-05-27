@@ -33,8 +33,11 @@ def _load_custom_voices() -> None:
 def _save_custom_voices() -> None:
     """Save custom (non-default) voices to the registry file."""
     default_ids = {
-        "noah-natural", "noah-classical", "noah-fem",
-        "noah-fem-classical", "noah-lora",
+        "noah-natural",
+        "noah-classical",
+        "noah-fem",
+        "noah-fem-classical",
+        "noah-lora",
     }
     custom = {k: v for k, v in _REGISTRY.items() if k not in default_ids}
     _REGISTRY_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -66,7 +69,8 @@ def get_voice(voice_id: str) -> dict[str, Any] | None:
     if voice and not Path(voice.get("model_path", "")).exists():
         logger.warning(
             "Voice '%s' registered but model file missing: %s",
-            voice_id, voice.get("model_path"),
+            voice_id,
+            voice.get("model_path"),
         )
         voice = dict(voice)
         voice["warning"] = f"model file not found: {voice.get('model_path', '')}"
@@ -76,10 +80,7 @@ def get_voice(voice_id: str) -> dict[str, Any] | None:
 def list_available_voices() -> list[dict[str, Any]]:
     """List only voices whose model files actually exist on disk."""
     _load_custom_voices()
-    return [
-        v for v in _REGISTRY.values()
-        if Path(v.get("model_path", "")).exists()
-    ]
+    return [v for v in _REGISTRY.values() if Path(v.get("model_path", "")).exists()]
 
 
 def register_voice(

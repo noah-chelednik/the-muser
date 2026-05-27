@@ -53,7 +53,10 @@ def analyze(
         hop_length = 512
         n_mfcc = 13
         mel_spec = librosa.feature.melspectrogram(
-            y=samples, sr=sr, hop_length=hop_length, n_mels=128,
+            y=samples,
+            sr=sr,
+            hop_length=hop_length,
+            n_mels=128,
         )
         mfcc = librosa.feature.mfcc(S=librosa.power_to_db(mel_spec), n_mfcc=n_mfcc)
         # mfcc shape: (n_mfcc, T)
@@ -75,10 +78,10 @@ def analyze(
         novelty = np.zeros(n)
         kernel_size = min(16, n // 4) if n >= 8 else 2
         for i in range(kernel_size, n - kernel_size):
-            tl = ssm[i - kernel_size:i, i - kernel_size:i].mean()
-            br = ssm[i:i + kernel_size, i:i + kernel_size].mean()
-            tr = ssm[i - kernel_size:i, i:i + kernel_size].mean()
-            bl = ssm[i:i + kernel_size, i - kernel_size:i].mean()
+            tl = ssm[i - kernel_size : i, i - kernel_size : i].mean()
+            br = ssm[i : i + kernel_size, i : i + kernel_size].mean()
+            tr = ssm[i - kernel_size : i, i : i + kernel_size].mean()
+            bl = ssm[i : i + kernel_size, i - kernel_size : i].mean()
             novelty[i] = (tl + br) - (tr + bl)
 
         # Smooth and peak-pick
@@ -127,17 +130,13 @@ def analyze(
         # Bell centered at 5.5 with sigma 2.5
         ideal_center = 5.5
         ideal_sigma = 2.5
-        seg_score = float(np.exp(-((segment_count - ideal_center) / ideal_sigma) ** 2))
+        seg_score = float(np.exp(-(((segment_count - ideal_center) / ideal_sigma) ** 2)))
 
         # Diversity normalized (0-1), capped at reasonable range
         diversity_normalized = min(segment_diversity / 5.0, 1.0)
 
         # Composite
-        score = (
-            0.3 * seg_score
-            + 0.3 * diversity_normalized
-            + 0.4 * energy_arc_r2
-        )
+        score = 0.3 * seg_score + 0.3 * diversity_normalized + 0.4 * energy_arc_r2
         score = float(np.clip(score, 0.0, 1.0))
 
         # Genre weight adjustments are handled at the composite level

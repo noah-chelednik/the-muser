@@ -21,7 +21,6 @@ Usage::
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -63,7 +62,7 @@ def normalize_loudness(audio: np.ndarray, sr: int, target_lufs: float = -18.0) -
         return audio
 
     # Calculate current RMS
-    rms = np.sqrt(np.mean(audio ** 2))
+    rms = np.sqrt(np.mean(audio**2))
     if rms < 1e-10:
         return audio
 
@@ -92,7 +91,7 @@ def remove_silence(
     Keeps short silences (< min_silence_ms) for natural phrasing.
     """
     frame_length = int(sr * 0.025)  # 25ms frames
-    hop_length = int(sr * 0.010)    # 10ms hop
+    hop_length = int(sr * 0.010)  # 10ms hop
     min_silence_frames = int(min_silence_ms / 10)
 
     # Calculate frame energies
@@ -103,8 +102,8 @@ def remove_silence(
     energies = np.zeros(n_frames)
     for i in range(n_frames):
         start = i * hop_length
-        frame = audio[start:start + frame_length]
-        rms = np.sqrt(np.mean(frame ** 2) + 1e-10)
+        frame = audio[start : start + frame_length]
+        rms = np.sqrt(np.mean(frame**2) + 1e-10)
         energies[i] = 20.0 * np.log10(rms + 1e-10)
 
     # Find non-silent regions
@@ -118,7 +117,7 @@ def remove_silence(
         else:
             if silence_count > 0 and silence_count < min_silence_frames:
                 # Short silence — keep it
-                is_active[i - silence_count:i] = True
+                is_active[i - silence_count : i] = True
             silence_count = 0
 
     # Build output from active regions
@@ -201,10 +200,10 @@ def segment_audio(
 
             min_energy = float("inf")
             for check in range(search_end, search_start, -int(sr * 0.1)):
-                frame = audio[max(0, check - frame_len):check]
+                frame = audio[max(0, check - frame_len) : check]
                 if len(frame) == 0:
                     continue
-                energy = 20.0 * np.log10(np.sqrt(np.mean(frame ** 2)) + 1e-10)
+                energy = 20.0 * np.log10(np.sqrt(np.mean(frame**2)) + 1e-10)
                 if energy < min_energy:
                     min_energy = energy
                     best_split = check
@@ -221,44 +220,55 @@ def segment_audio(
 
 def get_rms_db(audio: np.ndarray) -> float:
     """Calculate RMS in dB."""
-    rms = np.sqrt(np.mean(audio ** 2))
+    rms = np.sqrt(np.mean(audio**2))
     return 20.0 * np.log10(rms + 1e-10)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Preprocess voice recordings for training"
-    )
+    parser = argparse.ArgumentParser(description="Preprocess voice recordings for training")
     parser.add_argument(
-        "--input-dir", required=True,
+        "--input-dir",
+        required=True,
         help="Directory containing raw vocal recordings (WAV/FLAC/MP3)",
     )
     parser.add_argument(
-        "--voice-name", default="noah",
+        "--voice-name",
+        default="noah",
         help="Voice name for output organization (default: noah)",
     )
     parser.add_argument(
-        "--target-lufs", type=float, default=-18.0,
+        "--target-lufs",
+        type=float,
+        default=-18.0,
         help="Target loudness in LUFS (default: -18)",
     )
     parser.add_argument(
-        "--min-segment", type=float, default=5.0,
+        "--min-segment",
+        type=float,
+        default=5.0,
         help="Minimum segment length in seconds (default: 5)",
     )
     parser.add_argument(
-        "--max-segment", type=float, default=15.0,
+        "--max-segment",
+        type=float,
+        default=15.0,
         help="Maximum segment length in seconds (default: 15)",
     )
     parser.add_argument(
-        "--min-rms-db", type=float, default=-35.0,
+        "--min-rms-db",
+        type=float,
+        default=-35.0,
         help="Discard segments with RMS below this (default: -35 dB)",
     )
     parser.add_argument(
-        "--skip-demucs", action="store_true",
+        "--skip-demucs",
+        action="store_true",
         help="Skip Demucs separation (input is already isolated vocals)",
     )
     parser.add_argument(
-        "--sample-rate", type=int, default=48000,
+        "--sample-rate",
+        type=int,
+        default=48000,
         help="Output sample rate (default: 48000)",
     )
 
@@ -280,9 +290,7 @@ def main():
 
     # Find audio files
     audio_exts = {".wav", ".flac", ".mp3", ".ogg", ".m4a"}
-    audio_files = sorted(
-        f for f in input_dir.rglob("*") if f.suffix.lower() in audio_exts
-    )
+    audio_files = sorted(f for f in input_dir.rglob("*") if f.suffix.lower() in audio_exts)
 
     if not audio_files:
         logger.error("No audio files found in %s", input_dir)
@@ -303,12 +311,11 @@ def main():
                 vocals_path = str(audio_file)
             else:
                 logger.info("  Isolating vocals with Demucs...")
-                vocals_path = isolate_vocals(
-                    str(audio_file), str(demucs_tmp), two_stems=True
-                )
+                vocals_path = isolate_vocals(str(audio_file), str(demucs_tmp), two_stems=True)
 
             # Step 2: Load audio
             import librosa
+
             audio, sr = librosa.load(vocals_path, sr=args.sample_rate, mono=True)
 
             if len(audio) == 0:
@@ -323,7 +330,9 @@ def main():
             removed_pct = (1 - len(audio_cleaned) / len(audio)) * 100
             logger.info(
                 "  Silence removed: %.1f%% (%.1fs -> %.1fs)",
-                removed_pct, len(audio) / sr, len(audio_cleaned) / sr,
+                removed_pct,
+                len(audio) / sr,
+                len(audio_cleaned) / sr,
             )
 
             # Step 5: Save full recording for ACE-Step LoRA
@@ -344,7 +353,8 @@ def main():
 
             # Step 6: Segment for RVC training
             segments = segment_audio(
-                audio_cleaned, sr,
+                audio_cleaned,
+                sr,
                 min_segment_s=args.min_segment,
                 max_segment_s=args.max_segment,
             )
@@ -365,37 +375,47 @@ def main():
 
             logger.info(
                 "  Segments: %d kept, %d discarded (RMS < %.0f dB)",
-                kept, len(segments) - kept, args.min_rms_db,
+                kept,
+                len(segments) - kept,
+                args.min_rms_db,
             )
 
-            manifest.append({
-                "source": str(audio_file),
-                "full_recording": str(full_path),
-                "segments_kept": kept,
-                "segments_discarded": len(segments) - kept,
-                "duration_s": round(len(audio_cleaned) / sr, 1),
-            })
+            manifest.append(
+                {
+                    "source": str(audio_file),
+                    "full_recording": str(full_path),
+                    "segments_kept": kept,
+                    "segments_discarded": len(segments) - kept,
+                    "duration_s": round(len(audio_cleaned) / sr, 1),
+                }
+            )
 
         except Exception as exc:
             logger.error("  Failed: %s", exc)
-            manifest.append({
-                "source": str(audio_file),
-                "status": "error",
-                "error": str(exc),
-            })
+            manifest.append(
+                {
+                    "source": str(audio_file),
+                    "status": "error",
+                    "error": str(exc),
+                }
+            )
 
     # Write manifest
     manifest_path = PROJECT_ROOT / "training_data" / "processed" / "preprocess_manifest.json"
     with open(manifest_path, "w") as f:
-        json.dump({
-            "voice_name": args.voice_name,
-            "total_files": len(audio_files),
-            "total_segments": total_segments,
-            "total_discarded": total_discarded,
-            "target_lufs": args.target_lufs,
-            "sample_rate": args.sample_rate,
-            "files": manifest,
-        }, f, indent=2)
+        json.dump(
+            {
+                "voice_name": args.voice_name,
+                "total_files": len(audio_files),
+                "total_segments": total_segments,
+                "total_discarded": total_discarded,
+                "target_lufs": args.target_lufs,
+                "sample_rate": args.sample_rate,
+                "files": manifest,
+            },
+            f,
+            indent=2,
+        )
 
     logger.info("=" * 60)
     logger.info("Preprocessing complete!")

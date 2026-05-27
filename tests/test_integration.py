@@ -4,9 +4,7 @@ All tests use mocked Claude API for CI compatibility.
 Tests verify complete workflows from user instruction to final output.
 """
 
-import json
-import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -22,20 +20,26 @@ class TestPianoPieceWorkflow:
         set_state(composition_state)
 
         # Step 1: Create plan
-        result = execute_tool("create_composition_plan", {
-            "title": "Test Nocturne",
-            "genre": "classical",
-            "instrumentation": ["Piano"],
-            "form": "ABA",
-            "key": "C minor",
-            "tempo": 72,
-        })
+        result = execute_tool(
+            "create_composition_plan",
+            {
+                "title": "Test Nocturne",
+                "genre": "classical",
+                "instrumentation": ["Piano"],
+                "form": "ABA",
+                "key": "C minor",
+                "tempo": 72,
+            },
+        )
         assert result["status"] == "success"
 
         # Step 2: Validate existing MusicXML
-        result = execute_tool("validate_notation", {
-            "musicxml_path": sample_musicxml_path,
-        })
+        result = execute_tool(
+            "validate_notation",
+            {
+                "musicxml_path": sample_musicxml_path,
+            },
+        )
         assert result["status"] == "success"
         assert result["passed"] is True
 
@@ -80,19 +84,22 @@ class TestPopSongWorkflow:
 
         set_state(composition_state)
 
-        result = execute_tool("create_composition_plan", {
-            "title": "Summer Days",
-            "genre": "pop",
-            "instrumentation": ["Vocals", "Guitar", "Bass", "Drums"],
-            "form": "verse-chorus",
-            "key": "G major",
-            "tempo": 120,
-            "sections": [
-                {"name": "intro", "measures": 8},
-                {"name": "verse1", "measures": 16},
-                {"name": "chorus", "measures": 8},
-            ],
-        })
+        result = execute_tool(
+            "create_composition_plan",
+            {
+                "title": "Summer Days",
+                "genre": "pop",
+                "instrumentation": ["Vocals", "Guitar", "Bass", "Drums"],
+                "form": "verse-chorus",
+                "key": "G major",
+                "tempo": 120,
+                "sections": [
+                    {"name": "intro", "measures": 8},
+                    {"name": "verse1", "measures": 16},
+                    {"name": "chorus", "measures": 8},
+                ],
+            },
+        )
         assert result["status"] == "success"
         assert composition_state.project["title"] == "Summer Days"
         assert composition_state.form_plan["form"] == "verse-chorus"
@@ -105,10 +112,13 @@ class TestPopSongWorkflow:
         mock_mgr.return_value.load_acestep.side_effect = ImportError("Not installed")
         set_state(composition_state)
 
-        result = execute_tool("generate_audio_acestep", {
-            "tags": "pop, female vocals, upbeat",
-            "lyrics": "[verse]\nWalking in the sun\n[chorus]\nSummer days",
-        })
+        result = execute_tool(
+            "generate_audio_acestep",
+            {
+                "tags": "pop, female vocals, upbeat",
+                "lyrics": "[verse]\nWalking in the sun\n[chorus]\nSummer days",
+            },
+        )
         assert result["status"] == "error"
 
 
@@ -122,18 +132,30 @@ class TestOrchestralWorkflow:
 
         set_state(composition_state)
 
-        result = execute_tool("create_composition_plan", {
-            "title": "Symphony Sketch",
-            "genre": "classical",
-            "instrumentation": [
-                "Flute", "Oboe", "Clarinet", "Bassoon",
-                "Horn", "Trumpet", "Trombone",
-                "Violin I", "Violin II", "Viola", "Cello", "Contrabass",
-            ],
-            "form": "sonata",
-            "key": "D major",
-            "tempo": 120,
-        })
+        result = execute_tool(
+            "create_composition_plan",
+            {
+                "title": "Symphony Sketch",
+                "genre": "classical",
+                "instrumentation": [
+                    "Flute",
+                    "Oboe",
+                    "Clarinet",
+                    "Bassoon",
+                    "Horn",
+                    "Trumpet",
+                    "Trombone",
+                    "Violin I",
+                    "Violin II",
+                    "Viola",
+                    "Cello",
+                    "Contrabass",
+                ],
+                "form": "sonata",
+                "key": "D major",
+                "tempo": 120,
+            },
+        )
         assert result["status"] == "success"
         instruments = composition_state.orchestration_state["instruments"]
         assert len(instruments) == 12
@@ -149,9 +171,12 @@ class TestErrorRecovery:
 
         set_state(composition_state)
 
-        result = execute_tool("validate_notation", {
-            "musicxml_path": "/nonexistent/file.musicxml",
-        })
+        result = execute_tool(
+            "validate_notation",
+            {
+                "musicxml_path": "/nonexistent/file.musicxml",
+            },
+        )
         # Should return error, not crash
         assert result["status"] in ("success", "error")
 
@@ -171,10 +196,13 @@ class TestErrorRecovery:
 
         set_state(composition_state)
 
-        result = execute_tool("update_memory_document", {
-            "section": "project",
-            "data": {"title": "Updated Title", "status": "composing"},
-        })
+        result = execute_tool(
+            "update_memory_document",
+            {
+                "section": "project",
+                "data": {"title": "Updated Title", "status": "composing"},
+            },
+        )
         assert result["status"] == "success"
         assert composition_state.project["title"] == "Updated Title"
 
@@ -184,14 +212,20 @@ class TestErrorRecovery:
 
         set_state(composition_state)
 
-        execute_tool("update_memory_document", {
-            "section": "revision_notes",
-            "data": {"note": "Changed key to G minor"},
-        })
-        execute_tool("update_memory_document", {
-            "section": "revision_notes",
-            "data": {"note": "Extended coda by 4 bars"},
-        })
+        execute_tool(
+            "update_memory_document",
+            {
+                "section": "revision_notes",
+                "data": {"note": "Changed key to G minor"},
+            },
+        )
+        execute_tool(
+            "update_memory_document",
+            {
+                "section": "revision_notes",
+                "data": {"note": "Extended coda by 4 bars"},
+            },
+        )
 
         assert len(composition_state.revision_notes) == 2
 
@@ -214,9 +248,12 @@ class TestGitVersioning:
         composition_state.save_section("test", "<score/>")
 
         # Save checkpoint
-        result = execute_tool("save_checkpoint", {
-            "message": "Added test section",
-        })
+        result = execute_tool(
+            "save_checkpoint",
+            {
+                "message": "Added test section",
+            },
+        )
         assert result["status"] == "success"
         assert result["commit"] != ""
 
@@ -227,9 +264,7 @@ class TestModelSwap:
 
     @patch("src.generation.notagen_wrapper.get_manager")
     @patch("src.generation.acestep_wrapper.get_manager")
-    def test_sequential_generation_attempts(
-        self, mock_ace_mgr, mock_nota_mgr, composition_state
-    ):
+    def test_sequential_generation_attempts(self, mock_ace_mgr, mock_nota_mgr, composition_state):
         """Attempting multiple generators in sequence handles failures."""
         from src.orchestrator.tool_executor import execute_tool, set_state
 
@@ -239,25 +274,34 @@ class TestModelSwap:
         set_state(composition_state)
 
         # NotaGen attempt
-        result1 = execute_tool("generate_notation_notagen", {
-            "period": "Romantic",
-            "composer": "Chopin",
-            "instrumentation": "Piano",
-        })
+        result1 = execute_tool(
+            "generate_notation_notagen",
+            {
+                "period": "Romantic",
+                "composer": "Chopin",
+                "instrumentation": "Piano",
+            },
+        )
         assert result1["status"] == "error"
 
         # ACE-Step attempt
-        result2 = execute_tool("generate_audio_acestep", {
-            "tags": "classical piano",
-        })
+        result2 = execute_tool(
+            "generate_audio_acestep",
+            {
+                "tags": "classical piano",
+            },
+        )
         assert result2["status"] == "error"
 
         # Claude inline always works
-        result3 = execute_tool("generate_notation_claude", {
-            "section_name": "fallback",
-            "instructions": "Simple C major scale",
-            "instruments": ["Piano"],
-        })
+        result3 = execute_tool(
+            "generate_notation_claude",
+            {
+                "section_name": "fallback",
+                "instructions": "Simple C major scale",
+                "instruments": ["Piano"],
+            },
+        )
         assert result3["status"] == "success"
 
 
@@ -282,10 +326,13 @@ class TestAudioValidation:
 
         set_state(composition_state)
 
-        result = execute_tool("validate_audio", {
-            "wav_path": tone_wav,
-            "expected_duration_s": 2.0,
-        })
+        result = execute_tool(
+            "validate_audio",
+            {
+                "wav_path": tone_wav,
+                "expected_duration_s": 2.0,
+            },
+        )
         assert result["status"] == "success"
 
     def test_validate_missing_audio(self, composition_state):
@@ -294,8 +341,11 @@ class TestAudioValidation:
 
         set_state(composition_state)
 
-        result = execute_tool("validate_audio", {
-            "wav_path": "/nonexistent/audio.wav",
-        })
+        result = execute_tool(
+            "validate_audio",
+            {
+                "wav_path": "/nonexistent/audio.wav",
+            },
+        )
         assert result["status"] == "success"
         assert len(result.get("issues", [])) > 0

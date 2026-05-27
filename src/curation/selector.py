@@ -46,6 +46,7 @@ except ImportError:
 # Main selection pipeline
 # ---------------------------------------------------------------------------
 
+
 def select_tracks(
     analyses: dict[str, list[CandidateAnalysis]],
     manifest_tracks: dict,
@@ -106,7 +107,9 @@ def select_tracks(
     dropped = sum(1 for s in selections.values() if s.dropped)
     logger.info(
         "Selection complete: %d survived, %d dropped, %d duplicates removed",
-        survived, dropped, len(duplicate_pairs),
+        survived,
+        dropped,
+        len(duplicate_pairs),
     )
 
     return selections, duplicate_pairs
@@ -115,6 +118,7 @@ def select_tracks(
 # ---------------------------------------------------------------------------
 # Per-track selection (Phases 2-4)
 # ---------------------------------------------------------------------------
+
 
 def _select_one_track(
     track_id: str,
@@ -165,9 +169,8 @@ def _select_one_track(
         for c in candidates:
             failures = ", ".join(c.gate_failures) if c.gate_failures else "unknown"
             failure_details.append(f"{c.candidate_id}: {failures}")
-        selection.drop_reason = (
-            f"all {len(candidates)} candidates failed hard gates: "
-            + "; ".join(failure_details)
+        selection.drop_reason = f"all {len(candidates)} candidates failed hard gates: " + "; ".join(
+            failure_details
         )
         logger.info("Track %s dropped: %s", track_id, selection.drop_reason)
 
@@ -178,6 +181,7 @@ def _select_one_track(
 # Phase 5 — Cross-Validation with old scorer
 # ---------------------------------------------------------------------------
 
+
 def _cross_validate(selections: dict[str, TrackSelection]) -> None:
     """Run old scorer on selected tracks, flag rank disagreements.
 
@@ -185,7 +189,8 @@ def _cross_validate(selections: dict[str, TrackSelection]) -> None:
     """
     # Collect tracks that have a selected candidate
     selected = {
-        tid: sel for tid, sel in selections.items()
+        tid: sel
+        for tid, sel in selections.items()
         if not sel.dropped and sel.selected_candidate is not None
     }
     if not selected:
@@ -220,19 +225,26 @@ def _cross_validate(selections: dict[str, TrackSelection]) -> None:
             uncertain_count += 1
             logger.debug(
                 "Track %s flagged uncertain: new_rank=%d old_rank=%d diff=%d (threshold=%.1f)",
-                tid, new_rank_map[tid], old_rank_map[tid], rank_diff, threshold,
+                tid,
+                new_rank_map[tid],
+                old_rank_map[tid],
+                rank_diff,
+                threshold,
             )
 
     if uncertain_count > 0:
         logger.info(
             "Cross-validation: %d/%d tracks flagged as uncertain (threshold=%.1f)",
-            uncertain_count, corpus_size, threshold,
+            uncertain_count,
+            corpus_size,
+            threshold,
         )
 
 
 # ---------------------------------------------------------------------------
 # Phase 6 — Deduplication wrapper
 # ---------------------------------------------------------------------------
+
 
 def apply_dedup(
     selections: dict[str, TrackSelection],
@@ -259,9 +271,7 @@ def apply_dedup(
         return selections, []
 
     # Only check non-dropped tracks
-    active_selections = {
-        tid: sel for tid, sel in selections.items() if not sel.dropped
-    }
+    active_selections = {tid: sel for tid, sel in selections.items() if not sel.dropped}
 
     if len(active_selections) < 2:
         return selections, []
@@ -278,7 +288,9 @@ def apply_dedup(
             )
             logger.info(
                 "Dedup: dropped %s (dup of %s, sim=%.4f)",
-                pair.dropped_id, pair.kept_id, pair.similarity,
+                pair.dropped_id,
+                pair.kept_id,
+                pair.similarity,
             )
 
     return selections, duplicate_pairs

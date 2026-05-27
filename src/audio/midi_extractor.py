@@ -8,7 +8,6 @@ librosa-based fallback for basic pitch tracking.
 """
 
 import logging
-import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -47,16 +46,22 @@ def extract_midi(
     Path(output_midi_path).parent.mkdir(parents=True, exist_ok=True)
 
     result = _try_basic_pitch(
-        audio_path, output_midi_path,
-        onset_threshold, frame_threshold,
-        min_note_length_ms, min_frequency_hz, max_frequency_hz,
+        audio_path,
+        output_midi_path,
+        onset_threshold,
+        frame_threshold,
+        min_note_length_ms,
+        min_frequency_hz,
+        max_frequency_hz,
     )
     if result is not None:
         return result
 
     return _fallback_librosa(
-        audio_path, output_midi_path,
-        min_frequency_hz, max_frequency_hz,
+        audio_path,
+        output_midi_path,
+        min_frequency_hz,
+        max_frequency_hz,
     )
 
 
@@ -95,7 +100,9 @@ def _try_basic_pitch(
 
         logger.info(
             "basic-pitch extracted %d notes (%.1fs) -> %s",
-            note_count, duration, output_path,
+            note_count,
+            duration,
+            output_path,
         )
 
         return {
@@ -117,7 +124,6 @@ def _fallback_librosa(
 ) -> dict:
     """Fallback MIDI extraction via librosa pitch tracking."""
     import librosa
-    import numpy as np
     import pretty_midi
 
     logger.info("Extracting MIDI via librosa fallback: %s", audio_path)
@@ -126,7 +132,10 @@ def _fallback_librosa(
     duration = len(y) / sr
 
     pitches, magnitudes = librosa.piptrack(
-        y=y, sr=sr, fmin=min_frequency_hz, fmax=max_frequency_hz,
+        y=y,
+        sr=sr,
+        fmin=min_frequency_hz,
+        fmax=max_frequency_hz,
     )
 
     hop_length = 512
@@ -152,8 +161,10 @@ def _fallback_librosa(
             if current_note is None or current_note != midi_num:
                 if current_note is not None and time_s - current_start > 0.05:
                     note = pretty_midi.Note(
-                        velocity=80, pitch=current_note,
-                        start=current_start, end=time_s,
+                        velocity=80,
+                        pitch=current_note,
+                        start=current_start,
+                        end=time_s,
                     )
                     instrument.notes.append(note)
                 current_note = midi_num
@@ -161,16 +172,20 @@ def _fallback_librosa(
         else:
             if current_note is not None and time_s - current_start > 0.05:
                 note = pretty_midi.Note(
-                    velocity=80, pitch=current_note,
-                    start=current_start, end=time_s,
+                    velocity=80,
+                    pitch=current_note,
+                    start=current_start,
+                    end=time_s,
                 )
                 instrument.notes.append(note)
             current_note = None
 
     if current_note is not None:
         note = pretty_midi.Note(
-            velocity=80, pitch=current_note,
-            start=current_start, end=duration,
+            velocity=80,
+            pitch=current_note,
+            start=current_start,
+            end=duration,
         )
         instrument.notes.append(note)
 
@@ -180,7 +195,9 @@ def _fallback_librosa(
     note_count = len(instrument.notes)
     logger.info(
         "librosa extracted %d notes (%.1fs) -> %s",
-        note_count, duration, output_path,
+        note_count,
+        duration,
+        output_path,
     )
 
     return {

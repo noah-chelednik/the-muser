@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import essentia.standard as es
+
     HAS_ESSENTIA = True
 except ImportError:
     HAS_ESSENTIA = False
@@ -91,9 +92,7 @@ def analyze(
             mean_beat_strength = float(np.mean(beat_strengths))
             # Normalize relative to overall onset strength
             overall_mean = float(np.mean(onset_env)) if len(onset_env) > 0 else 1e-10
-            beat_strength_normalized = min(
-                mean_beat_strength / max(overall_mean, 1e-10) / 2.0, 1.0
-            )
+            beat_strength_normalized = min(mean_beat_strength / max(overall_mean, 1e-10) / 2.0, 1.0)
         else:
             mean_beat_strength = 0.0
             beat_strength_normalized = 0.0
@@ -110,7 +109,9 @@ def analyze(
             if len(segment) > sr:  # at least 1 second
                 try:
                     seg_tempo = librosa.beat.beat_track(
-                        y=segment, sr=sr, units="time",
+                        y=segment,
+                        sr=sr,
+                        units="time",
                     )[0]
                     if isinstance(seg_tempo, np.ndarray):
                         seg_tempo = float(seg_tempo[0]) if len(seg_tempo) > 0 else 0.0
@@ -131,11 +132,7 @@ def analyze(
         tempo_drift_score = float(np.clip(1.0 - tempo_drift_bpm / 15.0, 0.0, 1.0))
 
         # ── Composite score ──────────────────────────────────────────
-        score = (
-            0.4 * ibi_stability_score
-            + 0.3 * beat_strength_normalized
-            + 0.3 * tempo_drift_score
-        )
+        score = 0.4 * ibi_stability_score + 0.3 * beat_strength_normalized + 0.3 * tempo_drift_score
         score = float(np.clip(score, 0.0, 1.0))
 
         return DimensionResult(
@@ -159,9 +156,7 @@ def analyze(
         )
 
 
-def _detect_beats(
-    samples: np.ndarray, sr: int
-) -> tuple[float, np.ndarray]:
+def _detect_beats(samples: np.ndarray, sr: int) -> tuple[float, np.ndarray]:
     """Detect BPM and beat positions.
 
     Uses essentia if available, otherwise falls back to librosa.

@@ -26,7 +26,11 @@ def _run_ffmpeg_af(wav_path: str, output_path: str, af_filter: str) -> str:
     cmd = ["ffmpeg", "-y", "-i", wav_path, "-af", af_filter, output_path]
 
     subprocess.run(
-        cmd, check=True, capture_output=True, text=True, timeout=FFMPEG_TIMEOUT,
+        cmd,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=FFMPEG_TIMEOUT,
     )
 
     if not Path(output_path).exists():
@@ -85,7 +89,9 @@ def apply_compression(
     )
     logger.info(
         "Compression: thresh=%.0fdB ratio=%.1f:1 on %s",
-        threshold_db, ratio, wav_path,
+        threshold_db,
+        ratio,
+        wav_path,
     )
     return _run_ffmpeg_af(wav_path, output_path, af)
 

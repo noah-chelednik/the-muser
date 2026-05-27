@@ -53,12 +53,14 @@ class CompositionState:
     """
 
     # Project metadata
-    project: dict[str, Any] = field(default_factory=lambda: {
-        "title": "Untitled",
-        "genre": "",
-        "status": "planning",
-        "target_duration_s": 0,
-    })
+    project: dict[str, Any] = field(
+        default_factory=lambda: {
+            "title": "Untitled",
+            "genre": "",
+            "status": "planning",
+            "target_duration_s": 0,
+        }
+    )
 
     # Form / structure plan: section_name -> {measures, key, tempo, status, description}
     form_plan: dict[str, Any] = field(default_factory=dict)
@@ -67,10 +69,12 @@ class CompositionState:
     theme_catalog: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     # Harmonic plan: {key_centers: [{measure, key}], modulation_points: [{measure, from_key, to_key}]}
-    harmonic_plan: dict[str, Any] = field(default_factory=lambda: {
-        "key_centers": [],
-        "modulation_points": [],
-    })
+    harmonic_plan: dict[str, Any] = field(
+        default_factory=lambda: {
+            "key_centers": [],
+            "modulation_points": [],
+        }
+    )
 
     # Current orchestration state
     orchestration_state: dict[str, Any] = field(default_factory=dict)
@@ -134,9 +138,7 @@ class CompositionState:
             logger.warning("No movements defined; single-movement mode active")
             return
         if index < 0 or index >= len(self.movements):
-            raise IndexError(
-                f"Movement index {index} out of range (0-{len(self.movements) - 1})"
-            )
+            raise IndexError(f"Movement index {index} out of range (0-{len(self.movements) - 1})")
         self.current_movement = index
         logger.info("Switched to movement %d: '%s'", index, self.movements[index].get("name", "?"))
 
@@ -182,7 +184,8 @@ class CompositionState:
         }
         logger.info(
             "Registered cross-movement theme '%s' in movements %s",
-            theme_id, movements,
+            theme_id,
+            movements,
         )
         self.save_plan()
 
@@ -190,10 +193,7 @@ class CompositionState:
         """Ensure the project directory exists and return it."""
         if not self.project_dir:
             title_slug = (
-                self.project.get("title", "untitled")
-                .lower()
-                .replace(" ", "_")
-                .replace("/", "_")
+                self.project.get("title", "untitled").lower().replace(" ", "_").replace("/", "_")
             )
             self.project_dir = str(COMPOSITIONS_DIR / title_slug)
         path = Path(self.project_dir)
@@ -262,9 +262,7 @@ class CompositionState:
         """Save the theme catalog to themes.json."""
         project_dir = self._ensure_project_dir()
         themes_path = project_dir / "themes.json"
-        themes_path.write_text(
-            json.dumps(self.theme_catalog, indent=2), encoding="utf-8"
-        )
+        themes_path.write_text(json.dumps(self.theme_catalog, indent=2), encoding="utf-8")
         logger.info("Saved %d themes to %s", len(self.theme_catalog), themes_path)
         return str(themes_path)
 
@@ -309,11 +307,13 @@ class CompositionState:
         result = []
         for section_name, meta in self.completed_sections.items():
             section_file = sections_dir / f"{section_name}.musicxml"
-            result.append({
-                "name": section_name,
-                "status": meta.get("status", "unknown"),
-                "has_file": section_file.exists(),
-            })
+            result.append(
+                {
+                    "name": section_name,
+                    "status": meta.get("status", "unknown"),
+                    "has_file": section_file.exists(),
+                }
+            )
         return result
 
     def git_commit(self, message: str) -> str:
@@ -340,10 +340,12 @@ class CompositionState:
         if theme_id not in self.theme_catalog:
             logger.warning("Theme '%s' not found in catalog", theme_id)
             return
-        self.theme_catalog[theme_id]["appearances"].append({
-            "location": location,
-            "description": description,
-        })
+        self.theme_catalog[theme_id]["appearances"].append(
+            {
+                "location": location,
+                "description": description,
+            }
+        )
         self.save_plan()
         logger.info("Recorded appearance of theme '%s' at %s", theme_id, location)
 
@@ -351,20 +353,24 @@ class CompositionState:
 
     def add_key_center(self, measure: int, key: str) -> None:
         """Add a key center to the harmonic plan."""
-        self.harmonic_plan.setdefault("key_centers", []).append({
-            "measure": measure,
-            "key": key,
-        })
+        self.harmonic_plan.setdefault("key_centers", []).append(
+            {
+                "measure": measure,
+                "key": key,
+            }
+        )
         self.save_plan()
         logger.info("Added key center: %s at m.%d", key, measure)
 
     def add_modulation(self, measure: int, from_key: str, to_key: str) -> None:
         """Record a modulation point."""
-        self.harmonic_plan.setdefault("modulation_points", []).append({
-            "measure": measure,
-            "from_key": from_key,
-            "to_key": to_key,
-        })
+        self.harmonic_plan.setdefault("modulation_points", []).append(
+            {
+                "measure": measure,
+                "from_key": from_key,
+                "to_key": to_key,
+            }
+        )
         self.save_plan()
         logger.info("Added modulation at m.%d: %s -> %s", measure, from_key, to_key)
 
@@ -411,7 +417,9 @@ class CompositionState:
         elif section == "theme_catalog":
             # Legacy: data is a single theme dict, add it
             tid = data.get("theme_id", data.get("name", f"theme_{len(self.theme_catalog)}"))
-            self.add_theme(tid, data.get("abc_snippet", ""), data.get("character", data.get("description", "")))
+            self.add_theme(
+                tid, data.get("abc_snippet", ""), data.get("character", data.get("description", ""))
+            )
             return  # save already called in add_theme
         elif section == "harmonic_plan":
             self.harmonic_plan.update(data)
@@ -507,13 +515,17 @@ class CompositionState:
                 kc_strs = [f"m.{kc['measure']}:{kc['key']}" for kc in key_centers[:6]]
                 lines.append(f"  Keys: {', '.join(kc_strs)}")
             if modulations:
-                mod_strs = [f"m.{m['measure']}:{m['from_key']}->{m['to_key']}" for m in modulations[:4]]
+                mod_strs = [
+                    f"m.{m['measure']}:{m['from_key']}->{m['to_key']}" for m in modulations[:4]
+                ]
                 lines.append(f"  Modulations: {', '.join(mod_strs)}")
 
         # Completed sections
         if self.completed_sections:
             done = [n for n, m in self.completed_sections.items() if m.get("status") == "completed"]
-            in_prog = [n for n, m in self.completed_sections.items() if m.get("status") == "in_progress"]
+            in_prog = [
+                n for n, m in self.completed_sections.items() if m.get("status") == "in_progress"
+            ]
             if done:
                 lines.append(f"**Completed:** {', '.join(done)}")
             if in_prog:
@@ -543,7 +555,8 @@ class CompositionState:
         if est_tokens > _CONTEXT_TOKEN_BUDGET:
             logger.warning(
                 "Context string ~%d tokens exceeds budget %d, trimming",
-                est_tokens, _CONTEXT_TOKEN_BUDGET,
+                est_tokens,
+                _CONTEXT_TOKEN_BUDGET,
             )
             # Trim by removing theme details and harmonic specifics
             result = self._trimmed_context_string()
@@ -560,7 +573,9 @@ class CompositionState:
             f"Status: {self.project.get('status', 'planning')}",
         ]
         if self.theme_catalog:
-            lines.append(f"**Themes:** {len(self.theme_catalog)} defined ({', '.join(list(self.theme_catalog.keys())[:5])})")
+            lines.append(
+                f"**Themes:** {len(self.theme_catalog)} defined ({', '.join(list(self.theme_catalog.keys())[:5])})"
+            )
         done = [n for n, m in self.completed_sections.items() if m.get("status") == "completed"]
         if done:
             lines.append(f"**Completed:** {', '.join(done)}")

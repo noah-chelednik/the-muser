@@ -71,9 +71,13 @@ def main(composition: str | None, model: str | None, verbose: bool, stream: bool
         if plan_path.exists():
             state.load_plan(str(plan_path))
             state.project_dir = str(COMPOSITIONS_DIR / composition)
-            console.print(f"[green]Resumed composition:[/green] {state.project.get('title', composition)}")
+            console.print(
+                f"[green]Resumed composition:[/green] {state.project.get('title', composition)}"
+            )
         else:
-            console.print(f"[yellow]No existing composition found at {plan_path}. Starting fresh.[/yellow]")
+            console.print(
+                f"[yellow]No existing composition found at {plan_path}. Starting fresh.[/yellow]"
+            )
             state.project["title"] = composition
             state.project_dir = str(COMPOSITIONS_DIR / composition)
 
@@ -105,7 +109,9 @@ def main(composition: str | None, model: str | None, verbose: bool, stream: bool
                 console.print("[dim]No sections yet.[/dim]")
             else:
                 for s in sections:
-                    status_icon = "[green]done[/green]" if s["has_file"] else "[yellow]pending[/yellow]"
+                    status_icon = (
+                        "[green]done[/green]" if s["has_file"] else "[yellow]pending[/yellow]"
+                    )
                     console.print(f"  {status_icon} {s['name']}")
             continue
 

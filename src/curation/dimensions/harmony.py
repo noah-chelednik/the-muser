@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import essentia.standard as es
+
     HAS_ESSENTIA = True
 except ImportError:
     HAS_ESSENTIA = False
@@ -26,14 +27,38 @@ except ImportError:
 
 # ── Krumhansl-Schmuckler key profiles ────────────────────────────────────
 # 12 pitch classes: C, C#, D, D#, E, F, F#, G, G#, A, A#, B
-_MAJOR_PROFILE = np.array([
-    6.35, 2.23, 3.48, 2.33, 4.38, 4.09,
-    2.52, 5.19, 2.39, 3.66, 2.29, 2.88,
-])
-_MINOR_PROFILE = np.array([
-    6.33, 2.68, 3.52, 5.38, 2.60, 3.53,
-    2.54, 4.75, 3.98, 2.69, 3.34, 3.17,
-])
+_MAJOR_PROFILE = np.array(
+    [
+        6.35,
+        2.23,
+        3.48,
+        2.33,
+        4.38,
+        4.09,
+        2.52,
+        5.19,
+        2.39,
+        3.66,
+        2.29,
+        2.88,
+    ]
+)
+_MINOR_PROFILE = np.array(
+    [
+        6.33,
+        2.68,
+        3.52,
+        5.38,
+        2.60,
+        3.53,
+        2.54,
+        4.75,
+        3.98,
+        2.69,
+        3.34,
+        3.17,
+    ]
+)
 
 _PITCH_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -133,11 +158,7 @@ def analyze(
         consonance_score = float(np.clip(1.0 - mean_entropy / max_entropy, 0.0, 1.0))
 
         # ── Composite score ──────────────────────────────────────────
-        score = (
-            0.4 * key_confidence
-            + 0.3 * tonal_stability
-            + 0.3 * consonance_score
-        )
+        score = 0.4 * key_confidence + 0.3 * tonal_stability + 0.3 * consonance_score
         score = float(np.clip(score, 0.0, 1.0))
 
         return DimensionResult(
@@ -161,9 +182,7 @@ def analyze(
         )
 
 
-def _detect_key(
-    samples: np.ndarray, sr: int
-) -> tuple[str, str, float]:
+def _detect_key(samples: np.ndarray, sr: int) -> tuple[str, str, float]:
     """Detect key, mode, and confidence.
 
     Uses essentia if available, otherwise falls back to

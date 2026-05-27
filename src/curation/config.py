@@ -33,15 +33,11 @@ def load_config(
 
     # Resolve production run directory
     if config.production_run:
-        config.production_run_dir = str(
-            BASE_DIR / "production_run" / config.production_run
-        )
+        config.production_run_dir = str(BASE_DIR / "production_run" / config.production_run)
 
     # Env overrides
     config.artist_name = os.environ.get("MUSER_ARTIST_NAME", config.artist_name)
-    config.copyright_holder = os.environ.get(
-        "MUSER_COPYRIGHT_HOLDER", config.copyright_holder
-    )
+    config.copyright_holder = os.environ.get("MUSER_COPYRIGHT_HOLDER", config.copyright_holder)
     yr = os.environ.get("MUSER_RELEASE_YEAR")
     if yr:
         config.release_year = int(yr)

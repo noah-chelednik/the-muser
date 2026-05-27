@@ -56,6 +56,7 @@ def _get_patchilizer():
         sys.path.insert(0, inference_path)
     from utils import Patchilizer  # type: ignore[import-untyped]
     from config import PATCH_SIZE  # type: ignore[import-untyped]
+
     return Patchilizer(), PATCH_SIZE
 
 
@@ -77,7 +78,10 @@ def _run_generation(
     try:
         import torch  # noqa: F811
         from config import (  # type: ignore[import-untyped]
-            PATCH_SIZE, TOP_K, TOP_P, TEMPERATURE,
+            PATCH_SIZE,
+            TOP_K,
+            TOP_P,
+            TEMPERATURE,
         )
 
         patchilizer, _ = _get_patchilizer()
@@ -234,9 +238,7 @@ def generate_symbolic(
     elapsed = time.monotonic() - t0
 
     if worker.is_alive():
-        logger.warning(
-            "NotaGen generation timed out after %d s.", NOTAGEN_TIMEOUT_S
-        )
+        logger.warning("NotaGen generation timed out after %d s.", NOTAGEN_TIMEOUT_S)
         return {
             "abc": "",
             "error": f"Generation timed out after {NOTAGEN_TIMEOUT_S}s",

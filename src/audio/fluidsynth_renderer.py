@@ -76,6 +76,7 @@ def render_fluidsynth(
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
 
     from src.orchestrator.config import FLUIDSYNTH_PATH
+
     fluidsynth_bin = shutil.which(FLUIDSYNTH_PATH) or shutil.which("fluidsynth")
     if not fluidsynth_bin:
         raise FileNotFoundError(
@@ -89,18 +90,25 @@ def render_fluidsynth(
 
     cmd = [
         fluidsynth_bin,
-        "-ni",          # non-interactive
-        "-g", "1.0",    # gain
-        "-r", str(sample_rate),
+        "-ni",  # non-interactive
+        "-g",
+        "1.0",  # gain
+        "-r",
+        str(sample_rate),
         str(sf_path),
         str(midi),
-        "-F", str(out),
-        "-T", "wav",
+        "-F",
+        str(out),
+        "-T",
+        "wav",
     ]
 
     logger.info(
         "Rendering MIDI via FluidSynth: %s -> %s (sf=%s, rate=%d)",
-        midi, out, sf_path.name, sample_rate,
+        midi,
+        out,
+        sf_path.name,
+        sample_rate,
     )
 
     try:

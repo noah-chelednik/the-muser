@@ -63,9 +63,7 @@ def analyze(
             samples = samples.T
 
         if samples.ndim != 2 or samples.shape[0] != 2:
-            return _fail(
-                f"unexpected shape {samples.shape}, expected (2, N)"
-            )
+            return _fail(f"unexpected shape {samples.shape}, expected (2, N)")
 
         if samples.shape[1] < 2:
             return _fail("audio too short")
@@ -86,8 +84,8 @@ def analyze(
             phase_correlation = 0.0
 
         # ── Stereo width ──────────────────────────────────────────────
-        rms_mid = float(np.sqrt(np.mean(mid ** 2)))
-        rms_side = float(np.sqrt(np.mean(side ** 2)))
+        rms_mid = float(np.sqrt(np.mean(mid**2)))
+        rms_side = float(np.sqrt(np.mean(side**2)))
         stereo_width = rms_side / max(rms_mid, 1e-10)
 
         # ── Score ─────────────────────────────────────────────────────
@@ -105,10 +103,9 @@ def analyze(
                 passed=passed,
                 value=float(phase_correlation),
                 threshold=float(threshold),
-                reason="" if passed else (
-                    f"phase_correlation={phase_correlation:.3f} below "
-                    f"min {threshold}"
-                ),
+                reason=""
+                if passed
+                else (f"phase_correlation={phase_correlation:.3f} below min {threshold}"),
             ),
             raw_metrics={
                 "phase_correlation": round(phase_correlation, 4),

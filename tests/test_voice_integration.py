@@ -8,12 +8,9 @@ Mock-based tests run without GPU. GPU-dependent tests are marked with
 ``@pytest.mark.gpu``.
 """
 
-import os
 import shutil
-import subprocess
-import sys
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -31,13 +28,16 @@ class TestDemucsWrapperPythonApiFallback:
         output_dir = str(tmp_path / "stems")
 
         # Make the Python API import fail so we hit the CLI fallback path
-        with patch(
-            "src.voice.demucs_wrapper._separate_via_python",
-            side_effect=ImportError("No module named 'demucs'"),
-        ) as mock_python, patch(
-            "src.voice.demucs_wrapper._separate_via_cli",
-            return_value={"vocals": "/fake/vocals.wav", "no_vocals": "/fake/no_vocals.wav"},
-        ) as mock_cli:
+        with (
+            patch(
+                "src.voice.demucs_wrapper._separate_via_python",
+                side_effect=ImportError("No module named 'demucs'"),
+            ) as mock_python,
+            patch(
+                "src.voice.demucs_wrapper._separate_via_cli",
+                return_value={"vocals": "/fake/vocals.wav", "no_vocals": "/fake/no_vocals.wav"},
+            ) as mock_cli,
+        ):
             from src.voice.demucs_wrapper import separate_stems
 
             result = separate_stems(
@@ -49,7 +49,10 @@ class TestDemucsWrapperPythonApiFallback:
 
             mock_python.assert_called_once()
             mock_cli.assert_called_once_with(
-                voice_test_audio, output_dir, True, "htdemucs",
+                voice_test_audio,
+                output_dir,
+                True,
+                "htdemucs",
             )
             assert "vocals" in result
             assert "no_vocals" in result
@@ -71,7 +74,10 @@ class TestRVCWrapperFormantParams:
         mock_module = MagicMock()
         mock_module.VoiceConverter = mock_vc_class
 
-        with patch.dict("sys.modules", {"rvc": MagicMock(), "rvc.infer": MagicMock(), "rvc.infer.infer": mock_module}):
+        with patch.dict(
+            "sys.modules",
+            {"rvc": MagicMock(), "rvc.infer": MagicMock(), "rvc.infer.infer": mock_module},
+        ):
             from src.voice.rvc_wrapper import convert_voice
 
             result = convert_voice(
@@ -115,7 +121,10 @@ class TestRVCWrapperFormantParams:
         mock_module = MagicMock()
         mock_module.VoiceConverter = mock_vc_class
 
-        with patch.dict("sys.modules", {"rvc": MagicMock(), "rvc.infer": MagicMock(), "rvc.infer.infer": mock_module}):
+        with patch.dict(
+            "sys.modules",
+            {"rvc": MagicMock(), "rvc.infer": MagicMock(), "rvc.infer.infer": mock_module},
+        ):
             from src.voice.rvc_wrapper import convert_voice
 
             convert_voice(
@@ -141,13 +150,16 @@ class TestRVCWrapperCLICommandConstruction:
         output_path = str(tmp_path / "output.wav")
 
         # Force ImportError on Python API so it falls through to CLI
-        with patch(
-            "src.voice.rvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no rvc"),
-        ), patch(
-            "subprocess.run",
-            return_value=MagicMock(returncode=0, stderr="", stdout=""),
-        ) as mock_run:
+        with (
+            patch(
+                "src.voice.rvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no rvc"),
+            ),
+            patch(
+                "subprocess.run",
+                return_value=MagicMock(returncode=0, stderr="", stdout=""),
+            ) as mock_run,
+        ):
             from src.voice.rvc_wrapper import convert_voice
 
             convert_voice(
@@ -212,13 +224,16 @@ class TestRVCWrapperCLICommandConstruction:
         model_file.write_bytes(b"fake model")
         output_path = str(tmp_path / "output.wav")
 
-        with patch(
-            "src.voice.rvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no rvc"),
-        ), patch(
-            "subprocess.run",
-            return_value=MagicMock(returncode=0, stderr="", stdout=""),
-        ) as mock_run:
+        with (
+            patch(
+                "src.voice.rvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no rvc"),
+            ),
+            patch(
+                "subprocess.run",
+                return_value=MagicMock(returncode=0, stderr="", stdout=""),
+            ) as mock_run,
+        ):
             from src.voice.rvc_wrapper import convert_voice
 
             convert_voice(
@@ -264,13 +279,16 @@ class TestSeedVCWrapperParameterValidation:
         shutil.copy2(voice_test_audio, str(ref_audio))
 
         # We mock both backends to capture the clamped value
-        with patch(
-            "src.voice.seedvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no seedvc"),
-        ), patch(
-            "src.voice.seedvc_wrapper._convert_via_cli",
-            return_value="/fake/output.wav",
-        ) as mock_cli:
+        with (
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no seedvc"),
+            ),
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_cli",
+                return_value="/fake/output.wav",
+            ) as mock_cli,
+        ):
             from src.voice.seedvc_wrapper import convert_voice_seedvc
 
             # Pass an out-of-range value (100 -> clamped to 50)
@@ -288,13 +306,16 @@ class TestSeedVCWrapperParameterValidation:
         ref_audio = tmp_path / "ref.wav"
         shutil.copy2(voice_test_audio, str(ref_audio))
 
-        with patch(
-            "src.voice.seedvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no seedvc"),
-        ), patch(
-            "src.voice.seedvc_wrapper._convert_via_cli",
-            return_value="/fake/output.wav",
-        ) as mock_cli:
+        with (
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no seedvc"),
+            ),
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_cli",
+                return_value="/fake/output.wav",
+            ) as mock_cli,
+        ):
             from src.voice.seedvc_wrapper import convert_voice_seedvc
 
             convert_voice_seedvc(
@@ -311,13 +332,16 @@ class TestSeedVCWrapperParameterValidation:
         ref_audio = tmp_path / "ref.wav"
         shutil.copy2(voice_test_audio, str(ref_audio))
 
-        with patch(
-            "src.voice.seedvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no seedvc"),
-        ), patch(
-            "src.voice.seedvc_wrapper._convert_via_cli",
-            return_value="/fake/output.wav",
-        ) as mock_cli:
+        with (
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no seedvc"),
+            ),
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_cli",
+                return_value="/fake/output.wav",
+            ) as mock_cli,
+        ):
             from src.voice.seedvc_wrapper import convert_voice_seedvc
 
             # Too high
@@ -335,13 +359,16 @@ class TestSeedVCWrapperParameterValidation:
         ref_audio = tmp_path / "ref.wav"
         shutil.copy2(voice_test_audio, str(ref_audio))
 
-        with patch(
-            "src.voice.seedvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no seedvc"),
-        ), patch(
-            "src.voice.seedvc_wrapper._convert_via_cli",
-            return_value="/fake/output.wav",
-        ) as mock_cli:
+        with (
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no seedvc"),
+            ),
+            patch(
+                "src.voice.seedvc_wrapper._convert_via_cli",
+                return_value="/fake/output.wav",
+            ) as mock_cli,
+        ):
             from src.voice.seedvc_wrapper import convert_voice_seedvc
 
             convert_voice_seedvc(
@@ -381,12 +408,19 @@ class TestFeminizePipelineThreeStages:
             Path(output_path).write_bytes(b"stage3 output")
             return output_path
 
-        with patch(
-            "scripts.feminize_voice._stage1_formant_preshift", side_effect=fake_stage1,
-        ), patch(
-            "scripts.feminize_voice._stage2_rvc_conversion", side_effect=fake_stage2,
-        ), patch(
-            "scripts.feminize_voice._stage3_postprocess_eq", side_effect=fake_stage3,
+        with (
+            patch(
+                "scripts.feminize_voice._stage1_formant_preshift",
+                side_effect=fake_stage1,
+            ),
+            patch(
+                "scripts.feminize_voice._stage2_rvc_conversion",
+                side_effect=fake_stage2,
+            ),
+            patch(
+                "scripts.feminize_voice._stage3_postprocess_eq",
+                side_effect=fake_stage3,
+            ),
         ):
             from scripts.feminize_voice import feminize_audio
 
@@ -441,9 +475,7 @@ class TestFeminizePresetsAllValid:
 
         for preset_name, params in FEMINIZATION_PRESETS.items():
             missing = expected_keys - set(params.keys())
-            assert not missing, (
-                f"Preset '{preset_name}' missing keys: {missing}"
-            )
+            assert not missing, f"Preset '{preset_name}' missing keys: {missing}"
 
             assert isinstance(params["pre_formant_ratio"], (int, float)), (
                 f"Preset '{preset_name}': pre_formant_ratio should be numeric"
@@ -490,7 +522,10 @@ class TestVoiceRegistryOperations:
     def test_voice_registry_operations(self, tmp_path):
         """Full CRUD lifecycle: register -> get -> list -> remove."""
         from src.voice.voice_registry import (
-            get_voice, list_voices, register_voice, remove_voice,
+            get_voice,
+            list_voices,
+            register_voice,
+            remove_voice,
         )
 
         voice_id = "_integration_test_voice"
@@ -587,12 +622,15 @@ class TestFullPipelineMocked:
         model_file = tmp_path / "model.pth"
         model_file.write_bytes(b"fake model")
 
-        with patch(
-            "src.voice.rvc_wrapper._convert_via_python_api",
-            side_effect=ImportError("no rvc"),
-        ), patch(
-            "subprocess.run",
-            return_value=MagicMock(returncode=0),
+        with (
+            patch(
+                "src.voice.rvc_wrapper._convert_via_python_api",
+                side_effect=ImportError("no rvc"),
+            ),
+            patch(
+                "subprocess.run",
+                return_value=MagicMock(returncode=0),
+            ),
         ):
             from src.voice.rvc_wrapper import convert_voice
 
@@ -644,9 +682,7 @@ class TestDemucsGPU:
         assert len(stems) == 4, f"Expected 4 stems, got {list(stems.keys())}"
         for stem_name in ["vocals", "drums", "bass", "other"]:
             assert stem_name in stems, f"Missing stem: {stem_name}"
-            assert Path(stems[stem_name]).exists(), (
-                f"Stem file does not exist: {stems[stem_name]}"
-            )
+            assert Path(stems[stem_name]).exists(), f"Stem file does not exist: {stems[stem_name]}"
 
 
 @pytest.mark.gpu
@@ -710,9 +746,7 @@ class TestFeminizationGPU:
                 rvc_model_path=model_path,
                 **params,
             )
-            assert Path(result).exists(), (
-                f"Preset '{preset_name}' output not found: {result}"
-            )
+            assert Path(result).exists(), f"Preset '{preset_name}' output not found: {result}"
 
 
 @pytest.mark.gpu

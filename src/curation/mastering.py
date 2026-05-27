@@ -61,7 +61,9 @@ def _master_one(
         # Step 1: genre post-production
         intermediate = mastered_dir / f"_tmp_{track.track_id}.wav"
         apply_postproduction(
-            str(src_wav), str(intermediate), genre=preset,
+            str(src_wav),
+            str(intermediate),
+            genre=preset,
         )
 
         # Step 2: loudness normalize
@@ -103,11 +105,10 @@ def master_all(
     output_dir.mkdir(parents=True, exist_ok=True)
     results: dict[str, str] = {}
 
-    tracks_to_master = [
-        t for t in selections.values()
-        if not t.dropped and t.selected_candidate
-    ]
-    log.info("Mastering %d tracks with %d workers...", len(tracks_to_master), config.parallel_workers)
+    tracks_to_master = [t for t in selections.values() if not t.dropped and t.selected_candidate]
+    log.info(
+        "Mastering %d tracks with %d workers...", len(tracks_to_master), config.parallel_workers
+    )
 
     with ProcessPoolExecutor(max_workers=config.parallel_workers) as pool:
         futures = {
@@ -125,6 +126,7 @@ def master_all(
 
     # Save mastered manifest for cache reload
     import json
+
     manifest_path = output_dir / "mastered" / "mastered_manifest.json"
     if results:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)

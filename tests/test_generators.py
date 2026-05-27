@@ -5,7 +5,6 @@ format conversion, and model manager operations.
 """
 
 import os
-import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -446,13 +445,16 @@ class TestToolValidators:
         """Valid ACE-Step arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep", {
-            "tags": "pop, female vocals, upbeat",
-            "lyrics": "[instrumental]",
-            "duration_s": 60,
-            "infer_step": 27,
-            "guidance_scale": 15.0,
-        })
+        result = validate_arguments(
+            "generate_audio_acestep",
+            {
+                "tags": "pop, female vocals, upbeat",
+                "lyrics": "[instrumental]",
+                "duration_s": 60,
+                "infer_step": 27,
+                "guidance_scale": 15.0,
+            },
+        )
         assert isinstance(result, dict)
         assert result["tags"] == "pop, female vocals, upbeat"
         assert result["infer_step"] == 27
@@ -461,9 +463,12 @@ class TestToolValidators:
         """ACE-Step validator applies defaults for optional fields."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep", {
-            "tags": "jazz, piano trio",
-        })
+        result = validate_arguments(
+            "generate_audio_acestep",
+            {
+                "tags": "jazz, piano trio",
+            },
+        )
         assert isinstance(result, dict)
         assert result["duration_s"] == 60
         assert result["num_candidates"] == 1
@@ -472,9 +477,12 @@ class TestToolValidators:
         """ACE-Step validator rejects empty tags."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep", {
-            "tags": "",
-        })
+        result = validate_arguments(
+            "generate_audio_acestep",
+            {
+                "tags": "",
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -482,10 +490,13 @@ class TestToolValidators:
         """Post-production validator works."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("apply_postproduction", {
-            "wav_path": "/tmp/test.wav",
-            "genre": "rock",
-        })
+        result = validate_arguments(
+            "apply_postproduction",
+            {
+                "wav_path": "/tmp/test.wav",
+                "genre": "rock",
+            },
+        )
         assert isinstance(result, dict)
         assert result["genre"] == "rock"
 
@@ -493,10 +504,13 @@ class TestToolValidators:
         """Export validator works."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("export_final", {
-            "wav_path": "/tmp/test.wav",
-            "formats": ["wav", "mp3"],
-        })
+        result = validate_arguments(
+            "export_final",
+            {
+                "wav_path": "/tmp/test.wav",
+                "formats": ["wav", "mp3"],
+            },
+        )
         assert isinstance(result, dict)
         assert result["formats"] == ["wav", "mp3"]
 
@@ -504,10 +518,13 @@ class TestToolValidators:
         """Validate audio validator works."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("validate_audio", {
-            "wav_path": "/tmp/test.wav",
-            "expected_duration_s": 60.0,
-        })
+        result = validate_arguments(
+            "validate_audio",
+            {
+                "wav_path": "/tmp/test.wav",
+                "expected_duration_s": 60.0,
+            },
+        )
         assert isinstance(result, dict)
 
     def test_unknown_tool_passes_through(self):

@@ -6,16 +6,17 @@ from unittest.mock import patch
 
 
 class TestSessionLogger:
-
     def test_creates_log_file(self, tmp_path):
         with patch("src.orchestrator.session_logger.LOG_DIR", tmp_path):
             from src.orchestrator.session_logger import SessionLogger
+
             logger = SessionLogger()
             assert Path(logger.log_path).parent == tmp_path
 
     def test_log_turn_appends_jsonl(self, tmp_path):
         with patch("src.orchestrator.session_logger.LOG_DIR", tmp_path):
             from src.orchestrator.session_logger import SessionLogger
+
             logger = SessionLogger()
             logger.log_turn(
                 messages=[{"role": "user", "content": "hello"}],
@@ -31,11 +32,14 @@ class TestSessionLogger:
     def test_multiple_turns(self, tmp_path):
         with patch("src.orchestrator.session_logger.LOG_DIR", tmp_path):
             from src.orchestrator.session_logger import SessionLogger
+
             logger = SessionLogger()
             for i in range(3):
                 logger.log_turn(
                     messages=[{"role": "user", "content": f"msg {i}"}],
-                    tools=[], response_content=f"resp {i}", tool_calls=[],
+                    tools=[],
+                    response_content=f"resp {i}",
+                    tool_calls=[],
                 )
             lines = Path(logger.log_path).read_text().strip().split("\n")
             assert len(lines) == 3
@@ -43,6 +47,7 @@ class TestSessionLogger:
     def test_export_training_format(self, tmp_path):
         with patch("src.orchestrator.session_logger.LOG_DIR", tmp_path):
             from src.orchestrator.session_logger import SessionLogger
+
             logger = SessionLogger()
             logger.log_turn(
                 messages=[{"role": "user", "content": "compose"}],
@@ -61,5 +66,6 @@ class TestSessionLogger:
     def test_export_empty_session(self, tmp_path):
         with patch("src.orchestrator.session_logger.LOG_DIR", tmp_path):
             from src.orchestrator.session_logger import SessionLogger
+
             logger = SessionLogger()
             assert logger.export_training_format() == []

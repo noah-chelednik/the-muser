@@ -11,6 +11,7 @@ Prerequisites:
 Usage:
   python scripts/finetune_orchestrator.py
 """
+
 from pathlib import Path
 
 from unsloth import FastLanguageModel
@@ -33,18 +34,14 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 model = FastLanguageModel.get_peft_model(
     model,
     r=16,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                     "gate_proj", "up_proj", "down_proj"],
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     lora_alpha=16,
     lora_dropout=0,
     use_gradient_checkpointing="unsloth",
 )
 
 # Load training data
-dataset = load_dataset("json",
-    data_files=str(TRAINING_DATA),
-    split="train"
-)
+dataset = load_dataset("json", data_files=str(TRAINING_DATA), split="train")
 
 # Train
 trainer = SFTTrainer(
@@ -66,9 +63,5 @@ trainer = SFTTrainer(
 trainer.train()
 
 # Export to GGUF for Ollama
-model.save_pretrained_gguf(
-    str(GGUF_DIR),
-    tokenizer,
-    quantization_method="q4_k_m"
-)
+model.save_pretrained_gguf(str(GGUF_DIR), tokenizer, quantization_method="q4_k_m")
 print(f"Done! Deploy with: ollama create muser-orchestrator -f {GGUF_DIR}/Modelfile")

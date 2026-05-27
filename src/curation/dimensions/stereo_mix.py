@@ -84,8 +84,8 @@ def analyze(
         mid = (left + right) / 2.0
         side = (left - right) / 2.0
 
-        rms_mid = float(np.sqrt(np.mean(mid ** 2)))
-        rms_side = float(np.sqrt(np.mean(side ** 2)))
+        rms_mid = float(np.sqrt(np.mean(mid**2)))
+        rms_side = float(np.sqrt(np.mean(side**2)))
 
         stereo_width = rms_side / max(rms_mid, 1e-10)
         mid_side_ratio = rms_mid / max(rms_side, 1e-10)
@@ -121,12 +121,12 @@ def analyze(
             width_sigma = 0.25
 
         width_sigma = max(width_sigma, 0.01)
-        width_score = float(np.exp(-((stereo_width - width_center) / width_sigma) ** 2))
+        width_score = float(np.exp(-(((stereo_width - width_center) / width_sigma) ** 2)))
 
         # Mid/side balance score: bell curve centered at 3.0, sigma 2.0
         ms_center = 3.0
         ms_sigma = 2.0
-        ms_score = float(np.exp(-((mid_side_ratio - ms_center) / ms_sigma) ** 2))
+        ms_score = float(np.exp(-(((mid_side_ratio - ms_center) / ms_sigma) ** 2)))
 
         # Composite
         score = 0.5 * width_score + 0.5 * ms_score

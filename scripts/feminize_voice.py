@@ -49,7 +49,6 @@ Usage::
 """
 
 import argparse
-import json
 import logging
 import os
 import shutil
@@ -125,6 +124,7 @@ FEMINIZATION_PRESETS = {
 # Stage 1: External formant pre-shift via parselmouth (Praat)
 # ---------------------------------------------------------------------------
 
+
 def _stage1_formant_preshift(
     input_audio: str,
     output_path: str,
@@ -183,6 +183,7 @@ def _formant_shift_praat_cli(
     )
 
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".praat", delete=False) as f:
         f.write(script)
         script_path = f.name
@@ -191,7 +192,10 @@ def _formant_shift_praat_cli(
         logger.info("Stage 1: Praat CLI formant shift (ratio=%.3f)", formant_ratio)
         subprocess.run(
             [praat_bin, "--run", script_path],
-            check=True, capture_output=True, text=True, timeout=120,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         logger.info("Stage 1 complete: %s", output_path)
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
@@ -214,14 +218,21 @@ def _formant_shift_parselmouth(
 
     logger.info(
         "Stage 1: Formant pre-shift via parselmouth (ratio=%.3f) %s -> %s",
-        formant_ratio, input_audio, output_path,
+        formant_ratio,
+        input_audio,
+        output_path,
     )
 
     sound = parselmouth.Sound(input_audio)
     shifted = call(
         sound,
         "Change gender",
-        75.0, 600.0, formant_ratio, 0.0, 1.0, 1.0,
+        75.0,
+        600.0,
+        formant_ratio,
+        0.0,
+        1.0,
+        1.0,
     )
 
     shifted.save(output_path, parselmouth.SoundFileFormat.WAV)
@@ -232,6 +243,7 @@ def _formant_shift_parselmouth(
 # ---------------------------------------------------------------------------
 # Stage 2: RVC conversion with extended formant parameters
 # ---------------------------------------------------------------------------
+
 
 def _stage2_rvc_conversion(
     input_audio: str,
@@ -269,7 +281,6 @@ def _stage2_rvc_conversion(
     Returns:
         Path to the RVC-converted audio file.
     """
-    from src.orchestrator.config import APPLIO_DIR
 
     input_path = Path(input_audio)
     if not input_path.exists():
@@ -280,10 +291,13 @@ def _stage2_rvc_conversion(
         raise FileNotFoundError(f"RVC model not found: {rvc_model_path}")
 
     logger.info(
-        "Stage 2: RVC conversion (transpose=%+d, timbre=%.2f, quefrency=%.1f, "
-        "f0=%s) %s -> %s",
-        transpose, formant_timbre, formant_quefrency,
-        f0_method, input_audio, output_path,
+        "Stage 2: RVC conversion (transpose=%+d, timbre=%.2f, quefrency=%.1f, f0=%s) %s -> %s",
+        transpose,
+        formant_timbre,
+        formant_quefrency,
+        f0_method,
+        input_audio,
+        output_path,
     )
 
     # Try Python API first
@@ -390,36 +404,56 @@ def _rvc_convert_cli(
     from src.orchestrator.config import APPLIO_DIR
 
     cmd = [
-        "python", str(APPLIO_DIR / "core.py"), "infer",
-        "--input_path", input_audio,
-        "--output_path", output_path,
-        "--pth_path", model_path,
-        "--index_path", index_path,
-        "--pitch", str(transpose),
-        "--f0_method", f0_method,
-        "--index_rate", str(index_rate),
-        "--filter_radius", str(filter_radius),
-        "--volume_envelope", str(rms_mix_rate),
-        "--protect", str(protect),
-        "--export_format", "WAV",
-        "--split_audio", "true",
-        "--f0_autotune", "true",
-        "--f0_autotune_strength", "0.8",
-        "--formant_shifting", "true",
-        "--formant_qfrency", str(formant_quefrency),
-        "--formant_timbre", str(formant_timbre),
+        "python",
+        str(APPLIO_DIR / "core.py"),
+        "infer",
+        "--input_path",
+        input_audio,
+        "--output_path",
+        output_path,
+        "--pth_path",
+        model_path,
+        "--index_path",
+        index_path,
+        "--pitch",
+        str(transpose),
+        "--f0_method",
+        f0_method,
+        "--index_rate",
+        str(index_rate),
+        "--filter_radius",
+        str(filter_radius),
+        "--volume_envelope",
+        str(rms_mix_rate),
+        "--protect",
+        str(protect),
+        "--export_format",
+        "WAV",
+        "--split_audio",
+        "true",
+        "--f0_autotune",
+        "true",
+        "--f0_autotune_strength",
+        "0.8",
+        "--formant_shifting",
+        "true",
+        "--formant_qfrency",
+        str(formant_quefrency),
+        "--formant_timbre",
+        str(formant_timbre),
     ]
 
     logger.info("Running RVC CLI: %s", " ".join(cmd))
     result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=300,
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=300,
         cwd=str(APPLIO_DIR),
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"RVC CLI failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"RVC CLI failed (exit {result.returncode}): {result.stderr}")
 
     logger.info("Stage 2 complete (CLI): %s", output_path)
     return output_path
@@ -428,6 +462,7 @@ def _rvc_convert_cli(
 # ---------------------------------------------------------------------------
 # Stage 3: Post-processing formant-aware EQ via ffmpeg
 # ---------------------------------------------------------------------------
+
 
 def _stage3_postprocess_eq(
     input_audio: str,
@@ -453,18 +488,18 @@ def _stage3_postprocess_eq(
         Path to the final processed audio file.
     """
     # If all EQ parameters are essentially zero, just copy
-    if (abs(presence_boost_db) < 0.1
-            and abs(chest_cut_db) < 0.1
-            and not add_breathiness):
+    if abs(presence_boost_db) < 0.1 and abs(chest_cut_db) < 0.1 and not add_breathiness:
         logger.info("Stage 3: No EQ adjustments needed, copying input")
         shutil.copy2(input_audio, output_path)
         return output_path
 
     logger.info(
-        "Stage 3: Post-processing EQ (presence=+%.1fdB, chest=-%.1fdB, "
-        "breathiness=%s) %s -> %s",
-        presence_boost_db, chest_cut_db, add_breathiness,
-        input_audio, output_path,
+        "Stage 3: Post-processing EQ (presence=+%.1fdB, chest=-%.1fdB, breathiness=%s) %s -> %s",
+        presence_boost_db,
+        chest_cut_db,
+        add_breathiness,
+        input_audio,
+        output_path,
     )
 
     # Build ffmpeg filter chain
@@ -472,15 +507,11 @@ def _stage3_postprocess_eq(
 
     # Presence boost: peak EQ centered at 3.2kHz, Q=1.2, spanning ~2.5-4kHz
     if abs(presence_boost_db) >= 0.1:
-        filters.append(
-            f"equalizer=f=3200:t=q:w=1.2:g={presence_boost_db}"
-        )
+        filters.append(f"equalizer=f=3200:t=q:w=1.2:g={presence_boost_db}")
 
     # Chest resonance cut: peak EQ centered at 1000Hz, Q=0.8, spanning ~800-1200Hz
     if abs(chest_cut_db) >= 0.1:
-        filters.append(
-            f"equalizer=f=1000:t=q:w=0.8:g={-chest_cut_db}"
-        )
+        filters.append(f"equalizer=f=1000:t=q:w=0.8:g={-chest_cut_db}")
 
     # Breathiness: mix in band-limited noise for airy quality
     if add_breathiness:
@@ -488,7 +519,9 @@ def _stage3_postprocess_eq(
         # This uses ffmpeg's anoisesrc + bandpass + amix approach.
         # We build it as a complex filter graph.
         result = _stage3_with_breathiness(
-            input_audio, output_path, filters,
+            input_audio,
+            output_path,
+            filters,
         )
         return result
 
@@ -496,22 +529,27 @@ def _stage3_postprocess_eq(
     filter_chain = ",".join(filters)
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", input_audio,
-        "-af", filter_chain,
-        "-c:a", "pcm_s16le",
+        "ffmpeg",
+        "-y",
+        "-i",
+        input_audio,
+        "-af",
+        filter_chain,
+        "-c:a",
+        "pcm_s16le",
         output_path,
     ]
 
     logger.info("Running ffmpeg EQ: %s", " ".join(cmd))
     result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=120,
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=120,
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"ffmpeg EQ failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"ffmpeg EQ failed (exit {result.returncode}): {result.stderr}")
 
     logger.info("Stage 3 complete: %s", output_path)
     return output_path
@@ -545,23 +583,30 @@ def _stage3_with_breathiness(
     )
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", input_audio,
-        "-filter_complex", filtergraph,
-        "-map", "[out]",
-        "-c:a", "pcm_s16le",
+        "ffmpeg",
+        "-y",
+        "-i",
+        input_audio,
+        "-filter_complex",
+        filtergraph,
+        "-map",
+        "[out]",
+        "-c:a",
+        "pcm_s16le",
         output_path,
     ]
 
     logger.info("Running ffmpeg EQ + breathiness: %s", " ".join(cmd))
     result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=120,
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=120,
     )
 
     if result.returncode != 0:
         raise RuntimeError(
-            f"ffmpeg breathiness filter failed (exit {result.returncode}): "
-            f"{result.stderr}"
+            f"ffmpeg breathiness filter failed (exit {result.returncode}): {result.stderr}"
         )
 
     logger.info("Stage 3 complete (with breathiness): %s", output_path)
@@ -571,6 +616,7 @@ def _stage3_with_breathiness(
 # ---------------------------------------------------------------------------
 # Main pipeline: feminize_audio()
 # ---------------------------------------------------------------------------
+
 
 def feminize_audio(
     input_audio: str,
@@ -634,11 +680,16 @@ def feminize_audio(
     logger.info("  Stage 1: formant_ratio=%.3f", pre_formant_ratio)
     logger.info(
         "  Stage 2: transpose=%+d, timbre=%.2f, quefrency=%.1f, f0=%s",
-        transpose, formant_timbre, formant_quefrency, f0_method,
+        transpose,
+        formant_timbre,
+        formant_quefrency,
+        f0_method,
     )
     logger.info(
         "  Stage 3: presence=+%.1fdB, chest=-%.1fdB, breathiness=%s",
-        presence_boost_db, chest_cut_db, add_breathiness,
+        presence_boost_db,
+        chest_cut_db,
+        add_breathiness,
     )
     logger.info("=" * 60)
 
@@ -689,6 +740,7 @@ def feminize_audio(
 # Mode B: Dedicated female model training (uses feminize_audio)
 # ---------------------------------------------------------------------------
 
+
 def mode_b_create_dataset(
     source_model: str,
     index_path: str | None,
@@ -727,7 +779,8 @@ def mode_b_create_dataset(
 
     logger.info(
         "Creating synthetic female dataset: %d segments, preset=%s",
-        len(wav_files), preset_name or "(custom)",
+        len(wav_files),
+        preset_name or "(custom)",
     )
 
     processed = 0
@@ -752,7 +805,9 @@ def mode_b_create_dataset(
             logger.error("Failed to feminize %s: %s", wav_path.name, exc)
 
     logger.info(
-        "Synthetic dataset: %d/%d segments processed", processed, len(wav_files),
+        "Synthetic dataset: %d/%d segments processed",
+        processed,
+        len(wav_files),
     )
     return processed
 
@@ -767,7 +822,9 @@ def mode_b_train(
 
     logger.info(
         "Training female model '%s': %d epochs, batch_size=%d",
-        voice_name, epochs, batch_size,
+        voice_name,
+        epochs,
+        batch_size,
     )
 
     result = subprocess.run(
@@ -778,9 +835,7 @@ def mode_b_train(
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Training failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"Training failed (exit {result.returncode}): {result.stderr}")
 
     logger.info("Female model training complete: %s", voice_name)
 
@@ -819,10 +874,12 @@ def register_feminized_voice(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def _add_common_feminization_args(parser: argparse.ArgumentParser) -> None:
     """Add feminization parameter arguments common to mode-a and mode-b."""
     parser.add_argument(
-        "--preset", choices=list(FEMINIZATION_PRESETS.keys()),
+        "--preset",
+        choices=list(FEMINIZATION_PRESETS.keys()),
         default=None,
         help="Feminization preset (overridden by explicit params)",
     )
@@ -830,57 +887,80 @@ def _add_common_feminization_args(parser: argparse.ArgumentParser) -> None:
     # Stage 1
     stage1 = parser.add_argument_group("Stage 1: Formant pre-shift")
     stage1.add_argument(
-        "--pre-formant-ratio", type=float, default=None,
+        "--pre-formant-ratio",
+        type=float,
+        default=None,
         help="Formant frequency ratio (default: 1.07, >1=feminine)",
     )
 
     # Stage 2
     stage2 = parser.add_argument_group("Stage 2: RVC conversion")
     stage2.add_argument(
-        "--transpose", type=int, default=None,
+        "--transpose",
+        type=int,
+        default=None,
         help="Semitones up (default: 6, range: -12 to +12)",
     )
     stage2.add_argument(
-        "--formant-quefrency", type=float, default=None,
+        "--formant-quefrency",
+        type=float,
+        default=None,
         help="Quefrency threshold for formant envelope (default: 8.0)",
     )
     stage2.add_argument(
-        "--formant-timbre", type=float, default=None,
+        "--formant-timbre",
+        type=float,
+        default=None,
         help="Timbre scaling factor (default: 1.15, >1=brighter)",
     )
     stage2.add_argument(
-        "--index-rate", type=float, default=None,
+        "--index-rate",
+        type=float,
+        default=None,
         help="Feature retrieval blend ratio (default: 0.5)",
     )
     stage2.add_argument(
-        "--filter-radius", type=int, default=None,
+        "--filter-radius",
+        type=int,
+        default=None,
         help="Median filter radius for pitch (default: 4)",
     )
     stage2.add_argument(
-        "--rms-mix-rate", type=float, default=None,
+        "--rms-mix-rate",
+        type=float,
+        default=None,
         help="RMS envelope mix ratio (default: 0.1)",
     )
     stage2.add_argument(
-        "--protect", type=float, default=None,
+        "--protect",
+        type=float,
+        default=None,
         help="Consonant protection (default: 0.25)",
     )
     stage2.add_argument(
-        "--f0-method", default=None,
+        "--f0-method",
+        default=None,
         help="Pitch extraction method (default: rmvpe)",
     )
 
     # Stage 3
     stage3 = parser.add_argument_group("Stage 3: Post-processing EQ")
     stage3.add_argument(
-        "--presence-boost-db", type=float, default=None,
+        "--presence-boost-db",
+        type=float,
+        default=None,
         help="dB boost for 2.5-4kHz presence (default: 1.5)",
     )
     stage3.add_argument(
-        "--chest-cut-db", type=float, default=None,
+        "--chest-cut-db",
+        type=float,
+        default=None,
         help="dB cut for 800-1200Hz chest resonance (default: 1.0)",
     )
     stage3.add_argument(
-        "--add-breathiness", action="store_true", default=None,
+        "--add-breathiness",
+        action="store_true",
+        default=None,
         help="Add shaped noise in 4-8kHz for airy quality",
     )
 
@@ -944,19 +1024,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     mode_a.add_argument(
-        "--source-model", required=True,
+        "--source-model",
+        required=True,
         help="Path to source RVC .pth model",
     )
     mode_a.add_argument(
-        "--index-path", default=None,
+        "--index-path",
+        default=None,
         help="Path to .index file (optional)",
     )
     mode_a.add_argument(
-        "--input-audio", required=True,
+        "--input-audio",
+        required=True,
         help="Input audio to feminize",
     )
     mode_a.add_argument(
-        "--output", required=True,
+        "--output",
+        required=True,
         help="Output audio path",
     )
     _add_common_feminization_args(mode_a)
@@ -968,36 +1052,45 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     mode_b.add_argument(
-        "--source-model", required=True,
+        "--source-model",
+        required=True,
         help="Path to source RVC .pth model",
     )
     mode_b.add_argument(
-        "--index-path", default=None,
+        "--index-path",
+        default=None,
         help="Path to source .index file (optional)",
     )
     mode_b.add_argument(
-        "--voice-name", default="noah-fem",
+        "--voice-name",
+        default="noah-fem",
         help="Name for the female voice model",
     )
     mode_b.add_argument(
-        "--epochs", type=int, default=200,
+        "--epochs",
+        type=int,
+        default=200,
         help="Training epochs",
     )
     mode_b.add_argument(
-        "--batch-size", type=int, default=8,
+        "--batch-size",
+        type=int,
+        default=8,
         help="Training batch size",
     )
     mode_b.add_argument(
-        "--segments-dir", default=None,
-        help="Source segments directory "
-             "(default: training_data/processed/segments/)",
+        "--segments-dir",
+        default=None,
+        help="Source segments directory (default: training_data/processed/segments/)",
     )
     mode_b.add_argument(
-        "--skip-dataset", action="store_true",
+        "--skip-dataset",
+        action="store_true",
         help="Skip dataset creation, go straight to training",
     )
     mode_b.add_argument(
-        "--skip-training", action="store_true",
+        "--skip-training",
+        action="store_true",
         help="Only create dataset, don't train",
     )
     _add_common_feminization_args(mode_b)
@@ -1022,9 +1115,7 @@ def main():
         segments_dir = args.segments_dir or str(
             PROJECT_ROOT / "training_data" / "processed" / "segments"
         )
-        fem_dataset_dir = str(
-            PROJECT_ROOT / "training_data" / "processed" / "segments_feminized"
-        )
+        fem_dataset_dir = str(PROJECT_ROOT / "training_data" / "processed" / "segments_feminized")
 
         # Step 1: Create synthetic female dataset
         if not args.skip_dataset:
@@ -1040,12 +1131,8 @@ def main():
             logger.info("Created %d feminized segments", count)
 
             # Swap the segments directory so train_rvc.sh picks up feminized data
-            real_segments = (
-                PROJECT_ROOT / "training_data" / "processed" / "segments"
-            )
-            backup = (
-                PROJECT_ROOT / "training_data" / "processed" / "segments_original"
-            )
+            real_segments = PROJECT_ROOT / "training_data" / "processed" / "segments"
+            backup = PROJECT_ROOT / "training_data" / "processed" / "segments_original"
             if not backup.exists():
                 real_segments.rename(backup)
             # Symlink feminized data as the segments dir
@@ -1071,12 +1158,8 @@ def main():
             )
         finally:
             # Restore original segments directory
-            real_segments = (
-                PROJECT_ROOT / "training_data" / "processed" / "segments"
-            )
-            backup = (
-                PROJECT_ROOT / "training_data" / "processed" / "segments_original"
-            )
+            real_segments = PROJECT_ROOT / "training_data" / "processed" / "segments"
+            backup = PROJECT_ROOT / "training_data" / "processed" / "segments_original"
             if backup.exists():
                 if real_segments.exists() or real_segments.is_symlink():
                     real_segments.unlink()

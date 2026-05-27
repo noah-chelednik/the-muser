@@ -1,15 +1,12 @@
 """Integration tests for the agent loop."""
 
-import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 
 from src.orchestrator.llm_provider import LLMResponse, ToolCall
 
 
 class TestAgentLoop:
-
     def _mock_response(self, content="", tool_calls=None):
         return LLMResponse(
             content=content,
@@ -31,9 +28,11 @@ class TestAgentLoop:
         from src.orchestrator.agent import run_agent_turn
 
         mock_chat.side_effect = [
-            self._mock_response(tool_calls=[
-                ToolCall(name="list_sections", arguments={}, id="call_1"),
-            ]),
+            self._mock_response(
+                tool_calls=[
+                    ToolCall(name="list_sections", arguments={}, id="call_1"),
+                ]
+            ),
             self._mock_response(content="No sections yet."),
         ]
 
@@ -45,9 +44,11 @@ class TestAgentLoop:
         from src.orchestrator.agent import run_agent_turn
 
         mock_chat.side_effect = [
-            self._mock_response(tool_calls=[
-                ToolCall(name="fake_nonexistent_tool", arguments={}, id="call_1"),
-            ]),
+            self._mock_response(
+                tool_calls=[
+                    ToolCall(name="fake_nonexistent_tool", arguments={}, id="call_1"),
+                ]
+            ),
             self._mock_response(content="I encountered an issue."),
         ]
 
@@ -61,13 +62,19 @@ class TestAgentLoop:
         musicxml = '<score-partwise version="4.0"><part id="P1"></part></score-partwise>'
 
         mock_chat.side_effect = [
-            self._mock_response(tool_calls=[
-                ToolCall(
-                    name="generate_notation_claude",
-                    arguments={"section_name": "intro", "instructions": "4 bars", "instruments": ["Piano"]},
-                    id="call_1",
-                ),
-            ]),
+            self._mock_response(
+                tool_calls=[
+                    ToolCall(
+                        name="generate_notation_claude",
+                        arguments={
+                            "section_name": "intro",
+                            "instructions": "4 bars",
+                            "instruments": ["Piano"],
+                        },
+                        id="call_1",
+                    ),
+                ]
+            ),
             self._mock_response(content=f"Here is the notation:\n```xml\n{musicxml}\n```"),
         ]
 
@@ -84,7 +91,9 @@ class TestAgentLoop:
 
         tokens = []
         result = run_agent_turn(
-            "Hello", [], composition_state,
+            "Hello",
+            [],
+            composition_state,
             on_token=lambda t: tokens.append(t),
         )
         assert result == "Streaming response"
@@ -94,9 +103,11 @@ class TestAgentLoop:
     def test_max_iterations_safety(self, mock_chat, composition_state):
         from src.orchestrator.agent import run_agent_turn
 
-        mock_chat.return_value = self._mock_response(tool_calls=[
-            ToolCall(name="list_sections", arguments={}, id="call_loop"),
-        ])
+        mock_chat.return_value = self._mock_response(
+            tool_calls=[
+                ToolCall(name="list_sections", arguments={}, id="call_loop"),
+            ]
+        )
 
         result = run_agent_turn("loop forever", [], composition_state)
         assert "maximum" in result.lower() or "iterations" in result.lower()

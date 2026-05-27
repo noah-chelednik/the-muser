@@ -9,6 +9,7 @@ Supports three backends via LiteLLM:
 The orchestrator code calls this module and never imports
 anthropic, ollama, or litellm directly.
 """
+
 from __future__ import annotations
 
 import os
@@ -30,9 +31,11 @@ logger = logging.getLogger("muser.llm")
 # Data classes for normalized responses
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ToolCall:
     """A single tool invocation requested by the LLM."""
+
     name: str
     arguments: dict
     id: str | None = None  # Anthropic uses IDs; Ollama does not
@@ -41,6 +44,7 @@ class ToolCall:
 @dataclass
 class LLMResponse:
     """Normalized response from any LLM provider."""
+
     content: str | None = None
     tool_calls: list[ToolCall] = field(default_factory=list)
     raw: Any = None
@@ -95,6 +99,7 @@ def get_provider_chain() -> list[str]:
 # Core chat function
 # ---------------------------------------------------------------------------
 
+
 def chat(
     messages: list[dict],
     tools: list[dict] | None = None,
@@ -126,18 +131,14 @@ def chat(
     for model_str in chain:
         try:
             logger.info(f"Trying provider: {model_str}")
-            resp = _call_litellm(
-                model_str, messages, tools, temperature, max_tokens, num_ctx
-            )
+            resp = _call_litellm(model_str, messages, tools, temperature, max_tokens, num_ctx)
             return resp
         except Exception as e:
             logger.warning(f"Provider {model_str} failed: {e}")
             last_error = e
             continue
 
-    raise RuntimeError(
-        f"All LLM providers failed. Last error: {last_error}"
-    )
+    raise RuntimeError(f"All LLM providers failed. Last error: {last_error}")
 
 
 def _call_litellm(
@@ -182,12 +183,12 @@ def _call_litellm(
         # Model spent all tokens thinking — use last sentence of reasoning
         # as a fallback so callers get *something*.
         logger.warning(
-            "LLM returned empty content with reasoning_content. "
-            "Consider increasing max_tokens."
+            "LLM returned empty content with reasoning_content. Consider increasing max_tokens."
         )
     if "<think>" in content:
         # Strip thinking tags to get only the final answer
         import re
+
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
 
     tool_calls = []
@@ -196,11 +197,13 @@ def _call_litellm(
             args = tc.function.arguments
             if isinstance(args, str):
                 args = json.loads(args)
-            tool_calls.append(ToolCall(
-                name=tc.function.name,
-                arguments=args,
-                id=tc.id,
-            ))
+            tool_calls.append(
+                ToolCall(
+                    name=tc.function.name,
+                    arguments=args,
+                    id=tc.id,
+                )
+            )
 
     # Calculate tokens/second from usage data
     tokens_per_second = 0.0
@@ -212,7 +215,9 @@ def _call_litellm(
 
     logger.info(
         "LLM response: provider=%s, latency=%.0fms, tok/s=%.1f",
-        model.split("/")[0], latency_ms, tokens_per_second,
+        model.split("/")[0],
+        latency_ms,
+        tokens_per_second,
     )
 
     return LLMResponse(
@@ -230,6 +235,7 @@ def _call_litellm(
 # Streaming chat
 # ---------------------------------------------------------------------------
 
+
 def chat_stream(
     messages: list[dict],
     tools: list[dict] | None = None,
@@ -244,14 +250,19 @@ def chat_stream(
     Tool calls are accumulated and returned in the final LLMResponse.
     Falls back to non-streaming chat() if streaming fails.
     """
-    import time as _time
 
     chain = [model] if model else get_provider_chain()
 
     for model_str in chain:
         try:
             return _stream_litellm(
-                model_str, messages, tools, temperature, max_tokens, num_ctx, on_token,
+                model_str,
+                messages,
+                tools,
+                temperature,
+                max_tokens,
+                num_ctx,
+                on_token,
             )
         except Exception as e:
             logger.warning("Streaming failed for %s: %s. Trying next.", model_str, e)
@@ -320,6 +331,7 @@ def _stream_litellm(
 
     if "<think>" in content:
         import re
+
         content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
 
     tool_calls = []
@@ -347,15 +359,13 @@ def _stream_litellm(
 # Convenience: validate tool calls against known registry
 # ---------------------------------------------------------------------------
 
+
 def validate_tool_call(tool_call: ToolCall, valid_tools: set[str]) -> bool:
     """
     Reject hallucinated tool names.
     Local models sometimes invent tools that don't exist.
     """
     if tool_call.name not in valid_tools:
-        logger.error(
-            f"Hallucinated tool call: '{tool_call.name}' "
-            f"not in {valid_tools}"
-        )
+        logger.error(f"Hallucinated tool call: '{tool_call.name}' not in {valid_tools}")
         return False
     return True

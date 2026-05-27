@@ -62,9 +62,11 @@ console = Console()
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Segment:
     """A single audio segment extracted from a recording."""
+
     source_file: str
     segment_id: str
     wav_path: str
@@ -84,6 +86,7 @@ class Segment:
 @dataclass
 class DatasetReport:
     """Summary report of dataset preparation."""
+
     voice_name: str
     total_recordings: int = 0
     total_segments: int = 0
@@ -101,6 +104,7 @@ class DatasetReport:
 # ---------------------------------------------------------------------------
 # Step 1: Segmentation
 # ---------------------------------------------------------------------------
+
 
 def segment_audio(
     wav_path: str,
@@ -140,7 +144,9 @@ def segment_audio(
     if total_duration < min_duration_s:
         logger.warning(
             "Recording too short (%.1fs < %.1fs): %s",
-            total_duration, min_duration_s, wav_path,
+            total_duration,
+            min_duration_s,
+            wav_path,
         )
         return []
 
@@ -153,7 +159,7 @@ def segment_audio(
         y,
         top_db=abs(silence_threshold_db),
         frame_length=int(sr * 0.025),  # 25ms frames
-        hop_length=int(sr * 0.010),    # 10ms hops
+        hop_length=int(sr * 0.010),  # 10ms hops
     )
 
     if len(intervals) == 0:
@@ -242,18 +248,22 @@ def segment_audio(
 
         sf.write(seg_path, segment_audio_data, sr)
 
-        segments.append(Segment(
-            source_file=wav_path,
-            segment_id=segment_id,
-            wav_path=seg_path,
-            start_s=start / sr,
-            end_s=end / sr,
-            duration_s=duration,
-        ))
+        segments.append(
+            Segment(
+                source_file=wav_path,
+                segment_id=segment_id,
+                wav_path=seg_path,
+                start_s=start / sr,
+                end_s=end / sr,
+                duration_s=duration,
+            )
+        )
 
     logger.info(
         "Segmented %s into %d segments (total %.1fs)",
-        wav_path, len(segments), sum(s.duration_s for s in segments),
+        wav_path,
+        len(segments),
+        sum(s.duration_s for s in segments),
     )
     return segments
 
@@ -261,6 +271,7 @@ def segment_audio(
 # ---------------------------------------------------------------------------
 # Step 2: Transcription
 # ---------------------------------------------------------------------------
+
 
 def transcribe_segments(
     segments: list[Segment],
@@ -356,18 +367,26 @@ def _try_whisper_cli(
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = subprocess.run(
                     [
-                        whisper_bin, seg.wav_path,
-                        "--model", model_size,
-                        "--language", language,
-                        "--output_format", "json",
-                        "--output_dir", tmpdir,
+                        whisper_bin,
+                        seg.wav_path,
+                        "--model",
+                        model_size,
+                        "--language",
+                        language,
+                        "--output_format",
+                        "json",
+                        "--output_dir",
+                        tmpdir,
                     ],
-                    capture_output=True, text=True, timeout=120,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
                 )
                 if result.returncode != 0:
                     logger.warning(
                         "Whisper CLI failed for %s: %s",
-                        seg.segment_id, result.stderr,
+                        seg.segment_id,
+                        result.stderr,
                     )
                     seg.needs_review = True
                     seg.review_reasons.append("whisper_cli_error")
@@ -399,6 +418,7 @@ def _try_whisper_cli(
 # ---------------------------------------------------------------------------
 # Step 3: Phoneme alignment
 # ---------------------------------------------------------------------------
+
 
 def align_phonemes(
     segments: list[Segment],
@@ -470,6 +490,7 @@ def _try_sofa_alignment(
     if not sofa_available:
         try:
             import sofa  # type: ignore[import-untyped]
+
             sofa_available = True
         except ImportError:
             pass
@@ -495,29 +516,45 @@ def _try_sofa_alignment(
             if sofa_bin:
                 cmd = [
                     sofa_bin,
-                    "--wav", seg.wav_path,
-                    "--text", lab_path,
-                    "--output", os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
-                    "--language", language,
+                    "--wav",
+                    seg.wav_path,
+                    "--text",
+                    lab_path,
+                    "--output",
+                    os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
+                    "--language",
+                    language,
                 ]
             elif sofa_script:
                 cmd = [
-                    sys.executable, sofa_script,
-                    "--wav", seg.wav_path,
-                    "--text", lab_path,
-                    "--output", os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
+                    sys.executable,
+                    sofa_script,
+                    "--wav",
+                    seg.wav_path,
+                    "--text",
+                    lab_path,
+                    "--output",
+                    os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
                 ]
             else:
                 # Use Python module
                 cmd = [
-                    sys.executable, "-m", "sofa",
-                    "--wav", seg.wav_path,
-                    "--text", lab_path,
-                    "--output", os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
+                    sys.executable,
+                    "-m",
+                    "sofa",
+                    "--wav",
+                    seg.wav_path,
+                    "--text",
+                    lab_path,
+                    "--output",
+                    os.path.join(align_dir, f"{seg.segment_id}.TextGrid"),
                 ]
 
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=60,
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
 
             if result.returncode == 0:
@@ -532,7 +569,9 @@ def _try_sofa_alignment(
                     seg.review_reasons.append("sofa_no_output")
             else:
                 logger.warning(
-                    "SOFA failed for %s: %s", seg.segment_id, result.stderr[:200],
+                    "SOFA failed for %s: %s",
+                    seg.segment_id,
+                    result.stderr[:200],
                 )
                 seg.needs_review = True
                 seg.review_reasons.append("sofa_alignment_failed")
@@ -589,7 +628,8 @@ def _try_mfa_alignment(
 
         result = subprocess.run(
             [
-                mfa_bin, "align",
+                mfa_bin,
+                "align",
                 mfa_input,
                 dict_name,
                 acoustic_model,
@@ -597,7 +637,9 @@ def _try_mfa_alignment(
                 "--clean",
                 "--overwrite",
             ],
-            capture_output=True, text=True, timeout=600,
+            capture_output=True,
+            text=True,
+            timeout=600,
         )
 
         if result.returncode != 0:
@@ -642,6 +684,7 @@ def _parse_textgrid(tg_path: str) -> tuple[list[str], list[float]]:
     try:
         # Try tgt library first (common TextGrid parser)
         import tgt  # type: ignore[import-untyped]
+
         tg = tgt.io.read_textgrid(tg_path)
 
         # Find the phones tier
@@ -723,6 +766,7 @@ def _simple_g2p(text: str) -> list[str]:
     # Try g2p_en if available
     try:
         from g2p_en import G2p  # type: ignore[import-untyped]
+
         g2p = G2p()
         phonemes = g2p(text)
         return [p for p in phonemes if p.strip()]
@@ -754,6 +798,7 @@ def _simple_g2p(text: str) -> list[str]:
 # ---------------------------------------------------------------------------
 # Step 4: F0 extraction
 # ---------------------------------------------------------------------------
+
 
 def extract_f0(
     segments: list[Segment],
@@ -807,6 +852,7 @@ def _try_some_f0(
     if not some_available:
         try:
             import some  # type: ignore[import-untyped]
+
             some_available = True
         except ImportError:
             pass
@@ -830,7 +876,10 @@ def _try_some_f0(
                 cmd = [sys.executable, "-m", "some", seg.wav_path, "--output", f0_output]
 
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=60,
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
 
             if result.returncode == 0 and os.path.exists(f0_output):
@@ -875,7 +924,8 @@ def _try_crepe_f0(
         try:
             y, sr = librosa.load(seg.wav_path, sr=sample_rate, mono=True)
             _, frequency, confidence, _ = crepe.predict(
-                y, sr,
+                y,
+                sr,
                 step_size=int(hop_length_s * 1000),  # step_size in ms
                 viterbi=True,
             )
@@ -915,7 +965,8 @@ def _extract_f0_pyin(
         try:
             y, sr = librosa.load(seg.wav_path, sr=sample_rate, mono=True)
             f0, voiced_flag, voiced_prob = librosa.pyin(
-                y, sr=sr,
+                y,
+                sr=sr,
                 fmin=librosa.note_to_hz("C2"),
                 fmax=librosa.note_to_hz("C6"),
                 hop_length=hop_length,
@@ -927,7 +978,9 @@ def _extract_f0_pyin(
             seg.f0_timestep_s = hop_length_s
 
             # Check voiced ratio
-            voiced_ratio = float(np.sum(voiced_flag)) / len(voiced_flag) if len(voiced_flag) > 0 else 0
+            voiced_ratio = (
+                float(np.sum(voiced_flag)) / len(voiced_flag) if len(voiced_flag) > 0 else 0
+            )
             if voiced_ratio < 0.3:
                 seg.needs_review = True
                 seg.review_reasons.append(f"low_voiced_ratio: {voiced_ratio:.2f}")
@@ -944,6 +997,7 @@ def _extract_f0_pyin(
 # ---------------------------------------------------------------------------
 # Step 5: Format conversion to DiffSinger .ds
 # ---------------------------------------------------------------------------
+
 
 def convert_to_ds_format(
     segments: list[Segment],
@@ -998,8 +1052,10 @@ def convert_to_ds_format(
             # Map phonemes to notes (ph_num)
             if seg.phonemes and note_seq:
                 ph_num = _map_phonemes_to_notes(
-                    seg.phonemes, seg.phone_durations,
-                    note_seq, note_dur,
+                    seg.phonemes,
+                    seg.phone_durations,
+                    note_seq,
+                    note_dur,
                 )
                 ds_entry["ph_num"] = ph_num
 
@@ -1132,6 +1188,7 @@ def _map_phonemes_to_notes(
 # Step 6: Quality assessment
 # ---------------------------------------------------------------------------
 
+
 def assess_quality(
     segments: list[Segment],
     sample_rate: int = 44100,
@@ -1162,7 +1219,7 @@ def assess_quality(
                 seg.needs_review = True
 
             # Check energy
-            rms = float(np.sqrt(np.mean(y ** 2)))
+            rms = float(np.sqrt(np.mean(y**2)))
             if rms < 0.01:
                 score -= 0.4
                 seg.review_reasons.append("very_low_energy")
@@ -1206,6 +1263,7 @@ def assess_quality(
 # Report generation
 # ---------------------------------------------------------------------------
 
+
 def generate_report(
     segments: list[Segment],
     report: DatasetReport,
@@ -1218,12 +1276,10 @@ def generate_report(
     report.total_segments = len(segments)
     report.total_duration_s = sum(s.duration_s for s in segments)
     report.avg_segment_duration_s = (
-        report.total_duration_s / report.total_segments
-        if report.total_segments > 0 else 0.0
+        report.total_duration_s / report.total_segments if report.total_segments > 0 else 0.0
     )
     report.avg_quality_score = (
-        sum(s.quality_score for s in segments) / len(segments)
-        if segments else 0.0
+        sum(s.quality_score for s in segments) / len(segments) if segments else 0.0
     )
     report.segments_needing_review = sum(1 for s in segments if s.needs_review)
 
@@ -1233,17 +1289,19 @@ def generate_report(
         "segments": [],
     }
     for seg in segments:
-        report_data["segments"].append({
-            "segment_id": seg.segment_id,
-            "source_file": seg.source_file,
-            "duration_s": round(seg.duration_s, 2),
-            "transcript": seg.transcript,
-            "num_phonemes": len(seg.phonemes),
-            "num_f0_frames": len(seg.f0_values),
-            "quality_score": round(seg.quality_score, 3),
-            "needs_review": seg.needs_review,
-            "review_reasons": seg.review_reasons,
-        })
+        report_data["segments"].append(
+            {
+                "segment_id": seg.segment_id,
+                "source_file": seg.source_file,
+                "duration_s": round(seg.duration_s, 2),
+                "transcript": seg.transcript,
+                "num_phonemes": len(seg.phonemes),
+                "num_f0_frames": len(seg.f0_values),
+                "quality_score": round(seg.quality_score, 3),
+                "needs_review": seg.needs_review,
+                "review_reasons": seg.review_reasons,
+            }
+        )
 
     report_path = os.path.join(output_dir, "quality_report.json")
     Path(report_path).write_text(
@@ -1253,21 +1311,26 @@ def generate_report(
 
     # Print rich console summary
     console.print()
-    console.print(Panel.fit(
-        f"[bold]DiffSinger Dataset Preparation Report[/bold]\n"
-        f"Voice: {report.voice_name}",
-        border_style="green",
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold]DiffSinger Dataset Preparation Report[/bold]\nVoice: {report.voice_name}",
+            border_style="green",
+        )
+    )
 
     table = Table(show_header=True, header_style="bold cyan")
     table.add_column("Metric", style="dim")
     table.add_column("Value")
     table.add_row("Total recordings", str(report.total_recordings))
     table.add_row("Total segments", str(report.total_segments))
-    table.add_row("Total duration", f"{report.total_duration_s:.1f}s ({report.total_duration_s / 60:.1f}min)")
+    table.add_row(
+        "Total duration", f"{report.total_duration_s:.1f}s ({report.total_duration_s / 60:.1f}min)"
+    )
     table.add_row("Avg segment duration", f"{report.avg_segment_duration_s:.1f}s")
     table.add_row("Avg quality score", f"{report.avg_quality_score:.3f}")
-    table.add_row("Segments needing review", f"{report.segments_needing_review} / {report.total_segments}")
+    table.add_row(
+        "Segments needing review", f"{report.segments_needing_review} / {report.total_segments}"
+    )
     table.add_row("Transcription method", report.transcription_method)
     table.add_row("Alignment method", report.alignment_method)
     table.add_row("F0 method", report.f0_method)
@@ -1313,26 +1376,31 @@ def generate_report(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 @click.command()
 @click.option(
-    "--input-dir", "-i",
+    "--input-dir",
+    "-i",
     required=True,
     type=click.Path(exists=True, file_okay=False),
     help="Directory containing WAV recordings.",
 )
 @click.option(
-    "--output-dir", "-o",
+    "--output-dir",
+    "-o",
     required=True,
     type=click.Path(file_okay=False),
     help="Output directory for the DiffSinger dataset.",
 )
 @click.option(
-    "--voice-name", "-n",
+    "--voice-name",
+    "-n",
     required=True,
     help="Name for this voice dataset.",
 )
 @click.option(
-    "--sample-rate", "-sr",
+    "--sample-rate",
+    "-sr",
     default=44100,
     type=int,
     help="Target sample rate for audio segments.",
@@ -1344,7 +1412,8 @@ def generate_report(
     help="Whisper model size for transcription.",
 )
 @click.option(
-    "--language", "-l",
+    "--language",
+    "-l",
     default="en",
     help="Language code for transcription and alignment.",
 )
@@ -1382,7 +1451,8 @@ def generate_report(
     help="Skip F0 extraction step.",
 )
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     is_flag=True,
     help="Enable verbose logging.",
 )
@@ -1409,13 +1479,15 @@ def main(
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    console.print(Panel.fit(
-        f"[bold cyan]DiffSinger Dataset Preparation[/bold cyan]\n"
-        f"Voice: {voice_name}\n"
-        f"Input: {input_dir}\n"
-        f"Output: {output_dir}",
-        border_style="cyan",
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold cyan]DiffSinger Dataset Preparation[/bold cyan]\n"
+            f"Voice: {voice_name}\n"
+            f"Input: {input_dir}\n"
+            f"Output: {output_dir}",
+            border_style="cyan",
+        )
+    )
 
     # Discover input WAV files
     input_path = Path(input_dir)

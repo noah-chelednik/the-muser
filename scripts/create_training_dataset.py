@@ -1,4 +1,5 @@
 """Convert session logs to Unsloth-compatible training format."""
+
 import json
 from pathlib import Path
 
@@ -15,13 +16,18 @@ def convert_sessions():
                 # Only include turns where the model made tool calls
                 # (these are the most valuable training signal)
                 if turn["response"]["tool_calls"]:
-                    examples.append({
-                        "messages": turn["messages"] + [{
-                            "role": "assistant",
-                            "tool_calls": turn["response"]["tool_calls"],
-                        }],
-                        "tools": turn["tools"],
-                    })
+                    examples.append(
+                        {
+                            "messages": turn["messages"]
+                            + [
+                                {
+                                    "role": "assistant",
+                                    "tool_calls": turn["response"]["tool_calls"],
+                                }
+                            ],
+                            "tools": turn["tools"],
+                        }
+                    )
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_PATH, "w") as f:

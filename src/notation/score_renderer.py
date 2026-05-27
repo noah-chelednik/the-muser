@@ -70,6 +70,7 @@ def render_pdf_lilypond(musicxml_path: str, output_path: str) -> str:
     out = _ensure_output_dir(output_path)
 
     from src.orchestrator.config import LILYPOND_PATH
+
     lilypond_bin = shutil.which(LILYPOND_PATH) or shutil.which("lilypond")
     # musicxml2ly lives alongside lilypond in the same directory
     musicxml2ly_bin = None

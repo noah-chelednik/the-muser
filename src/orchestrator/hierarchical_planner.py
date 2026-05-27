@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Context budget per level (approximate token count, ~4 chars per token)
 _CHARS_PER_TOKEN = 4
 _LEVEL_CONTEXT_BUDGETS = {
-    1: 800,   # Full-piece overview: concise
+    1: 800,  # Full-piece overview: concise
     2: 1200,  # Phrase level: moderate detail
     3: 1500,  # Note level: most detail
     4: 1000,  # Arrangement: moderate detail
@@ -33,6 +33,7 @@ _LEVEL_CONTEXT_BUDGETS = {
 @dataclass
 class Level1Section:
     """Full-piece level: form sections with measure ranges."""
+
     name: str
     start_measure: int
     end_measure: int
@@ -68,6 +69,7 @@ class Level1Section:
 @dataclass
 class Level2Phrase:
     """Phrase level (~32 measures): harmonic progressions, thematic assignments."""
+
     section_name: str
     start_measure: int
     end_measure: int
@@ -100,6 +102,7 @@ class Level2Phrase:
 @dataclass
 class Level3Detail:
     """Note level (~8 measures): actual notation content."""
+
     phrase_section: str
     start_measure: int
     end_measure: int
@@ -129,6 +132,7 @@ class Level3Detail:
 @dataclass
 class Level4Arrangement:
     """Arrangement level: full orchestration and voicing."""
+
     section_name: str
     instrument_assignments: dict[str, str] = field(default_factory=dict)
     dynamics: str = ""
@@ -214,7 +218,9 @@ class HierarchicalPlanner:
         self.current_section = ""
         logger.info(
             "Planned piece: form=%s, measures=%d, sections=%d",
-            form, total_measures, len(self.level1_plan),
+            form,
+            total_measures,
+            len(self.level1_plan),
         )
         return self.level1_plan
 
@@ -250,7 +256,8 @@ class HierarchicalPlanner:
         self.level2_phrases[section_name] = phrase_list
         logger.info(
             "Planned %d phrases for section '%s'",
-            len(phrase_list), section_name,
+            len(phrase_list),
+            section_name,
         )
         return phrase_list
 
@@ -286,7 +293,9 @@ class HierarchicalPlanner:
         self.level3_details.setdefault(section, []).append(detail)
         logger.info(
             "Planned measures %d-%d for section '%s'",
-            start, end, section,
+            start,
+            end,
+            section,
         )
         return detail
 
@@ -532,7 +541,7 @@ class HierarchicalPlanner:
 
         # Trim if over budget
         if len(result) > budget_chars:
-            result = result[:budget_chars - 20] + "\n  [... trimmed]"
+            result = result[: budget_chars - 20] + "\n  [... trimmed]"
 
         return result
 
@@ -564,18 +573,9 @@ class HierarchicalPlanner:
             "current_level": self.current_level,
             "current_section": self.current_section,
             "level1_plan": [s.to_dict() for s in self.level1_plan],
-            "level2_phrases": {
-                k: [p.to_dict() for p in v]
-                for k, v in self.level2_phrases.items()
-            },
-            "level3_details": {
-                k: [d.to_dict() for d in v]
-                for k, v in self.level3_details.items()
-            },
-            "level4_arrangements": {
-                k: v.to_dict()
-                for k, v in self.level4_arrangements.items()
-            },
+            "level2_phrases": {k: [p.to_dict() for p in v] for k, v in self.level2_phrases.items()},
+            "level3_details": {k: [d.to_dict() for d in v] for k, v in self.level3_details.items()},
+            "level4_arrangements": {k: v.to_dict() for k, v in self.level4_arrangements.items()},
         }
 
     @classmethod
@@ -587,9 +587,7 @@ class HierarchicalPlanner:
         planner.current_level = data.get("current_level", 1)
         planner.current_section = data.get("current_section", "")
 
-        planner.level1_plan = [
-            Level1Section.from_dict(s) for s in data.get("level1_plan", [])
-        ]
+        planner.level1_plan = [Level1Section.from_dict(s) for s in data.get("level1_plan", [])]
         planner.level2_phrases = {
             k: [Level2Phrase.from_dict(p) for p in v]
             for k, v in data.get("level2_phrases", {}).items()

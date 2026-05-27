@@ -73,12 +73,8 @@ OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("MUSER_OLLAMA_MODEL", "qwen3:30b-a3b")
 
 # Legacy Claude model references (used when MUSER_LLM_MODE="anthropic")
-CLAUDE_MODEL_ROUTINE = os.environ.get(
-    "MUSER_CLAUDE_MODEL_ROUTINE", "claude-sonnet-4-5-20250929"
-)
-CLAUDE_MODEL_COMPLEX = os.environ.get(
-    "MUSER_CLAUDE_MODEL_COMPLEX", "claude-opus-4-6"
-)
+CLAUDE_MODEL_ROUTINE = os.environ.get("MUSER_CLAUDE_MODEL_ROUTINE", "claude-sonnet-4-5-20250929")
+CLAUDE_MODEL_COMPLEX = os.environ.get("MUSER_CLAUDE_MODEL_COMPLEX", "claude-opus-4-6")
 MAX_TOOL_ITERATIONS = int(os.environ.get("MUSER_MAX_TOOL_ITERATIONS", "20"))
 
 # ---------------------------------------------------------------------------
@@ -128,18 +124,24 @@ MP3_BITRATE = os.environ.get("MUSER_MP3_BITRATE", "320k")
 # Local tool paths (.local prefix for sudo-free installs)
 # ---------------------------------------------------------------------------
 LOCAL_DIR = PROJECT_ROOT / ".local"
-_lilypond_candidates = sorted(LOCAL_DIR.glob("lilypond-*/bin/lilypond")) if LOCAL_DIR.exists() else []
+_lilypond_candidates = (
+    sorted(LOCAL_DIR.glob("lilypond-*/bin/lilypond")) if LOCAL_DIR.exists() else []
+)
 LILYPOND_PATH = os.environ.get(
     "MUSER_LILYPOND_PATH",
     str(_lilypond_candidates[-1]) if _lilypond_candidates else "lilypond",
 )
 FLUIDSYNTH_PATH = os.environ.get(
     "MUSER_FLUIDSYNTH_PATH",
-    str(LOCAL_DIR / "bin" / "fluidsynth") if (LOCAL_DIR / "bin" / "fluidsynth").exists() else "fluidsynth",
+    str(LOCAL_DIR / "bin" / "fluidsynth")
+    if (LOCAL_DIR / "bin" / "fluidsynth").exists()
+    else "fluidsynth",
 )
 SFIZZ_PATH = os.environ.get(
     "MUSER_SFIZZ_PATH",
-    str(LOCAL_DIR / "bin" / "sfizz_render") if (LOCAL_DIR / "bin" / "sfizz_render").exists() else "sfizz_render",
+    str(LOCAL_DIR / "bin" / "sfizz_render")
+    if (LOCAL_DIR / "bin" / "sfizz_render").exists()
+    else "sfizz_render",
 )
 
 # ---------------------------------------------------------------------------

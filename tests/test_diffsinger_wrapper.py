@@ -1,12 +1,11 @@
 """Tests for DiffSinger wrapper pure-logic functions."""
 
-import pytest
 
 
 class TestVocalExtraction:
-
     def test_extract_vocal_data(self, sample_musicxml_with_vocals):
         from src.generation.diffsinger_wrapper import _extract_vocal_data
+
         data = _extract_vocal_data(sample_musicxml_with_vocals)
         assert len(data["notes"]) > 0
         assert data["tempo"] > 0
@@ -14,12 +13,14 @@ class TestVocalExtraction:
 
     def test_extract_handles_rests(self, sample_musicxml_path):
         from src.generation.diffsinger_wrapper import _extract_vocal_data
+
         data = _extract_vocal_data(sample_musicxml_path)
         assert isinstance(data["notes"], list)
 
     def test_find_vocal_part_by_name(self):
         import music21
         from src.generation.diffsinger_wrapper import _find_vocal_part
+
         score = music21.stream.Score()
         p1 = music21.stream.Part()
         p1.partName = "Piano"
@@ -34,6 +35,7 @@ class TestVocalExtraction:
     def test_find_vocal_part_none(self):
         import music21
         from src.generation.diffsinger_wrapper import _find_vocal_part
+
         score = music21.stream.Score()
         p = music21.stream.Part()
         p.partName = "Strings"
@@ -42,9 +44,9 @@ class TestVocalExtraction:
 
 
 class TestPhonemeProcessing:
-
     def test_fallback_g2p_english(self):
         from src.generation.diffsinger_wrapper import _fallback_g2p
+
         result = _fallback_g2p(["hello", "world", ""])
         assert result["method"] == "fallback-rules"
         assert len(result["phonemes"]) == 3
@@ -52,11 +54,13 @@ class TestPhonemeProcessing:
 
     def test_fallback_g2p_empty(self):
         from src.generation.diffsinger_wrapper import _fallback_g2p
+
         result = _fallback_g2p(["", "  "])
         assert all(p == ["SP"] for p in result["phonemes"])
 
     def test_distribute_phoneme_durations_sums_correctly(self):
         from src.generation.diffsinger_wrapper import _distribute_phoneme_durations
+
         phonemes = ["HH", "EH", "L", "OW"]
         total = 0.5
         durs = _distribute_phoneme_durations(phonemes, total)
@@ -65,26 +69,29 @@ class TestPhonemeProcessing:
 
     def test_distribute_single_phoneme(self):
         from src.generation.diffsinger_wrapper import _distribute_phoneme_durations
+
         durs = _distribute_phoneme_durations(["AH"], 1.0)
         assert durs == [1.0]
 
 
 class TestNoteConversion:
-
     def test_midi_to_note_name(self):
         from src.generation.diffsinger_wrapper import _midi_to_note_name
+
         assert _midi_to_note_name(60) == "C4"
         assert _midi_to_note_name(69) == "A4"
         assert _midi_to_note_name(0) == "rest"
 
     def test_note_name_to_midi(self):
         from src.generation.diffsinger_wrapper import _note_name_to_midi
+
         assert _note_name_to_midi("C4") == 60.0
         assert _note_name_to_midi("rest") == 0.0
         assert _note_name_to_midi("") == 0.0
 
     def test_roundtrip(self):
         from src.generation.diffsinger_wrapper import _midi_to_note_name, _note_name_to_midi
+
         for midi in [48, 60, 72, 84]:
             name = _midi_to_note_name(midi)
             back = _note_name_to_midi(name)
@@ -92,12 +99,14 @@ class TestNoteConversion:
 
 
 class TestDSProjectBuilding:
-
     def test_build_ds_project_writes_json(self, sample_musicxml_with_vocals, tmp_path):
         import json
         from src.generation.diffsinger_wrapper import (
-            _extract_vocal_data, _lyrics_to_phonemes, _build_ds_project,
+            _extract_vocal_data,
+            _lyrics_to_phonemes,
+            _build_ds_project,
         )
+
         vocal_data = _extract_vocal_data(sample_musicxml_with_vocals)
         phoneme_data = _lyrics_to_phonemes(vocal_data)
         ds_path = str(tmp_path / "test.ds")

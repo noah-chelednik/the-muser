@@ -12,8 +12,6 @@ from .models import (
     PipelineConfig,
     TrackMetadata,
     TrackSelection,
-    AlbumPackage,
-    GumroadPack,
 )
 from .metadata import GENRE_DISPLAY
 
@@ -54,6 +52,7 @@ def package_all(
 # ---------------------------------------------------------------------------
 # DistroKid
 # ---------------------------------------------------------------------------
+
 
 def _package_distrokid(
     selections: dict[str, TrackSelection],
@@ -105,7 +104,7 @@ def _package_distrokid(
                 "tracks": [
                     {
                         "index": i + 1,
-                        "filename": f"{i+1:02d}_{_safe(m.title)}.wav",
+                        "filename": f"{i + 1:02d}_{_safe(m.title)}.wav",
                         "title": m.title,
                         "duration": m.duration_formatted,
                         "bpm": m.bpm,
@@ -174,6 +173,7 @@ def _write_distrokid_guide(
 # Gumroad
 # ---------------------------------------------------------------------------
 
+
 def _package_gumroad(
     selections: dict[str, TrackSelection],
     metadata: dict[str, TrackMetadata],
@@ -223,7 +223,9 @@ def _package_gumroad(
             zf.writestr("TRACK_LIST.txt", _track_list_text(tracks))
 
         # Write listing guide
-        _write_gumroad_listing(pack_dir, pack_title, display, genre, price, tracks, zip_name, config)
+        _write_gumroad_listing(
+            pack_dir, pack_title, display, genre, price, tracks, zip_name, config
+        )
 
         # Machine-readable
         pack_meta = {
@@ -232,8 +234,14 @@ def _package_gumroad(
             "price_usd": price,
             "zip_filename": zip_name,
             "track_count": len(tracks),
-            "tags": [genre, "royalty free", "background music", display.lower(),
-                     "instrumental", "ai music"],
+            "tags": [
+                genre,
+                "royalty free",
+                "background music",
+                display.lower(),
+                "instrumental",
+                "ai music",
+            ],
         }
         with open(pack_dir / "metadata.json", "w") as f:
             json.dump(pack_meta, f, indent=2)
@@ -268,8 +276,9 @@ def _write_gumroad_listing(
         f"\n"
         f"Created with AI-assisted composition tools."
     )
-    tags_str = ", ".join([genre, "royalty free", "background music",
-                          display.lower(), "instrumental"])
+    tags_str = ", ".join(
+        [genre, "royalty free", "background music", display.lower(), "instrumental"]
+    )
 
     lines = [
         "=" * 50,
@@ -304,6 +313,7 @@ def _write_gumroad_listing(
 # ---------------------------------------------------------------------------
 # Fiverr
 # ---------------------------------------------------------------------------
+
 
 def _package_fiverr(
     selections: dict[str, TrackSelection],
@@ -347,9 +357,9 @@ def _package_fiverr(
 
 
 def _write_fiverr_guide(fv_dir: Path, config: PipelineConfig) -> None:
-    guide = f"""{'='*50}
+    guide = f"""{"=" * 50}
 FIVERR GIG SETUP GUIDE
-{'='*50}
+{"=" * 50}
 
 GIG 1: Custom Background Music
   Title: I will compose custom background music for your video
@@ -425,7 +435,7 @@ GIG 3: Lo-Fi Beats & Chill Music
   - Royalty-free commercial license
   ---
 
-{'='*50}
+{"=" * 50}
 """
     (fv_dir / "GIG_SETUP.txt").write_text(guide)
 
@@ -433,6 +443,7 @@ GIG 3: Lo-Fi Beats & Chill Music
 # ---------------------------------------------------------------------------
 # Ko-fi
 # ---------------------------------------------------------------------------
+
 
 def _package_kofi(
     selections: dict[str, TrackSelection],
@@ -457,12 +468,14 @@ def _package_kofi(
         if mp3_src.exists():
             dst = singles_dir / f"{_safe(meta.title)}.mp3"
             shutil.copy2(mp3_src, dst)
-            singles.append({
-                "title": meta.title,
-                "file": dst.name,
-                "genre": meta.genre_primary,
-                "price": 4,
-            })
+            singles.append(
+                {
+                    "title": meta.title,
+                    "file": dst.name,
+                    "genre": meta.genre_primary,
+                    "price": 4,
+                }
+            )
 
     # Write listing guide
     _write_kofi_guide(kf_dir, singles, config)
@@ -486,7 +499,7 @@ def _write_kofi_guide(kf_dir: Path, singles: list[dict], config: PipelineConfig)
             f"{i}. Title: {s['title']} — {display} Track",
             f"   Price: ${s['price']}",
             f"   Description: Original {display.lower()} track. Mastered WAV + MP3.",
-            f"   Royalty-free for personal and commercial use.",
+            "   Royalty-free for personal and commercial use.",
             f"   File: {s['file']}",
             "",
         ]
@@ -506,6 +519,7 @@ def _write_kofi_guide(kf_dir: Path, singles: list[dict], config: PipelineConfig)
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _safe(title: str) -> str:
     s = title.replace(" ", "_")
     s = "".join(c for c in s if c.isalnum() or c in ("_", "-"))
@@ -514,7 +528,7 @@ def _safe(title: str) -> str:
 
 def _license_text(config: PipelineConfig) -> str:
     return f"""ROYALTY-FREE MUSIC LICENSE
-{'='*40}
+{"=" * 40}
 
 Copyright {config.release_year} {config.copyright_holder}. All rights reserved.
 

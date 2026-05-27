@@ -32,14 +32,11 @@ from typing import Any
 
 from src.orchestrator.config import (
     ACESTEP_DEFAULT_DURATION_S,
-    ACESTEP_DIR,
     ACESTEP_INFER_STEP,
     ACESTEP_GUIDANCE_SCALE,
     ACESTEP_MAX_RETRIES,
-    ACESTEP_SAMPLE_RATE,
     ACESTEP_VERSION,
     ACESTEP_V15_DIR,
-    ACESTEP_V15_DIT_MODEL,
     ACESTEP_V15_BATCH_SIZE,
     ACESTEP_V15_THINKING_MODE,
     ACESTEP_V15_LM_TEMPERATURE,
@@ -88,19 +85,24 @@ def _is_silent(wav_path: str, threshold_db: float = -50.0) -> bool:
         if is_silent:
             logger.info(
                 "Silence detected in %s (peak RMS %.1f dB < %.1f dB threshold).",
-                wav_path, peak_db, threshold_db,
+                wav_path,
+                peak_db,
+                threshold_db,
             )
         return is_silent
 
     except ImportError:
         logger.warning(
-            "librosa is not installed; skipping silence detection for %s.", wav_path,
+            "librosa is not installed; skipping silence detection for %s.",
+            wav_path,
         )
         return False
 
     except Exception as exc:
         logger.warning(
-            "Could not analyse %s for silence: %s. Treating as silent.", wav_path, exc,
+            "Could not analyse %s for silence: %s. Treating as silent.",
+            wav_path,
+            exc,
         )
         return True
 
@@ -128,9 +130,12 @@ def _run_acestep_inference_v10(
     lora = lora_path if lora_path else "none"
 
     logger.info(
-        "ACE-Step v1.0 inference: duration=%.1fs, seed=%d, infer_step=%d, "
-        "guidance=%.1f, lora=%s",
-        duration_s, seed, infer_step, guidance_scale, lora,
+        "ACE-Step v1.0 inference: duration=%.1fs, seed=%d, infer_step=%d, guidance=%.1f, lora=%s",
+        duration_s,
+        seed,
+        infer_step,
+        guidance_scale,
+        lora,
     )
 
     result = None
@@ -191,6 +196,7 @@ def _generate_audio_v10(
     """Generate audio using ACE-Step v1.0 pipeline."""
     try:
         import torch as _torch
+
         mgr = get_manager()
         cpu_offload = not _torch.cuda.is_available()
         pipeline = mgr.load_acestep(cpu_offload=cpu_offload)
@@ -209,7 +215,10 @@ def _generate_audio_v10(
 
         logger.info(
             "ACE-Step v1.0 attempt %d/%d (seed=%d, need %d more).",
-            attempt, ACESTEP_MAX_RETRIES, current_seed, remaining,
+            attempt,
+            ACESTEP_MAX_RETRIES,
+            current_seed,
+            remaining,
         )
 
         try:
@@ -271,6 +280,7 @@ def _generate_audio_v15(
 ) -> list[str]:
     """Generate audio using ACE-Step v1.5 handler API."""
     import sys
+
     v15_path = str(ACESTEP_V15_DIR)
     if v15_path not in sys.path:
         sys.path.insert(0, v15_path)
@@ -340,8 +350,13 @@ def _generate_audio_v15(
     logger.info(
         "ACE-Step v1.5 generate: task=%s, duration=%.1fs, steps=%d, "
         "guidance=%.1f, batch=%d, seed=%d, thinking=%s",
-        task_type, duration_s, infer_step, guidance_scale,
-        config.batch_size, seed, ACESTEP_V15_THINKING_MODE,
+        task_type,
+        duration_s,
+        infer_step,
+        guidance_scale,
+        config.batch_size,
+        seed,
+        ACESTEP_V15_THINKING_MODE,
     )
 
     try:
@@ -551,7 +566,7 @@ def generate_audio(
     if duration_s is None:
         duration_s = ACESTEP_DEFAULT_DURATION_S
     if seed is None:
-        seed = int(time.time()) % (2 ** 31)
+        seed = int(time.time()) % (2**31)
     if infer_step is None:
         infer_step = ACESTEP_INFER_STEP if ACESTEP_VERSION == "v10" else 8
     if guidance_scale is None:
@@ -560,8 +575,14 @@ def generate_audio(
     logger.info(
         "generate_audio [%s]: tags=%r, lyrics_len=%d, duration=%.0fs, "
         "candidates=%d, seed=%d, steps=%d, guidance=%.1f",
-        ACESTEP_VERSION, tags[:80], len(lyrics), duration_s,
-        num_candidates, seed, infer_step, guidance_scale,
+        ACESTEP_VERSION,
+        tags[:80],
+        len(lyrics),
+        duration_s,
+        num_candidates,
+        seed,
+        infer_step,
+        guidance_scale,
     )
 
     if ACESTEP_VERSION == "v10":
@@ -626,21 +647,35 @@ def repaint_audio(
     end_s: End of the region to repaint (seconds).
     """
     if seed is None:
-        seed = int(time.time()) % (2 ** 31)
+        seed = int(time.time()) % (2**31)
 
     if ACESTEP_V15_API_URL:
         return _generate_audio_v15_api(
-            tags=tags, lyrics=lyrics, duration_s=-1, num_candidates=1,
-            seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-            task_type="repaint", src_audio=src_audio,
-            repainting_start=start_s, repainting_end=end_s,
+            tags=tags,
+            lyrics=lyrics,
+            duration_s=-1,
+            num_candidates=1,
+            seed=seed,
+            infer_step=infer_step,
+            guidance_scale=guidance_scale,
+            task_type="repaint",
+            src_audio=src_audio,
+            repainting_start=start_s,
+            repainting_end=end_s,
         )
 
     return _generate_audio_v15(
-        tags=tags, lyrics=lyrics, duration_s=-1, num_candidates=1,
-        seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-        task_type="repaint", src_audio=src_audio,
-        repainting_start=start_s, repainting_end=end_s,
+        tags=tags,
+        lyrics=lyrics,
+        duration_s=-1,
+        num_candidates=1,
+        seed=seed,
+        infer_step=infer_step,
+        guidance_scale=guidance_scale,
+        task_type="repaint",
+        src_audio=src_audio,
+        repainting_start=start_s,
+        repainting_end=end_s,
     )
 
 
@@ -662,20 +697,32 @@ def cover_audio(
     cover_strength: 0.0=identical, 1.0=fully regenerated (default: 0.5).
     """
     if seed is None:
-        seed = int(time.time()) % (2 ** 31)
+        seed = int(time.time()) % (2**31)
 
     if ACESTEP_V15_API_URL:
         return _generate_audio_v15_api(
-            tags=tags, lyrics=lyrics, duration_s=-1, num_candidates=1,
-            seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-            task_type="cover", src_audio=src_audio,
+            tags=tags,
+            lyrics=lyrics,
+            duration_s=-1,
+            num_candidates=1,
+            seed=seed,
+            infer_step=infer_step,
+            guidance_scale=guidance_scale,
+            task_type="cover",
+            src_audio=src_audio,
             audio_cover_strength=cover_strength,
         )
 
     return _generate_audio_v15(
-        tags=tags, lyrics=lyrics, duration_s=-1, num_candidates=1,
-        seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-        task_type="cover", src_audio=src_audio,
+        tags=tags,
+        lyrics=lyrics,
+        duration_s=-1,
+        num_candidates=1,
+        seed=seed,
+        infer_step=infer_step,
+        guidance_scale=guidance_scale,
+        task_type="cover",
+        src_audio=src_audio,
         audio_cover_strength=cover_strength,
     )
 
@@ -700,11 +747,12 @@ def extend_audio(
     extend_s: Duration of content to add (seconds).
     """
     if seed is None:
-        seed = int(time.time()) % (2 ** 31)
+        seed = int(time.time()) % (2**31)
 
     # Get source duration to set repaint region at the end
     try:
         import librosa
+
         y, sr = librosa.load(src_audio, sr=None, mono=True)
         src_duration = len(y) / sr
     except Exception:
@@ -714,15 +762,29 @@ def extend_audio(
 
     if ACESTEP_V15_API_URL:
         return _generate_audio_v15_api(
-            tags=tags, lyrics=lyrics, duration_s=total_duration, num_candidates=1,
-            seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-            task_type="complete", src_audio=src_audio,
-            repainting_start=src_duration, repainting_end=total_duration,
+            tags=tags,
+            lyrics=lyrics,
+            duration_s=total_duration,
+            num_candidates=1,
+            seed=seed,
+            infer_step=infer_step,
+            guidance_scale=guidance_scale,
+            task_type="complete",
+            src_audio=src_audio,
+            repainting_start=src_duration,
+            repainting_end=total_duration,
         )
 
     return _generate_audio_v15(
-        tags=tags, lyrics=lyrics, duration_s=total_duration, num_candidates=1,
-        seed=seed, infer_step=infer_step, guidance_scale=guidance_scale,
-        task_type="complete", src_audio=src_audio,
-        repainting_start=src_duration, repainting_end=total_duration,
+        tags=tags,
+        lyrics=lyrics,
+        duration_s=total_duration,
+        num_candidates=1,
+        seed=seed,
+        infer_step=infer_step,
+        guidance_scale=guidance_scale,
+        task_type="complete",
+        src_audio=src_audio,
+        repainting_start=src_duration,
+        repainting_end=total_duration,
     )

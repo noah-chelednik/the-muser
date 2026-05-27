@@ -23,11 +23,10 @@ The loop continues until either:
 import argparse
 import json
 import logging
-import os
 import signal
 import sys
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
 
 # Ensure project root is on sys.path
@@ -50,6 +49,7 @@ logger = logging.getLogger("muser.autogen")
 # ---------------------------------------------------------------------------
 # Audio quality scoring (same as batch script)
 # ---------------------------------------------------------------------------
+
 
 def get_audio_quality_score(wav_path: str) -> float:
     """Score audio quality using expanded metrics from audio_validator.
@@ -99,9 +99,11 @@ def get_audio_quality_score(wav_path: str) -> float:
 # Leaderboard
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Candidate:
     """A single generated audio candidate."""
+
     path: str
     score: float
     seed: int
@@ -184,23 +186,31 @@ def run_autogen(
         if leaderboard.count >= target_count:
             logger.info(
                 "Target count %d reached (%d candidates), stopping.",
-                target_count, leaderboard.count,
+                target_count,
+                leaderboard.count,
             )
             break
 
         # Check if quality threshold met for top candidate
-        if quality_threshold > 0 and leaderboard.best and leaderboard.best.score >= quality_threshold:
+        if (
+            quality_threshold > 0
+            and leaderboard.best
+            and leaderboard.best.score >= quality_threshold
+        ):
             logger.info(
                 "Quality threshold %.4f met (best=%.4f), stopping.",
-                quality_threshold, leaderboard.best.score,
+                quality_threshold,
+                leaderboard.best.score,
             )
             break
 
         seed = base_seed + round_idx * batch_size
         logger.info(
             "=== Round %d/%d | Candidates: %d/%d | Best: %.4f | Seed: %d ===",
-            round_idx + 1, max_rounds,
-            leaderboard.count, target_count,
+            round_idx + 1,
+            max_rounds,
+            leaderboard.count,
+            target_count,
             leaderboard.best.score if leaderboard.best else 0.0,
             seed,
         )
@@ -240,7 +250,10 @@ def run_autogen(
             rank = leaderboard.add(candidate)
             logger.info(
                 "  Candidate %d: score=%.4f, rank=#%d, seed=%d",
-                leaderboard.count, score, rank + 1, seed + j,
+                leaderboard.count,
+                score,
+                rank + 1,
+                seed + j,
             )
 
         # Write incremental leaderboard
@@ -249,8 +262,10 @@ def run_autogen(
         # GPU memory cleanup between rounds
         try:
             import gc
+
             gc.collect()
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         except ImportError:
@@ -272,59 +287,79 @@ def _save_leaderboard(leaderboard: Leaderboard, path: Path, start_time: float):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="AutoGen continuous generation loop for The Muser"
-    )
+    parser = argparse.ArgumentParser(description="AutoGen continuous generation loop for The Muser")
     parser.add_argument(
-        "--tags", required=True,
+        "--tags",
+        required=True,
         help="Descriptive caption / tags for generation",
     )
     parser.add_argument(
-        "--lyrics", default="[instrumental]",
+        "--lyrics",
+        default="[instrumental]",
         help="Lyrics (default: [instrumental])",
     )
     parser.add_argument(
-        "--duration", type=int, default=60,
+        "--duration",
+        type=int,
+        default=60,
         help="Duration in seconds (default: 60)",
     )
     parser.add_argument(
-        "--target-count", type=int, default=50,
+        "--target-count",
+        type=int,
+        default=50,
         help="Stop after generating this many candidates (default: 50)",
     )
     parser.add_argument(
-        "--max-rounds", type=int, default=100,
+        "--max-rounds",
+        type=int,
+        default=100,
         help="Maximum number of generation rounds (default: 100)",
     )
     parser.add_argument(
-        "--batch-size", type=int, default=4,
+        "--batch-size",
+        type=int,
+        default=4,
         help="Candidates per round (default: 4)",
     )
     parser.add_argument(
-        "--quality-threshold", type=float, default=0.0,
+        "--quality-threshold",
+        type=float,
+        default=0.0,
         help="Stop early if best score exceeds this (default: 0 = disabled)",
     )
     parser.add_argument(
-        "--infer-step", type=int, default=ACESTEP_INFER_STEP,
+        "--infer-step",
+        type=int,
+        default=ACESTEP_INFER_STEP,
         help=f"Diffusion inference steps (default: {ACESTEP_INFER_STEP})",
     )
     parser.add_argument(
-        "--guidance-scale", type=float, default=ACESTEP_GUIDANCE_SCALE,
+        "--guidance-scale",
+        type=float,
+        default=ACESTEP_GUIDANCE_SCALE,
         help=f"CFG guidance scale (default: {ACESTEP_GUIDANCE_SCALE})",
     )
     parser.add_argument(
-        "--output-dir", default=None,
+        "--output-dir",
+        default=None,
         help="Output directory (default: output/autogen_YYYYMMDD_HHMM)",
     )
     parser.add_argument(
-        "--seed", type=int, default=42,
+        "--seed",
+        type=int,
+        default=42,
         help="Base random seed (default: 42)",
     )
     parser.add_argument(
-        "--bpm", type=int, default=None,
+        "--bpm",
+        type=int,
+        default=None,
         help="Target BPM (v1.5 only)",
     )
     parser.add_argument(
-        "--key", default="",
+        "--key",
+        default="",
         help="Target key (v1.5 only, e.g., 'C major')",
     )
 
@@ -334,6 +369,7 @@ def main():
         output_dir = Path(args.output_dir)
     else:
         import datetime
+
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
         output_dir = PROJECT_ROOT / "output" / f"autogen_{timestamp}"
 
@@ -343,8 +379,13 @@ def main():
     logger.info("AutoGen Continuous Generation Loop")
     logger.info("=" * 60)
     logger.info("Tags: %s", args.tags[:100])
-    logger.info("Duration: %ds, Batch: %d, Target: %d, Max rounds: %d",
-                args.duration, args.batch_size, args.target_count, args.max_rounds)
+    logger.info(
+        "Duration: %ds, Batch: %d, Target: %d, Max rounds: %d",
+        args.duration,
+        args.batch_size,
+        args.target_count,
+        args.max_rounds,
+    )
     logger.info("Quality threshold: %.4f", args.quality_threshold)
     logger.info("Output: %s", output_dir)
     logger.info("=" * 60)

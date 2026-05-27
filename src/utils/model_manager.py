@@ -105,7 +105,7 @@ class ModelManager:
         """Return the amount of free VRAM in gigabytes on the default device."""
         torch = _import_torch()
         free_bytes, _total_bytes = torch.cuda.mem_get_info()
-        return free_bytes / (1024 ** 3)
+        return free_bytes / (1024**3)
 
     def unload_current(self) -> None:
         """Unload the currently-loaded model and release VRAM."""
@@ -121,7 +121,7 @@ class ModelManager:
             if isinstance(self._current_model, tuple):
                 for m in self._current_model:
                     try:
-                        if hasattr(m, 'unload'):
+                        if hasattr(m, "unload"):
                             m.unload()
                     except Exception:
                         pass
@@ -151,17 +151,14 @@ class ModelManager:
         after unloading, ``RuntimeError`` is raised.
         """
         free = self.get_vram_free_gb()
-        logger.debug(
-            "VRAM check: %.2f GB free, %.2f GB required.", free, required_gb
-        )
+        logger.debug("VRAM check: %.2f GB free, %.2f GB required.", free, required_gb)
 
         if free >= required_gb:
             return
 
         if self._current_model is not None:
             logger.info(
-                "Insufficient VRAM (%.2f GB free / %.2f GB needed); "
-                "unloading '%s'.",
+                "Insufficient VRAM (%.2f GB free / %.2f GB needed); unloading '%s'.",
                 free,
                 required_gb,
                 self._current_name,
@@ -211,10 +208,13 @@ class ModelManager:
             from transformers import GPT2Config
 
             # Import the actual model class from NotaGen's inference/utils.py.
-            from utils import NotaGenLMHeadModel, Patchilizer  # type: ignore[import-untyped]
+            from utils import NotaGenLMHeadModel  # type: ignore[import-untyped]
             from config import (  # type: ignore[import-untyped]
-                PATCH_SIZE, PATCH_LENGTH, PATCH_NUM_LAYERS,
-                CHAR_NUM_LAYERS, HIDDEN_SIZE,
+                PATCH_SIZE,
+                PATCH_LENGTH,
+                PATCH_NUM_LAYERS,
+                CHAR_NUM_LAYERS,
+                HIDDEN_SIZE,
             )
 
             # Locate the checkpoint – prefer the consolidated weights file.
@@ -223,12 +223,12 @@ class ModelManager:
                 # Fallback: look for any .pth or .bin in the weights directory.
                 weights_dir = NOTAGEN_DIR / "weights"
                 candidates = (
-                    sorted(weights_dir.glob("*.pth")) + sorted(weights_dir.glob("*.bin"))
-                ) if weights_dir.is_dir() else []
+                    (sorted(weights_dir.glob("*.pth")) + sorted(weights_dir.glob("*.bin")))
+                    if weights_dir.is_dir()
+                    else []
+                )
                 if not candidates:
-                    raise FileNotFoundError(
-                        f"No NotaGen checkpoint found in {weights_dir}"
-                    )
+                    raise FileNotFoundError(f"No NotaGen checkpoint found in {weights_dir}")
                 ckpt_path = candidates[-1]
 
             logger.info("Loading NotaGen checkpoint from %s", ckpt_path)
@@ -252,7 +252,8 @@ class ModelManager:
             )
 
             model = NotaGenLMHeadModel(
-                encoder_config=patch_config, decoder_config=byte_config,
+                encoder_config=patch_config,
+                decoder_config=byte_config,
             )
             checkpoint = torch.load(str(ckpt_path), map_location="cuda", weights_only=False)
             # NotaGen checkpoints wrap the state dict under a 'model' key.
@@ -262,7 +263,9 @@ class ModelManager:
 
             self._current_model = model
             self._current_name = "notagen"
-            logger.info("NotaGen loaded successfully (VRAM free: %.2f GB).", self.get_vram_free_gb())
+            logger.info(
+                "NotaGen loaded successfully (VRAM free: %.2f GB).", self.get_vram_free_gb()
+            )
             return self._current_model
 
         except Exception as exc:
@@ -315,12 +318,12 @@ class ModelManager:
             # Determine checkpoint_dir: use local dir if weight subdirs
             # exist, otherwise pass None to trigger HF auto-download.
             weight_subdirs = (
-                "music_dcae_f8c8", "music_vocoder",
-                "ace_step_transformer", "umt5-base",
+                "music_dcae_f8c8",
+                "music_vocoder",
+                "ace_step_transformer",
+                "umt5-base",
             )
-            has_local_weights = all(
-                (ACESTEP_DIR / d).is_dir() for d in weight_subdirs
-            )
+            has_local_weights = all((ACESTEP_DIR / d).is_dir() for d in weight_subdirs)
             checkpoint_dir = str(ACESTEP_DIR) if has_local_weights else None
 
             device_id = -1 if use_cpu else 0
@@ -329,7 +332,10 @@ class ModelManager:
             logger.info(
                 "Initialising ACE-Step pipeline (checkpoint_dir=%s, "
                 "device_id=%d, dtype=%s, cpu_offload=%s)",
-                checkpoint_dir, device_id, dtype, use_cpu,
+                checkpoint_dir,
+                device_id,
+                dtype,
+                use_cpu,
             )
 
             pipeline = ACEStepPipeline(
@@ -392,7 +398,8 @@ class ModelManager:
 
             logger.info(
                 "Initialising ACE-Step v1.5 (model=%s, project=%s)",
-                ACESTEP_V15_DIT_MODEL, ACESTEP_V15_DIR,
+                ACESTEP_V15_DIT_MODEL,
+                ACESTEP_V15_DIR,
             )
 
             dit_handler = AceStepHandler()
@@ -469,10 +476,9 @@ class ModelManager:
         # Detect available model formats
         has_onnx_acoustic = (model_dir / "acoustic.onnx").exists()
         has_onnx_variance = (model_dir / "variance.onnx").exists()
-        has_pt_acoustic = (
-            (model_dir / "acoustic.ckpt").exists()
-            or (model_dir / "acoustic.pt").exists()
-        )
+        has_pt_acoustic = (model_dir / "acoustic.ckpt").exists() or (
+            model_dir / "acoustic.pt"
+        ).exists()
 
         use_onnx = prefer_onnx and has_onnx_acoustic
 
@@ -489,7 +495,6 @@ class ModelManager:
 
         ONNX models can run on CPU or GPU and typically use ~2-4 GB.
         """
-        from pathlib import Path as _Path
 
         # ONNX uses much less VRAM than PyTorch
         required_gb = min(VRAM_BUDGET.get("diffsinger", 8.0), 4.0)
@@ -528,7 +533,9 @@ class ModelManager:
         try:
             acoustic_path = model_dir / "acoustic.onnx"
             acoustic_session = ort.InferenceSession(
-                str(acoustic_path), sess_opts, providers=providers,
+                str(acoustic_path),
+                sess_opts,
+                providers=providers,
             )
             logger.info("Loaded acoustic ONNX model: %s", acoustic_path)
 
@@ -536,7 +543,9 @@ class ModelManager:
             if has_variance:
                 variance_path = model_dir / "variance.onnx"
                 variance_session = ort.InferenceSession(
-                    str(variance_path), sess_opts, providers=providers,
+                    str(variance_path),
+                    sess_opts,
+                    providers=providers,
                 )
                 logger.info("Loaded variance ONNX model: %s", variance_path)
 
@@ -553,7 +562,9 @@ class ModelManager:
             if vocoder_onnx.exists():
                 try:
                     vocoder_session = ort.InferenceSession(
-                        str(vocoder_onnx), sess_opts, providers=providers,
+                        str(vocoder_onnx),
+                        sess_opts,
+                        providers=providers,
                     )
                     logger.info("Loaded vocoder ONNX model: %s", vocoder_onnx)
                 except Exception as exc:
@@ -629,14 +640,18 @@ class ModelManager:
             # Manual checkpoint loading
             logger.info("Loading acoustic checkpoint: %s", acoustic_ckpt)
             acoustic_state = torch.load(
-                str(acoustic_ckpt), map_location="cuda", weights_only=False,
+                str(acoustic_ckpt),
+                map_location="cuda",
+                weights_only=False,
             )
 
             variance_state = None
             if variance_ckpt.exists():
                 logger.info("Loading variance checkpoint: %s", variance_ckpt)
                 variance_state = torch.load(
-                    str(variance_ckpt), map_location="cuda", weights_only=False,
+                    str(variance_ckpt),
+                    map_location="cuda",
+                    weights_only=False,
                 )
 
             model = {

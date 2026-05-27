@@ -53,6 +53,7 @@ def execute_tool(tool_name: str, tool_input: dict[str, Any]) -> dict[str, Any]:
 # Helper: best-of-N candidate selection
 # ---------------------------------------------------------------------------
 
+
 def _select_best_candidate(paths: list[str], num_candidates: int) -> dict:
     """Score candidates and return the best one."""
     if len(paths) == 1:
@@ -89,15 +90,17 @@ def _select_best_candidate(paths: list[str], num_candidates: int) -> dict:
 # Handler implementations
 # ---------------------------------------------------------------------------
 
+
 def _handle_create_composition_plan(inputs: dict) -> dict:
-    from src.orchestrator.composition_state import CompositionState
 
     state = _get_state()
-    state.project.update({
-        "title": inputs.get("title", "Untitled"),
-        "genre": inputs.get("genre", ""),
-        "status": "planning",
-    })
+    state.project.update(
+        {
+            "title": inputs.get("title", "Untitled"),
+            "genre": inputs.get("genre", ""),
+            "status": "planning",
+        }
+    )
     state.form_plan = {
         "form": inputs.get("form", ""),
         "key": inputs.get("key", ""),
@@ -321,12 +324,14 @@ def _handle_render_vocals_diffsinger(inputs: dict) -> dict:
             voice_model_dir = model_name
             if model_name and not os.path.isdir(model_name):
                 from src.voice.voice_registry import get_voice
+
                 voice = get_voice(model_name)
                 if voice and voice.get("type") == "diffsinger":
                     voice_model_dir = voice.get("model_path", "")
 
             if not voice_model_dir:
                 from src.orchestrator.config import DIFFSINGER_DIR
+
                 voice_model_dir = str(DIFFSINGER_DIR / "checkpoints" / "default")
 
             output = synthesize_singing(
@@ -389,9 +394,13 @@ def _handle_feminize_audio(inputs: dict) -> dict:
     index_path = voice.get("index_path", "")
 
     if not model_path or not Path(model_path).exists():
-        return {"status": "error", "error": f"Voice model file not found for '{voice_id}': {model_path}"}
+        return {
+            "status": "error",
+            "error": f"Voice model file not found for '{voice_id}': {model_path}",
+        }
 
     from src.orchestrator.config import FEMINIZATION_PRESETS
+
     preset_params = FEMINIZATION_PRESETS
 
     params = preset_params.get(preset)
@@ -498,6 +507,7 @@ def _handle_render_preview(inputs: dict) -> dict:
 
     # MusicXML -> MIDI -> WAV
     import tempfile
+
     fd, midi_path = tempfile.mkstemp(suffix=".mid")
     os.close(fd)
     render_midi(musicxml_path, midi_path)
@@ -636,7 +646,10 @@ def _handle_train_voice_lora(inputs: dict) -> dict:
         return {"status": "error", "error": f"Training script not found: {script_path}"}
 
     if not Path(training_data_dir).is_dir():
-        return {"status": "error", "error": f"Training data directory not found: {training_data_dir}"}
+        return {
+            "status": "error",
+            "error": f"Training data directory not found: {training_data_dir}",
+        }
 
     env = {
         **dict(__import__("os").environ),
@@ -687,7 +700,10 @@ def _handle_record_theme_appearance(inputs: dict) -> dict:
         location=inputs["location"],
         description=inputs.get("description", ""),
     )
-    return {"status": "success", "message": f"Recorded appearance of '{theme_id}' at {inputs['location']}"}
+    return {
+        "status": "success",
+        "message": f"Recorded appearance of '{theme_id}' at {inputs['location']}",
+    }
 
 
 def _handle_update_harmonic_plan(inputs: dict) -> dict:
@@ -707,7 +723,10 @@ def _handle_update_harmonic_plan(inputs: dict) -> dict:
         if not from_key or not to_key:
             return {"status": "error", "error": "from_key and to_key required for add_modulation"}
         state.add_modulation(measure, from_key, to_key)
-        return {"status": "success", "message": f"Added modulation at m.{measure}: {from_key} -> {to_key}"}
+        return {
+            "status": "success",
+            "message": f"Added modulation at m.{measure}: {from_key} -> {to_key}",
+        }
     else:
         return {"status": "error", "error": f"Unknown operation: {operation}"}
 
@@ -721,11 +740,13 @@ def _handle_add_revision_note(inputs: dict) -> dict:
 def _handle_update_section_status(inputs: dict) -> dict:
     state = _get_state()
     state.update_section_status(inputs["section_name"], inputs["status"])
-    return {"status": "success", "message": f"Section '{inputs['section_name']}' status -> {inputs['status']}"}
+    return {
+        "status": "success",
+        "message": f"Section '{inputs['section_name']}' status -> {inputs['status']}",
+    }
 
 
 def _handle_plan_piece(inputs: dict) -> dict:
-    from src.orchestrator.hierarchical_planner import HierarchicalPlanner
 
     planner = _get_planner()
     form = inputs["form"]
@@ -801,6 +822,7 @@ def _get_state() -> "CompositionState":
     global _session_state
     if _session_state is None:
         from src.orchestrator.composition_state import CompositionState
+
         _session_state = CompositionState()
     return _session_state
 
@@ -816,6 +838,7 @@ def _get_planner() -> "HierarchicalPlanner":
     global _session_planner
     if _session_planner is None:
         from src.orchestrator.hierarchical_planner import HierarchicalPlanner
+
         _session_planner = HierarchicalPlanner()
     return _session_planner
 
@@ -830,8 +853,10 @@ def set_planner(planner: "HierarchicalPlanner") -> None:
 # New tool handlers (WS5)
 # ---------------------------------------------------------------------------
 
+
 def _handle_play_audio(inputs: dict) -> dict:
     from src.audio.player import play_audio
+
     return play_audio(
         wav_path=inputs["wav_path"],
         start_s=inputs.get("start_s", 0.0),
@@ -841,6 +866,7 @@ def _handle_play_audio(inputs: dict) -> dict:
 
 def _handle_apply_eq(inputs: dict) -> dict:
     from src.audio.effects import apply_eq
+
     wav = inputs["wav_path"]
     out = inputs.get("output_path") or wav.replace(".wav", "_eq.wav")
     result = apply_eq(wav, out, inputs["frequency_hz"], inputs["gain_db"], inputs.get("q", 1.0))
@@ -849,25 +875,34 @@ def _handle_apply_eq(inputs: dict) -> dict:
 
 def _handle_apply_reverb(inputs: dict) -> dict:
     from src.audio.effects import apply_reverb
+
     wav = inputs["wav_path"]
     out = inputs.get("output_path") or wav.replace(".wav", "_reverb.wav")
-    result = apply_reverb(wav, out, inputs.get("room_size", 0.5), inputs.get("decay", 0.4), inputs.get("mix", 0.3))
+    result = apply_reverb(
+        wav, out, inputs.get("room_size", 0.5), inputs.get("decay", 0.4), inputs.get("mix", 0.3)
+    )
     return {"status": "success", "output_path": result}
 
 
 def _handle_apply_compression(inputs: dict) -> dict:
     from src.audio.effects import apply_compression
+
     wav = inputs["wav_path"]
     out = inputs.get("output_path") or wav.replace(".wav", "_comp.wav")
     result = apply_compression(
-        wav, out, inputs.get("threshold_db", -20.0), inputs.get("ratio", 4.0),
-        inputs.get("attack_ms", 10.0), inputs.get("release_ms", 200.0),
+        wav,
+        out,
+        inputs.get("threshold_db", -20.0),
+        inputs.get("ratio", 4.0),
+        inputs.get("attack_ms", 10.0),
+        inputs.get("release_ms", 200.0),
     )
     return {"status": "success", "output_path": result}
 
 
 def _handle_adjust_volume(inputs: dict) -> dict:
     from src.audio.effects import adjust_volume
+
     wav = inputs["wav_path"]
     out = inputs.get("output_path") or wav.replace(".wav", "_vol.wav")
     result = adjust_volume(wav, out, inputs["gain_db"])
@@ -876,6 +911,7 @@ def _handle_adjust_volume(inputs: dict) -> dict:
 
 def _handle_extract_midi_from_audio(inputs: dict) -> dict:
     from src.audio.midi_extractor import extract_midi
+
     result = extract_midi(
         audio_path=inputs["audio_path"],
         output_midi_path=inputs.get("output_path", ""),
@@ -888,7 +924,6 @@ def _handle_extract_midi_from_audio(inputs: dict) -> dict:
 
 
 def _handle_score_audio_quality(inputs: dict) -> dict:
-    from dataclasses import asdict
     from src.audio.audio_validator import evaluate_quality
 
     report = evaluate_quality(
@@ -897,7 +932,13 @@ def _handle_score_audio_quality(inputs: dict) -> dict:
         lyrics=inputs.get("lyrics", ""),
     )
 
-    grades = {"A": "Production ready", "B": "Good quality, minor issues", "C": "Needs post-production", "D": "Consider regenerating", "F": "Poor quality, regenerate"}
+    grades = {
+        "A": "Production ready",
+        "B": "Good quality, minor issues",
+        "C": "Needs post-production",
+        "D": "Consider regenerating",
+        "F": "Poor quality, regenerate",
+    }
 
     return {
         "status": "success",
@@ -970,7 +1011,13 @@ def _handle_check_training_status(inputs: dict) -> dict:
         jobs = []
         for p, info in _training_jobs.items():
             proc = info.get("process")
-            status = "running" if proc and proc.poll() is None else "completed" if proc and proc.poll() == 0 else "failed"
+            status = (
+                "running"
+                if proc and proc.poll() is None
+                else "completed"
+                if proc and proc.poll() == 0
+                else "failed"
+            )
             jobs.append({"pid": p, "voice_name": info.get("voice_name", ""), "status": status})
         return {"status": "success", "jobs": jobs}
 
@@ -992,9 +1039,15 @@ def _handle_check_training_status(inputs: dict) -> dict:
                 try:
                     from src.voice.voice_registry import register_voice
                     from src.orchestrator.config import VOICES_DIR
+
                     lora_path = VOICES_DIR / f"{vn}-acestep-lora.safetensors"
                     if lora_path.exists():
-                        register_voice(voice_id=vn, name=vn, voice_type="acestep_lora", model_path=str(lora_path))
+                        register_voice(
+                            voice_id=vn,
+                            name=vn,
+                            voice_type="acestep_lora",
+                            model_path=str(lora_path),
+                        )
                 except Exception:
                     pass
         else:
@@ -1006,7 +1059,13 @@ def _handle_check_training_status(inputs: dict) -> dict:
                 lines = f.readlines()
                 last_lines = "".join(lines[-10:])
 
-        return {"status": "success", "training_status": status, "pid": pid, "voice_name": info.get("voice_name", ""), "log_tail": last_lines}
+        return {
+            "status": "success",
+            "training_status": status,
+            "pid": pid,
+            "voice_name": info.get("voice_name", ""),
+            "log_tail": last_lines,
+        }
 
     return {"status": "error", "error": f"Training job not found: pid={pid}"}
 

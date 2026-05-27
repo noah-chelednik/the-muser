@@ -48,11 +48,10 @@ def test_music21_musicxml_roundtrip(tmp_path):
 def test_lilypond_available():
     """LilyPond is installed and accessible."""
     from src.orchestrator.config import LILYPOND_PATH
+
     path = shutil.which("lilypond") or (LILYPOND_PATH if os.path.isfile(LILYPOND_PATH) else None)
     assert path is not None, "lilypond not found in PATH or config"
-    result = subprocess.run(
-        [path, "--version"], capture_output=True, text=True, timeout=10
-    )
+    result = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
 
 
@@ -60,11 +59,12 @@ def test_lilypond_available():
 def test_fluidsynth_available():
     """FluidSynth is installed and accessible."""
     from src.orchestrator.config import FLUIDSYNTH_PATH
-    path = shutil.which("fluidsynth") or (FLUIDSYNTH_PATH if os.path.isfile(FLUIDSYNTH_PATH) else None)
-    assert path is not None, "fluidsynth not found in PATH or config"
-    result = subprocess.run(
-        [path, "--version"], capture_output=True, text=True, timeout=10
+
+    path = shutil.which("fluidsynth") or (
+        FLUIDSYNTH_PATH if os.path.isfile(FLUIDSYNTH_PATH) else None
     )
+    assert path is not None, "fluidsynth not found in PATH or config"
+    result = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=10)
     # fluidsynth --version exits 1 on some versions but prints version
     assert "fluidsynth" in (result.stdout + result.stderr).lower()
 
@@ -74,9 +74,7 @@ def test_ffmpeg_available():
     """ffmpeg is installed and accessible."""
     path = shutil.which("ffmpeg")
     assert path is not None, "ffmpeg not found in PATH"
-    result = subprocess.run(
-        ["ffmpeg", "-version"], capture_output=True, text=True, timeout=10
-    )
+    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
 
 

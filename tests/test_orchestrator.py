@@ -4,11 +4,9 @@ Tests cover tool schema validation, tool executor routing,
 composition state CRUD, and mocked Claude API integration.
 """
 
-import json
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 
 
 class TestToolDefinitions:
@@ -87,11 +85,14 @@ class TestToolExecutor:
         state.project_dir = str(tmp_path / "test_comp")
         set_state(state)
 
-        result = execute_tool("create_composition_plan", {
-            "title": "Test Piece",
-            "genre": "classical",
-            "instrumentation": ["Piano"],
-        })
+        result = execute_tool(
+            "create_composition_plan",
+            {
+                "title": "Test Piece",
+                "genre": "classical",
+                "instrumentation": ["Piano"],
+            },
+        )
 
         assert result["status"] == "success"
         assert state.project["title"] == "Test Piece"
@@ -106,10 +107,13 @@ class TestToolExecutor:
         state.project["title"] = "Test"
         set_state(state)
 
-        result = execute_tool("update_composition_plan", {
-            "updates": {"project": {"title": "Updated Test"}},
-            "reason": "Testing update",
-        })
+        result = execute_tool(
+            "update_composition_plan",
+            {
+                "updates": {"project": {"title": "Updated Test"}},
+                "reason": "Testing update",
+            },
+        )
 
         assert result["status"] == "success"
         assert state.project["title"] == "Updated Test"
@@ -136,11 +140,14 @@ class TestToolExecutor:
         state.project_dir = str(tmp_path / "test_comp")
         set_state(state)
 
-        result = execute_tool("generate_notation_claude", {
-            "section_name": "intro",
-            "instructions": "Write 4 bars of C major",
-            "instruments": ["Piano"],
-        })
+        result = execute_tool(
+            "generate_notation_claude",
+            {
+                "section_name": "intro",
+                "instructions": "Write 4 bars of C major",
+                "instruments": ["Piano"],
+            },
+        )
 
         assert result["status"] == "success"
         assert result["action"] == "compose_inline"

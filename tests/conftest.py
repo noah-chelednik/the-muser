@@ -4,8 +4,6 @@ Provides reusable fixtures for sample scores, mock Claude responses,
 temporary directories, and test markers.
 """
 
-import json
-import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -14,6 +12,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # Markers
 # ---------------------------------------------------------------------------
+
 
 def pytest_configure(config):
     """Register custom markers."""
@@ -25,6 +24,7 @@ def pytest_configure(config):
 # ---------------------------------------------------------------------------
 # Sample MusicXML fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_score():
@@ -78,14 +78,7 @@ def sample_midi_path(tmp_path, sample_score):
 @pytest.fixture
 def sample_abc():
     """Return a simple ABC notation string."""
-    return (
-        "X:1\n"
-        "T:Test Piece\n"
-        "M:4/4\n"
-        "L:1/4\n"
-        "K:C\n"
-        "CDEF|GABc|cBAG|FEDC|\n"
-    )
+    return "X:1\nT:Test Piece\nM:4/4\nL:1/4\nK:C\nCDEF|GABc|cBAG|FEDC|\n"
 
 
 @pytest.fixture
@@ -144,6 +137,7 @@ def empty_score():
 # Mock Claude API fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_claude_text_response():
     """Create a mock Claude API response with just text."""
@@ -193,6 +187,7 @@ def composition_state(tmp_path):
 # Audio fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def silent_wav(tmp_path):
     """Create a silent WAV file."""
@@ -221,6 +216,7 @@ def tone_wav(tmp_path):
 # ---------------------------------------------------------------------------
 # Voice pipeline fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def voice_test_audio(tmp_path):
@@ -289,10 +285,12 @@ def tmp_voice_dir(tmp_path):
 # Curation and quality fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def clean_wav_samples():
     """440Hz sine tone as numpy array — passes all quality gates."""
     import numpy as np
+
     sr = 44100
     t = np.linspace(0, 3, sr * 3, dtype=np.float32)
     return 0.5 * np.sin(2 * np.pi * 440 * t), sr
@@ -302,6 +300,7 @@ def clean_wav_samples():
 def clipped_wav_samples():
     """Audio samples with clipping (values at ±0.999+)."""
     import numpy as np
+
     sr = 44100
     t = np.linspace(0, 2, sr * 2, dtype=np.float32)
     audio = 2.0 * np.sin(2 * np.pi * 440 * t)
@@ -312,6 +311,7 @@ def clipped_wav_samples():
 def silent_wav_samples():
     """Mostly silent audio with a brief gap."""
     import numpy as np
+
     sr = 44100
     return np.zeros(sr * 3, dtype=np.float32), sr
 
@@ -320,6 +320,7 @@ def silent_wav_samples():
 def stereo_samples():
     """Stereo audio (2-channel) for phase/stereo tests."""
     import numpy as np
+
     sr = 44100
     t = np.linspace(0, 2, sr * 2, dtype=np.float32)
     left = 0.5 * np.sin(2 * np.pi * 440 * t)
@@ -331,6 +332,7 @@ def stereo_samples():
 def default_pipeline_config():
     """PipelineConfig with defaults."""
     from src.curation.models import PipelineConfig
+
     return PipelineConfig()
 
 

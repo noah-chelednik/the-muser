@@ -21,23 +21,23 @@ logger = logging.getLogger(__name__)
 # Instrument ranges as (lowest_midi, highest_midi) inclusive
 # ---------------------------------------------------------------------------
 RANGES: dict[str, tuple[int, int]] = {
-    "violin": (55, 103),       # G3 to G7
-    "viola": (48, 91),         # C3 to G6
-    "cello": (36, 76),         # C2 to E5
-    "contrabass": (28, 67),    # E1 to G4
-    "flute": (60, 96),         # C4 to C7
-    "oboe": (58, 91),          # Bb3 to G6
-    "clarinet": (50, 94),      # D3 to Bb6
-    "bassoon": (34, 75),       # Bb1 to Eb5
-    "horn": (34, 77),          # Bb1 to F5
-    "trumpet": (54, 82),       # F#3 to Bb5
-    "trombone": (40, 72),      # E2 to C5
-    "tuba": (28, 58),          # E1 to Bb3
-    "piano": (21, 108),        # A0 to C8
-    "soprano": (60, 81),       # C4 to A5
-    "alto": (55, 77),          # G3 to F5
-    "tenor": (48, 72),         # C3 to C5
-    "bass": (40, 65),          # E2 to F4
+    "violin": (55, 103),  # G3 to G7
+    "viola": (48, 91),  # C3 to G6
+    "cello": (36, 76),  # C2 to E5
+    "contrabass": (28, 67),  # E1 to G4
+    "flute": (60, 96),  # C4 to C7
+    "oboe": (58, 91),  # Bb3 to G6
+    "clarinet": (50, 94),  # D3 to Bb6
+    "bassoon": (34, 75),  # Bb1 to Eb5
+    "horn": (34, 77),  # Bb1 to F5
+    "trumpet": (54, 82),  # F#3 to Bb5
+    "trombone": (40, 72),  # E2 to C5
+    "tuba": (28, 58),  # E1 to Bb3
+    "piano": (21, 108),  # A0 to C8
+    "soprano": (60, 81),  # C4 to A5
+    "alto": (55, 77),  # G3 to F5
+    "tenor": (48, 72),  # C3 to C5
+    "bass": (40, 65),  # E2 to F4
 }
 
 _BOUNDARY_SEMITONES = 2  # Notes within this many semitones of a limit trigger a warning.
@@ -74,6 +74,7 @@ class TheoryCheckResult:
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------
+
 
 def _expected_quarter_length(ts: music21.meter.TimeSignature) -> float:
     """Return the expected total quarter-length for one full measure."""
@@ -127,6 +128,7 @@ def _measure_signature(measure: stream.Measure) -> tuple[tuple[str, float], ...]
 # ---------------------------------------------------------------------------
 # Individual checks
 # ---------------------------------------------------------------------------
+
 
 def check_rhythm_consistency(score: stream.Score) -> list[str]:
     """Verify that note/rest durations in every measure sum to the time signature.
@@ -199,11 +201,15 @@ def check_instrument_ranges(score: stream.Score) -> list[str]:
         for measure in part.getElementsByClass(stream.Measure):
             for n in _notes_in_measure(measure):
                 midi = n.pitch.midi
-                loc = f"{part_name} ({instrument_key}), measure {measure.number}, {n.nameWithOctave}"
+                loc = (
+                    f"{part_name} ({instrument_key}), measure {measure.number}, {n.nameWithOctave}"
+                )
                 if midi < low or midi > high:
                     messages.append(f"[error] {loc}: MIDI {midi} outside range {low}-{high}")
                 elif midi < low + _BOUNDARY_SEMITONES or midi > high - _BOUNDARY_SEMITONES:
-                    messages.append(f"[warning] {loc}: MIDI {midi} near boundary of range {low}-{high}")
+                    messages.append(
+                        f"[warning] {loc}: MIDI {midi} near boundary of range {low}-{high}"
+                    )
 
     return messages
 
@@ -351,6 +357,7 @@ def check_empty_output(score: stream.Score) -> list[str]:
 # Top-level validator
 # ---------------------------------------------------------------------------
 
+
 def validate_score(
     score_or_path: Union[stream.Score, str, Path],
 ) -> TheoryCheckResult:
@@ -404,9 +411,9 @@ def validate_score(
     range_messages = check_instrument_ranges(score)
     for msg in range_messages:
         if msg.startswith("[error]"):
-            result.errors.append(msg[len("[error] "):])
+            result.errors.append(msg[len("[error] ") :])
         elif msg.startswith("[warning]"):
-            result.warnings.append(msg[len("[warning] "):])
+            result.warnings.append(msg[len("[warning] ") :])
         else:
             result.warnings.append(msg)
 

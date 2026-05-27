@@ -127,10 +127,9 @@ def analyze(
                 passed=passed,
                 value=float(clipped_ratio),
                 threshold=float(max_ratio),
-                reason="" if passed else (
-                    f"clipped_ratio={clipped_ratio:.6f} exceeds "
-                    f"max {max_ratio}"
-                ),
+                reason=""
+                if passed
+                else (f"clipped_ratio={clipped_ratio:.6f} exceeds max {max_ratio}"),
             ),
             raw_metrics={
                 "hard_clip_count": int(hard_clip_count),
@@ -138,9 +137,7 @@ def analyze(
                 "soft_clip_samples": int(soft_clip_samples),
                 "clipped_ratio": round(clipped_ratio, 8),
                 "true_peak_linear": round(true_peak_linear, 6),
-                "true_peak_dbfs": round(
-                    20.0 * np.log10(max(true_peak_linear, 1e-10)), 2
-                ),
+                "true_peak_dbfs": round(20.0 * np.log10(max(true_peak_linear, 1e-10)), 2),
                 "true_peak_clipped": true_peak_clipped,
                 "total_samples": total,
             },

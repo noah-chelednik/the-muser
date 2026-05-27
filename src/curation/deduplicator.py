@@ -29,6 +29,7 @@ FINGERPRINT_DIM = CHROMA_BINS + ONSET_HIST_BINS
 # Fingerprinting
 # ---------------------------------------------------------------------------
 
+
 def compute_fingerprint(wav_path: str) -> np.ndarray:
     """Compute a 28-dimensional fingerprint for a WAV file.
 
@@ -93,6 +94,7 @@ def compute_fingerprint(wav_path: str) -> np.ndarray:
 # Duplicate detection
 # ---------------------------------------------------------------------------
 
+
 def find_duplicates(
     tracks: dict[str, TrackSelection],
     config: PipelineConfig,
@@ -118,7 +120,8 @@ def find_duplicates(
 
     # Filter to tracks with selected candidates
     active: list[tuple[str, TrackSelection]] = [
-        (tid, sel) for tid, sel in tracks.items()
+        (tid, sel)
+        for tid, sel in tracks.items()
         if not sel.dropped and sel.selected_candidate is not None
     ]
 
@@ -185,17 +188,24 @@ def find_duplicates(
             else:
                 kept, dropped = tid_j, tid_i
 
-            pairs.append(DuplicatePair(
-                kept_id=kept,
-                dropped_id=dropped,
-                similarity=round(similarity, 6),
-                same_genre=same_genre,
-            ))
+            pairs.append(
+                DuplicatePair(
+                    kept_id=kept,
+                    dropped_id=dropped,
+                    similarity=round(similarity, 6),
+                    same_genre=same_genre,
+                )
+            )
             already_dropped.add(dropped)
 
             logger.info(
                 "Duplicate pair: %s <-> %s (dist=%.4f, threshold=%.4f, same_genre=%s) -> drop %s",
-                tid_i, tid_j, dist, threshold, same_genre, dropped,
+                tid_i,
+                tid_j,
+                dist,
+                threshold,
+                same_genre,
+                dropped,
             )
 
     # ------------------------------------------------------------------
@@ -211,6 +221,7 @@ def find_duplicates(
 # ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
+
 
 def _run_self_test(
     active: list[tuple[str, TrackSelection]],
@@ -255,13 +266,15 @@ def _run_self_test(
         same_track_dist = float(cdist([fp1], [fp2], metric="cosine")[0, 0])
         logger.info(
             "Self-test: same-track candidates distance=%.4f (should be < %.4f)",
-            same_track_dist, within_threshold,
+            same_track_dist,
+            within_threshold,
         )
         if same_track_dist > within_threshold:
             logger.warning(
                 "Self-test WARN: same-track candidates (%.4f) are more distant than "
                 "within_genre_threshold (%.4f) — threshold may be too tight",
-                same_track_dist, within_threshold,
+                same_track_dist,
+                within_threshold,
             )
     except Exception as exc:
         logger.warning("Self-test same-track comparison failed: %s", exc)
@@ -276,13 +289,15 @@ def _run_self_test(
                 diff_track_dist = float(cdist([fp_a], [fp_b], metric="cosine")[0, 0])
                 logger.info(
                     "Self-test: different tracks same genre distance=%.4f (should be > %.4f)",
-                    diff_track_dist, within_threshold,
+                    diff_track_dist,
+                    within_threshold,
                 )
                 if diff_track_dist <= within_threshold:
                     logger.warning(
                         "Self-test WARN: different tracks same genre (%.4f) are within "
                         "within_genre_threshold (%.4f) — threshold may be too loose",
-                        diff_track_dist, within_threshold,
+                        diff_track_dist,
+                        within_threshold,
                     )
             except Exception as exc:
                 logger.warning("Self-test different-track comparison failed: %s", exc)

@@ -23,15 +23,18 @@ class TestV15Validators:
         """Valid v1.5 arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep_v15", {
-            "tags": "A warm jazz piano trio with walking bass",
-            "lyrics": "[instrumental]",
-            "duration_s": 120,
-            "num_candidates": 4,
-            "bpm": 120,
-            "key_scale": "C major",
-            "time_signature": "4/4",
-        })
+        result = validate_arguments(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "A warm jazz piano trio with walking bass",
+                "lyrics": "[instrumental]",
+                "duration_s": 120,
+                "num_candidates": 4,
+                "bpm": 120,
+                "key_scale": "C major",
+                "time_signature": "4/4",
+            },
+        )
         assert isinstance(result, dict)
         assert result["tags"] == "A warm jazz piano trio with walking bass"
         assert result["duration_s"] == 120
@@ -42,9 +45,12 @@ class TestV15Validators:
         """v1.5 validator applies correct defaults."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep_v15", {
-            "tags": "pop track",
-        })
+        result = validate_arguments(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "pop track",
+            },
+        )
         assert isinstance(result, dict)
         assert result["duration_s"] == 120
         assert result["num_candidates"] == 1
@@ -55,10 +61,13 @@ class TestV15Validators:
         """v1.5 supports longer duration (up to 600s)."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep_v15", {
-            "tags": "epic orchestral piece",
-            "duration_s": 500,
-        })
+        result = validate_arguments(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "epic orchestral piece",
+                "duration_s": 500,
+            },
+        )
         assert isinstance(result, dict)
         assert result["duration_s"] == 500
 
@@ -66,10 +75,13 @@ class TestV15Validators:
         """v1.5 rejects duration > 600s."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep_v15", {
-            "tags": "test",
-            "duration_s": 700,
-        })
+        result = validate_arguments(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "test",
+                "duration_s": 700,
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -77,10 +89,13 @@ class TestV15Validators:
         """v1.5 supports up to 8 candidates."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("generate_audio_acestep_v15", {
-            "tags": "test",
-            "num_candidates": 8,
-        })
+        result = validate_arguments(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "test",
+                "num_candidates": 8,
+            },
+        )
         assert isinstance(result, dict)
         assert result["num_candidates"] == 8
 
@@ -88,12 +103,15 @@ class TestV15Validators:
         """Valid repaint arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("repaint_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "jazz piano",
-            "start_s": 10.0,
-            "end_s": 30.0,
-        })
+        result = validate_arguments(
+            "repaint_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "jazz piano",
+                "start_s": 10.0,
+                "end_s": 30.0,
+            },
+        )
         assert isinstance(result, dict)
         assert result["start_s"] == 10.0
         assert result["end_s"] == 30.0
@@ -102,11 +120,14 @@ class TestV15Validators:
         """Repaint requires src_audio."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("repaint_audio_acestep", {
-            "tags": "jazz",
-            "start_s": 0.0,
-            "end_s": 10.0,
-        })
+        result = validate_arguments(
+            "repaint_audio_acestep",
+            {
+                "tags": "jazz",
+                "start_s": 0.0,
+                "end_s": 10.0,
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -114,11 +135,14 @@ class TestV15Validators:
         """Valid cover arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("cover_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "rock guitar cover",
-            "cover_strength": 0.7,
-        })
+        result = validate_arguments(
+            "cover_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "rock guitar cover",
+                "cover_strength": 0.7,
+            },
+        )
         assert isinstance(result, dict)
         assert result["cover_strength"] == 0.7
 
@@ -126,10 +150,13 @@ class TestV15Validators:
         """Cover defaults to 0.5 strength."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("cover_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "jazz version",
-        })
+        result = validate_arguments(
+            "cover_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "jazz version",
+            },
+        )
         assert isinstance(result, dict)
         assert result["cover_strength"] == 0.5
 
@@ -137,11 +164,14 @@ class TestV15Validators:
         """Cover rejects strength > 1.0."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("cover_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "test",
-            "cover_strength": 1.5,
-        })
+        result = validate_arguments(
+            "cover_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "test",
+                "cover_strength": 1.5,
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -149,11 +179,14 @@ class TestV15Validators:
         """Valid extend arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("extend_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "continue the melody",
-            "extend_s": 60.0,
-        })
+        result = validate_arguments(
+            "extend_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "continue the melody",
+                "extend_s": 60.0,
+            },
+        )
         assert isinstance(result, dict)
         assert result["extend_s"] == 60.0
 
@@ -161,10 +194,13 @@ class TestV15Validators:
         """Extend defaults to 30s."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("extend_audio_acestep", {
-            "src_audio": "/tmp/test.wav",
-            "tags": "more",
-        })
+        result = validate_arguments(
+            "extend_audio_acestep",
+            {
+                "src_audio": "/tmp/test.wav",
+                "tags": "more",
+            },
+        )
         assert isinstance(result, dict)
         assert result["extend_s"] == 30.0
 
@@ -232,12 +268,15 @@ class TestV15ToolExecutor:
 
         mock_gen.return_value = ["/tmp/test.wav"]
 
-        result = execute_tool("generate_audio_acestep_v15", {
-            "tags": "jazz piano",
-            "duration_s": 60,
-            "num_candidates": 2,
-            "bpm": 120,
-        })
+        result = execute_tool(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "jazz piano",
+                "duration_s": 60,
+                "num_candidates": 2,
+                "bpm": 120,
+            },
+        )
 
         assert result["status"] == "success"
         assert "wav_paths" in result
@@ -249,9 +288,12 @@ class TestV15ToolExecutor:
 
         mock_gen.return_value = []
 
-        result = execute_tool("generate_audio_acestep_v15", {
-            "tags": "test",
-        })
+        result = execute_tool(
+            "generate_audio_acestep_v15",
+            {
+                "tags": "test",
+            },
+        )
 
         assert result["status"] == "error"
 
@@ -262,12 +304,15 @@ class TestV15ToolExecutor:
 
         mock_repaint.return_value = ["/tmp/repainted.wav"]
 
-        result = execute_tool("repaint_audio_acestep", {
-            "src_audio": "/tmp/source.wav",
-            "tags": "jazz",
-            "start_s": 10.0,
-            "end_s": 20.0,
-        })
+        result = execute_tool(
+            "repaint_audio_acestep",
+            {
+                "src_audio": "/tmp/source.wav",
+                "tags": "jazz",
+                "start_s": 10.0,
+                "end_s": 20.0,
+            },
+        )
 
         assert result["status"] == "success"
 
@@ -278,11 +323,14 @@ class TestV15ToolExecutor:
 
         mock_cover.return_value = ["/tmp/covered.wav"]
 
-        result = execute_tool("cover_audio_acestep", {
-            "src_audio": "/tmp/source.wav",
-            "tags": "rock version",
-            "cover_strength": 0.6,
-        })
+        result = execute_tool(
+            "cover_audio_acestep",
+            {
+                "src_audio": "/tmp/source.wav",
+                "tags": "rock version",
+                "cover_strength": 0.6,
+            },
+        )
 
         assert result["status"] == "success"
 
@@ -293,11 +341,14 @@ class TestV15ToolExecutor:
 
         mock_extend.return_value = ["/tmp/extended.wav"]
 
-        result = execute_tool("extend_audio_acestep", {
-            "src_audio": "/tmp/source.wav",
-            "tags": "continue",
-            "extend_s": 30.0,
-        })
+        result = execute_tool(
+            "extend_audio_acestep",
+            {
+                "src_audio": "/tmp/source.wav",
+                "tags": "continue",
+                "extend_s": 30.0,
+            },
+        )
 
         assert result["status"] == "success"
 
@@ -308,12 +359,15 @@ class TestV15ToolExecutor:
 
         mock_repaint.return_value = []
 
-        result = execute_tool("repaint_audio_acestep", {
-            "src_audio": "/tmp/source.wav",
-            "tags": "jazz",
-            "start_s": 0.0,
-            "end_s": 10.0,
-        })
+        result = execute_tool(
+            "repaint_audio_acestep",
+            {
+                "src_audio": "/tmp/source.wav",
+                "tags": "jazz",
+                "start_s": 0.0,
+                "end_s": 10.0,
+            },
+        )
 
         assert result["status"] == "error"
 
@@ -421,12 +475,15 @@ class TestTrainVoiceLora:
         """Valid LoRA training arguments pass validation."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("train_voice_lora", {
-            "voice_name": "noah",
-            "training_data_dir": "/tmp/training",
-            "epochs": 500,
-            "lora_rank": 32,
-        })
+        result = validate_arguments(
+            "train_voice_lora",
+            {
+                "voice_name": "noah",
+                "training_data_dir": "/tmp/training",
+                "epochs": 500,
+                "lora_rank": 32,
+            },
+        )
         assert isinstance(result, dict)
         assert result["voice_name"] == "noah"
         assert result["epochs"] == 500
@@ -435,10 +492,13 @@ class TestTrainVoiceLora:
         """LoRA validator applies defaults for optional fields."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("train_voice_lora", {
-            "voice_name": "noah",
-            "training_data_dir": "/tmp/training",
-        })
+        result = validate_arguments(
+            "train_voice_lora",
+            {
+                "voice_name": "noah",
+                "training_data_dir": "/tmp/training",
+            },
+        )
         assert isinstance(result, dict)
         assert result["epochs"] == 500
         assert result["lora_rank"] == 32
@@ -448,10 +508,13 @@ class TestTrainVoiceLora:
         """LoRA validator rejects names with special characters."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("train_voice_lora", {
-            "voice_name": "noah's voice",
-            "training_data_dir": "/tmp/training",
-        })
+        result = validate_arguments(
+            "train_voice_lora",
+            {
+                "voice_name": "noah's voice",
+                "training_data_dir": "/tmp/training",
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -459,11 +522,14 @@ class TestTrainVoiceLora:
         """LoRA validator rejects epochs > 5000."""
         from src.orchestrator.tool_validators import validate_arguments
 
-        result = validate_arguments("train_voice_lora", {
-            "voice_name": "test",
-            "training_data_dir": "/tmp/training",
-            "epochs": 10000,
-        })
+        result = validate_arguments(
+            "train_voice_lora",
+            {
+                "voice_name": "test",
+                "training_data_dir": "/tmp/training",
+                "epochs": 10000,
+            },
+        )
         assert isinstance(result, str)
         assert "Invalid" in result
 
@@ -471,10 +537,13 @@ class TestTrainVoiceLora:
         """LoRA handler returns error for missing training data dir."""
         from src.orchestrator.tool_executor import execute_tool
 
-        result = execute_tool("train_voice_lora", {
-            "voice_name": "test",
-            "training_data_dir": "/nonexistent/path/training",
-        })
+        result = execute_tool(
+            "train_voice_lora",
+            {
+                "voice_name": "test",
+                "training_data_dir": "/nonexistent/path/training",
+            },
+        )
 
         assert result["status"] == "error"
         assert "not found" in result["error"]
@@ -488,10 +557,13 @@ class TestTrainVoiceLora:
         os.makedirs(train_dir)
 
         with patch("src.orchestrator.config.PROJECT_ROOT", tmp_path):
-            result = execute_tool("train_voice_lora", {
-                "voice_name": "test",
-                "training_data_dir": train_dir,
-            })
+            result = execute_tool(
+                "train_voice_lora",
+                {
+                    "voice_name": "test",
+                    "training_data_dir": train_dir,
+                },
+            )
 
         assert result["status"] == "error"
 
@@ -571,6 +643,7 @@ class TestAutoGenLoop:
     def test_leaderboard_sorting(self):
         """Leaderboard sorts candidates by score descending."""
         import sys
+
         sys.path.insert(0, str(os.path.join(os.path.dirname(__file__), "..", "scripts")))
         from autogen_loop import Leaderboard, Candidate
 
@@ -590,6 +663,7 @@ class TestAutoGenLoop:
     def test_leaderboard_empty(self):
         """Leaderboard handles empty state."""
         import sys
+
         sys.path.insert(0, str(os.path.join(os.path.dirname(__file__), "..", "scripts")))
         from autogen_loop import Leaderboard
 
@@ -601,6 +675,7 @@ class TestAutoGenLoop:
     def test_leaderboard_to_list(self):
         """Leaderboard serializes to list of dicts."""
         import sys
+
         sys.path.insert(0, str(os.path.join(os.path.dirname(__file__), "..", "scripts")))
         from autogen_loop import Leaderboard, Candidate
 

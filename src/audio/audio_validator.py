@@ -12,7 +12,7 @@ import logging
 import re
 import shutil
 import subprocess
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 from pathlib import Path
 
 from src.orchestrator.config import FFMPEG_TIMEOUT
@@ -22,16 +22,17 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Thresholds
 # ---------------------------------------------------------------------------
-_SILENCE_FRACTION_THRESHOLD = 0.80   # Flag if > 80 % of the audio is silent.
-_CLIPPING_DBFS_THRESHOLD = -0.5      # Peak above this dBFS is considered clipping.
-_DURATION_TOLERANCE = 0.10           # 10 % tolerance for expected vs actual duration.
-_SILENCE_DETECT_NOISE_DB = -50       # Noise floor for ffmpeg silencedetect filter.
-_SILENCE_DETECT_DURATION = 0.5       # Minimum silent segment length (seconds).
+_SILENCE_FRACTION_THRESHOLD = 0.80  # Flag if > 80 % of the audio is silent.
+_CLIPPING_DBFS_THRESHOLD = -0.5  # Peak above this dBFS is considered clipping.
+_DURATION_TOLERANCE = 0.10  # 10 % tolerance for expected vs actual duration.
+_SILENCE_DETECT_NOISE_DB = -50  # Noise floor for ffmpeg silencedetect filter.
+_SILENCE_DETECT_DURATION = 0.5  # Minimum silent segment length (seconds).
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _ffprobe_path() -> str | None:
     """Return the path to ffprobe, or *None* if it is not installed."""
@@ -66,8 +67,10 @@ def _probe_format(wav_path: str) -> dict:
 
     cmd = [
         ffprobe,
-        "-v", "quiet",
-        "-print_format", "json",
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
         "-show_format",
         "-show_streams",
         wav_path,
@@ -114,9 +117,12 @@ def _detect_silence(wav_path: str, duration_s: float) -> float:
 
     cmd = [
         ffmpeg,
-        "-i", wav_path,
-        "-af", f"silencedetect=noise={_SILENCE_DETECT_NOISE_DB}dB:d={_SILENCE_DETECT_DURATION}",
-        "-f", "null",
+        "-i",
+        wav_path,
+        "-af",
+        f"silencedetect=noise={_SILENCE_DETECT_NOISE_DB}dB:d={_SILENCE_DETECT_DURATION}",
+        "-f",
+        "null",
         "-",
     ]
 
@@ -154,9 +160,12 @@ def _detect_peak_dbfs(wav_path: str) -> float | None:
 
     cmd = [
         ffmpeg,
-        "-i", wav_path,
-        "-af", "volumedetect",
-        "-f", "null",
+        "-i",
+        wav_path,
+        "-af",
+        "volumedetect",
+        "-f",
+        "null",
         "-",
     ]
 
@@ -173,6 +182,7 @@ def _detect_peak_dbfs(wav_path: str) -> float | None:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def get_audio_info(wav_path: str) -> dict:
     """Return basic audio metadata without performing validation.
@@ -298,6 +308,7 @@ def check_audio(
 # ---------------------------------------------------------------------------
 # Quality scoring (expanded metrics)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class QualityReport:
@@ -459,8 +470,8 @@ def evaluate_quality(
 
     # --- 6. Harmonic-to-noise ratio ----------------------------------------
     y_harmonic, y_percussive = librosa.effects.hpss(y)
-    harmonic_energy = float(np.sum(y_harmonic ** 2))
-    total_energy = float(np.sum(y ** 2))
+    harmonic_energy = float(np.sum(y_harmonic**2))
+    total_energy = float(np.sum(y**2))
     if total_energy > 0:
         hnr = harmonic_energy / total_energy
     else:
@@ -500,9 +511,7 @@ def evaluate_quality(
         "silence_ratio": silence_ratio_score,
         "clipping_ratio": clipping_ratio_score,
     }
-    composite = sum(
-        QUALITY_WEIGHTS[k] * v for k, v in metrics.items()
-    )
+    composite = sum(QUALITY_WEIGHTS[k] * v for k, v in metrics.items())
     composite = round(composite, 4)
 
     # --- Optional alignment scores -----------------------------------------

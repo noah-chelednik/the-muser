@@ -82,9 +82,7 @@ def analyze(
         if lufs > lufs_max:
             reasons.append(f"LUFS={lufs:.1f} above max {lufs_max}")
         if true_peak_dbtp > tp_max:
-            reasons.append(
-                f"true_peak={true_peak_dbtp:.1f} dBTP exceeds max {tp_max}"
-            )
+            reasons.append(f"true_peak={true_peak_dbtp:.1f} dBTP exceeds max {tp_max}")
 
         passed = len(reasons) == 0
 
@@ -117,10 +115,16 @@ def _ffmpeg_loudnorm(wav_path: str) -> tuple[float | None, float | None]:
     """Run ffmpeg loudnorm and parse JSON output from stderr."""
     try:
         cmd = [
-            "ffmpeg", "-hide_banner", "-nostats",
-            "-i", wav_path,
-            "-af", "loudnorm=print_format=json",
-            "-f", "null", "-",
+            "ffmpeg",
+            "-hide_banner",
+            "-nostats",
+            "-i",
+            wav_path,
+            "-af",
+            "loudnorm=print_format=json",
+            "-f",
+            "null",
+            "-",
         ]
         result = subprocess.run(
             cmd,
@@ -171,7 +175,7 @@ def _numpy_loudness(
     screening when ffmpeg is unavailable.
     """
     # RMS power
-    rms = float(np.sqrt(np.mean(samples ** 2)))
+    rms = float(np.sqrt(np.mean(samples**2)))
     if rms < 1e-10:
         return -70.0, -70.0
 

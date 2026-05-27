@@ -6,7 +6,6 @@ with chat, audio playback, composition status, and file management.
 
 import logging
 from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +16,11 @@ def create_app():
         import gradio as gr
     except ImportError:
         raise ImportError(
-            "Gradio is required for the web UI. "
-            "Install with: pip install 'the-muser[web]'"
+            "Gradio is required for the web UI. Install with: pip install 'the-muser[web]'"
         )
 
     from src.orchestrator.agent import run_agent_turn
     from src.orchestrator.composition_state import CompositionState
-    from src.orchestrator.config import COMPOSITIONS_DIR
 
     def handle_message(
         user_msg: str,

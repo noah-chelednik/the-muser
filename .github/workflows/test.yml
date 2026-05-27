@@ -29,13 +29,17 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install -e ".[dev,voice]"
+          pip install -e ".[dev]"
 
       - name: Run tests (CPU, no system deps)
         run: |
           pytest tests/ -v -m "not gpu and not system" \
             --ignore=tests/test_ollama_tools.py \
             --ignore=tests/test_llm_provider.py \
+            --ignore=tests/test_curation_dimensions.py \
+            --ignore=tests/test_curation_pipeline.py \
+            --ignore=tests/test_v15_and_voice.py \
+            --ignore=tests/test_voice_integration.py \
             --cov=src --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage

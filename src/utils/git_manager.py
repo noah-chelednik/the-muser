@@ -126,9 +126,11 @@ def log(path: str, max_count: int = 10) -> list[dict[str, str]]:
     repo = git.Repo(path)
     commits = []
     for c in repo.iter_commits(max_count=max_count):
-        commits.append({
-            "hash": str(c.hexsha[:8]),
-            "message": c.message.strip(),
-            "date": str(c.committed_datetime),
-        })
+        commits.append(
+            {
+                "hash": str(c.hexsha[:8]),
+                "message": c.message.strip(),
+                "date": str(c.committed_datetime),
+            }
+        )
     return commits

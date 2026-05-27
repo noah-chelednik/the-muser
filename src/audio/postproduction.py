@@ -80,9 +80,7 @@ GENRE_PRESETS: dict[str, dict] = {
 def _require_ffmpeg() -> None:
     """Raise FileNotFoundError if ffmpeg is not on PATH."""
     if not shutil.which("ffmpeg"):
-        raise FileNotFoundError(
-            "ffmpeg not found. Install ffmpeg and ensure it is on PATH."
-        )
+        raise FileNotFoundError("ffmpeg not found. Install ffmpeg and ensure it is on PATH.")
 
 
 def apply_postproduction(
@@ -125,9 +123,9 @@ def apply_postproduction(
 
     if genre not in GENRE_PRESETS:
         logger.warning(
-            "Unknown genre preset '%s', falling back to 'default'. "
-            "Available: %s",
-            genre, ", ".join(GENRE_PRESETS.keys()),
+            "Unknown genre preset '%s', falling back to 'default'. Available: %s",
+            genre,
+            ", ".join(GENRE_PRESETS.keys()),
         )
         genre = "default"
 
@@ -137,7 +135,9 @@ def apply_postproduction(
 
     logger.info(
         "Applying post-production: genre=%s, target=%s LUFS, filters=%d",
-        genre, target_lufs, len(filters),
+        genre,
+        target_lufs,
+        len(filters),
     )
 
     # If there are genre-specific filters, apply them first to a temp file,
@@ -154,9 +154,7 @@ def apply_postproduction(
     from src.audio.export import normalize_loudness
 
     try:
-        result_path = normalize_loudness(
-            str(source_for_norm), str(out), target_lufs=target_lufs
-        )
+        result_path = normalize_loudness(str(source_for_norm), str(out), target_lufs=target_lufs)
     finally:
         # Clean up intermediate file.
         if intermediate is not None and intermediate.is_file():
@@ -188,9 +186,12 @@ def _apply_filters(wav_path: str, output_path: str, filters: list[str]) -> str:
     filter_chain = ",".join(filters)
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", wav_path,
-        "-af", filter_chain,
+        "ffmpeg",
+        "-y",
+        "-i",
+        wav_path,
+        "-af",
+        filter_chain,
         output_path,
     ]
 
@@ -205,9 +206,7 @@ def _apply_filters(wav_path: str, output_path: str, filters: list[str]) -> str:
             timeout=FFMPEG_TIMEOUT,
         )
     except subprocess.CalledProcessError as exc:
-        logger.error(
-            "ffmpeg filter chain failed (rc=%d): %s", exc.returncode, exc.stderr
-        )
+        logger.error("ffmpeg filter chain failed (rc=%d): %s", exc.returncode, exc.stderr)
         raise
     except subprocess.TimeoutExpired:
         logger.error("ffmpeg filter chain timed out after %d seconds", FFMPEG_TIMEOUT)
@@ -315,9 +314,9 @@ def process_vocals(
 
     if style not in VOCAL_PRESETS:
         logger.warning(
-            "Unknown vocal style '%s', falling back to 'default'. "
-            "Available: %s",
-            style, ", ".join(VOCAL_PRESETS.keys()),
+            "Unknown vocal style '%s', falling back to 'default'. Available: %s",
+            style,
+            ", ".join(VOCAL_PRESETS.keys()),
         )
         style = "default"
 
@@ -326,7 +325,8 @@ def process_vocals(
 
     logger.info(
         "Applying vocal processing: style=%s, filters=%d stages",
-        style, len(filters),
+        style,
+        len(filters),
     )
 
     _apply_filters(str(wav), str(out), filters)
@@ -358,15 +358,12 @@ def _build_vocal_filter_chain(preset: dict) -> list[str]:
         f"release=50:knee=3:detection=peak"
     )
     # Notch the harsh sibilance band slightly after compression.
-    filters.append(
-        "equalizer=f=6500:t=q:w=2.0:g=-3"
-    )
+    filters.append("equalizer=f=6500:t=q:w=2.0:g=-3")
 
     # --- Stage 2: Gentle compression for vocal consistency ---
     comp_ratio = preset["compression_ratio"]
     filters.append(
-        f"acompressor=threshold=-24dB:ratio={comp_ratio}:attack=15:"
-        f"release=300:knee=6:makeup=2"
+        f"acompressor=threshold=-24dB:ratio={comp_ratio}:attack=15:release=300:knee=6:makeup=2"
     )
 
     # --- Stage 3: Analog-modeled saturation ---
@@ -377,10 +374,7 @@ def _build_vocal_filter_chain(preset: dict) -> list[str]:
     # Map drive (0.0-1.0) to a threshold: higher drive = lower threshold
     # = more saturation.  Range: -3 dB (drive=0) to -15 dB (drive=1.0).
     sat_threshold = round(-3 - (drive * 40), 1)
-    filters.append(
-        f"acompressor=threshold={sat_threshold}dB:ratio=2:attack=0.1:"
-        f"release=10:knee=10"
-    )
+    filters.append(f"acompressor=threshold={sat_threshold}dB:ratio=2:attack=0.1:release=10:knee=10")
 
     # --- Stage 4: Early reflections for physical presence ---
     er_delay = preset["early_reflection_delay_ms"]
@@ -392,8 +386,7 @@ def _build_vocal_filter_chain(preset: dict) -> list[str]:
     er_decay_2 = round(er_decay * 0.6, 2)
     er_decay_3 = round(er_decay * 0.3, 2)
     filters.append(
-        f"aecho=0.8:0.7:{er_delay}|{er_delay_2}|{er_delay_3}:"
-        f"{er_decay}|{er_decay_2}|{er_decay_3}"
+        f"aecho=0.8:0.7:{er_delay}|{er_delay_2}|{er_delay_3}:{er_decay}|{er_decay_2}|{er_decay_3}"
     )
 
     # --- Stage 5: Style-specific reverb tail ---
@@ -401,9 +394,7 @@ def _build_vocal_filter_chain(preset: dict) -> list[str]:
     reverb_decays = preset["reverb_decays"]
     # Use aecho with longer delay times to simulate a reverb tail.
     # in_gain=0.8 preserves dry signal, out_gain controlled by decay values.
-    filters.append(
-        f"aecho=0.8:0.65:{reverb_delays}:{reverb_decays}"
-    )
+    filters.append(f"aecho=0.8:0.65:{reverb_delays}:{reverb_decays}")
 
     return filters
 
@@ -494,8 +485,7 @@ def remix_vocals_with_instrumental(
         left_gain = round(min(1.0, 0.5 - vocal_pan * 0.5), 3)
         right_gain = round(min(1.0, 0.5 + vocal_pan * 0.5), 3)
         vocal_filters.append(
-            f"pan=stereo|c0={left_gain}*c0+{left_gain}*c1|"
-            f"c1={right_gain}*c0+{right_gain}*c1"
+            f"pan=stereo|c0={left_gain}*c0+{left_gain}*c1|c1={right_gain}*c0+{right_gain}*c1"
         )
 
     # Build the complex filter graph.
@@ -511,18 +501,25 @@ def remix_vocals_with_instrumental(
     )
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", vocal_src,
-        "-i", str(inst),
-        "-filter_complex", filter_complex,
-        "-map", "[out]",
+        "ffmpeg",
+        "-y",
+        "-i",
+        vocal_src,
+        "-i",
+        str(inst),
+        "-filter_complex",
+        filter_complex,
+        "-map",
+        "[out]",
         str(out),
     ]
 
     logger.info(
-        "Mixing vocals with instrumental: vocal_db=%.1f, pan=%.2f, "
-        "processing=%s, style=%s",
-        vocal_level_db, vocal_pan, apply_vocal_processing, vocal_style,
+        "Mixing vocals with instrumental: vocal_db=%.1f, pan=%.2f, processing=%s, style=%s",
+        vocal_level_db,
+        vocal_pan,
+        apply_vocal_processing,
+        vocal_style,
     )
     logger.debug("ffmpeg remix command: %s", " ".join(cmd))
 
@@ -535,9 +532,7 @@ def remix_vocals_with_instrumental(
             timeout=FFMPEG_TIMEOUT,
         )
     except subprocess.CalledProcessError as exc:
-        logger.error(
-            "ffmpeg remix failed (rc=%d): %s", exc.returncode, exc.stderr
-        )
+        logger.error("ffmpeg remix failed (rc=%d): %s", exc.returncode, exc.stderr)
         raise
     except subprocess.TimeoutExpired:
         logger.error("ffmpeg remix timed out after %d seconds", FFMPEG_TIMEOUT)

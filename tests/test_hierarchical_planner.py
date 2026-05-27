@@ -2,20 +2,23 @@
 
 import pytest
 from src.orchestrator.hierarchical_planner import (
-    HierarchicalPlanner, Level1Section, Level2Phrase,
-    Level3Detail, Level4Arrangement,
+    HierarchicalPlanner,
+    Level1Section,
 )
 
 
 class TestLevel1Planning:
-
     def test_plan_piece_creates_sections(self):
         p = HierarchicalPlanner()
-        sections = p.plan_piece("ABA", 64, [
-            {"name": "A", "start_measure": 1, "end_measure": 24},
-            {"name": "B", "start_measure": 25, "end_measure": 48},
-            {"name": "A'", "start_measure": 49, "end_measure": 64},
-        ])
+        sections = p.plan_piece(
+            "ABA",
+            64,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 24},
+                {"name": "B", "start_measure": 25, "end_measure": 48},
+                {"name": "A'", "start_measure": 49, "end_measure": 64},
+            ],
+        )
         assert len(sections) == 3
         assert sections[0].name == "A"
         assert p._form == "ABA"
@@ -28,23 +31,36 @@ class TestLevel1Planning:
 
     def test_section_key_and_tempo(self):
         p = HierarchicalPlanner()
-        sections = p.plan_piece("rondo", 32, [
-            {"name": "A", "start_measure": 1, "end_measure": 16, "key": "C major", "tempo": 120},
-        ])
+        sections = p.plan_piece(
+            "rondo",
+            32,
+            [
+                {
+                    "name": "A",
+                    "start_measure": 1,
+                    "end_measure": 16,
+                    "key": "C major",
+                    "tempo": 120,
+                },
+            ],
+        )
         assert sections[0].key == "C major"
         assert sections[0].tempo == 120
 
 
 class TestZoomNavigation:
-
     @pytest.fixture
     def planner_with_plan(self):
         p = HierarchicalPlanner()
-        p.plan_piece("ABA", 48, [
-            {"name": "A", "start_measure": 1, "end_measure": 16},
-            {"name": "B", "start_measure": 17, "end_measure": 32},
-            {"name": "A2", "start_measure": 33, "end_measure": 48},
-        ])
+        p.plan_piece(
+            "ABA",
+            48,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 16},
+                {"name": "B", "start_measure": 17, "end_measure": 32},
+                {"name": "A2", "start_measure": 33, "end_measure": 48},
+            ],
+        )
         return p
 
     def test_zoom_in_1_to_2(self, planner_with_plan):
@@ -92,35 +108,52 @@ class TestZoomNavigation:
 
 
 class TestContextGeneration:
-
     def test_level1_context(self):
         p = HierarchicalPlanner()
-        p.plan_piece("ABA", 48, [
-            {"name": "A", "start_measure": 1, "end_measure": 16, "key": "C major"},
-        ])
+        p.plan_piece(
+            "ABA",
+            48,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 16, "key": "C major"},
+            ],
+        )
         ctx = p.get_context_for_level(1)
         assert "ABA" in ctx
         assert "48" in ctx
 
     def test_context_trimming(self):
         p = HierarchicalPlanner()
-        sections = [{"name": f"S{i}", "start_measure": i*10+1, "end_measure": (i+1)*10, "description": "x"*200} for i in range(20)]
+        sections = [
+            {
+                "name": f"S{i}",
+                "start_measure": i * 10 + 1,
+                "end_measure": (i + 1) * 10,
+                "description": "x" * 200,
+            }
+            for i in range(20)
+        ]
         p.plan_piece("long", 200, sections)
         ctx = p.get_context_for_level(1)
         assert len(ctx) < 5000
 
 
 class TestSerialization:
-
     def test_roundtrip(self):
         p = HierarchicalPlanner()
-        p.plan_piece("ABA", 48, [
-            {"name": "A", "start_measure": 1, "end_measure": 16, "key": "C major"},
-            {"name": "B", "start_measure": 17, "end_measure": 32},
-        ])
-        p.plan_section("A", [
-            {"start_measure": 1, "end_measure": 8, "harmonic_progression": "I-IV-V-I"},
-        ])
+        p.plan_piece(
+            "ABA",
+            48,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 16, "key": "C major"},
+                {"name": "B", "start_measure": 17, "end_measure": 32},
+            ],
+        )
+        p.plan_section(
+            "A",
+            [
+                {"start_measure": 1, "end_measure": 8, "harmonic_progression": "I-IV-V-I"},
+            ],
+        )
 
         data = p.to_dict()
         p2 = HierarchicalPlanner.from_dict(data)
@@ -139,20 +172,27 @@ class TestSerialization:
 
 
 class TestSectionStatus:
-
     def test_update_status(self):
         p = HierarchicalPlanner()
-        p.plan_piece("AB", 32, [
-            {"name": "A", "start_measure": 1, "end_measure": 16},
-        ])
+        p.plan_piece(
+            "AB",
+            32,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 16},
+            ],
+        )
         p.update_section_status("A", "in_progress")
         assert p.level1_plan[0].status == "in_progress"
 
     def test_get_section(self):
         p = HierarchicalPlanner()
-        p.plan_piece("AB", 32, [
-            {"name": "A", "start_measure": 1, "end_measure": 16},
-        ])
+        p.plan_piece(
+            "AB",
+            32,
+            [
+                {"name": "A", "start_measure": 1, "end_measure": 16},
+            ],
+        )
         s = p.get_section("A")
         assert s is not None
         assert s.name == "A"

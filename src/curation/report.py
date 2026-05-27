@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import html
-import json
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -92,7 +91,7 @@ def _build_html(**ctx) -> str:
 <body>
 <div class="container">
 <h1>The Muser — Curation Report</h1>
-<p class="subtitle">Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+<p class="subtitle">Generated {datetime.now().strftime("%Y-%m-%d %H:%M")}</p>
 
 {_section_summary(ctx)}
 {_section_platforms(ctx)}
@@ -197,8 +196,8 @@ def _section_summary(ctx) -> str:
 <h3>Tier Distribution</h3>
 <p>{tier_html}</p>
 <h3>Confidence</h3>
-<p>High: {ctx['confidence_counts'].get('high',0)} &nbsp; | &nbsp;
-Uncertain: {ctx['confidence_counts'].get('uncertain',0)}</p>
+<p>High: {ctx["confidence_counts"].get("high", 0)} &nbsp; | &nbsp;
+Uncertain: {ctx["confidence_counts"].get("uncertain", 0)}</p>
 <h3>Genre Distribution</h3>
 <div class="bar-chart">{genre_html}</div>
 """
@@ -212,8 +211,8 @@ def _section_platforms(ctx) -> str:
     dk_albums = dk.get("albums", [])
     cards += f"""<div class="platform-card">
 <h3>DistroKid</h3>
-<p>{len(dk_albums)} albums, {dk.get('total_tracks', 0)} tracks</p>
-<p style="font-size:13px;color:#8b949e">{'<br>'.join(a['title']+f' ({a["tracks"]} tracks)' for a in dk_albums)}</p>
+<p>{len(dk_albums)} albums, {dk.get("total_tracks", 0)} tracks</p>
+<p style="font-size:13px;color:#8b949e">{"<br>".join(a["title"] + f" ({a["tracks"]} tracks)" for a in dk_albums)}</p>
 </div>"""
 
     gm = ps.get("gumroad", {})
@@ -221,20 +220,20 @@ def _section_platforms(ctx) -> str:
     total_rev = sum(p.get("price", 0) for p in gm_packs)
     cards += f"""<div class="platform-card">
 <h3>Gumroad</h3>
-<p>{len(gm_packs)} packs, {gm.get('total_tracks', 0)} tracks</p>
+<p>{len(gm_packs)} packs, {gm.get("total_tracks", 0)} tracks</p>
 <p style="font-size:13px;color:#8b949e">Potential revenue (if all sell): ${total_rev}</p>
 </div>"""
 
     fv = ps.get("fiverr", {})
     cards += f"""<div class="platform-card">
 <h3>Fiverr</h3>
-<p>{fv.get('total', 0)} demo tracks</p>
+<p>{fv.get("total", 0)} demo tracks</p>
 </div>"""
 
     kf = ps.get("kofi", {})
     cards += f"""<div class="platform-card">
 <h3>Ko-fi</h3>
-<p>{kf.get('total', 0)} singles</p>
+<p>{kf.get("total", 0)} singles</p>
 </div>"""
 
     return f"""<h2>Platform Summary</h2>
@@ -300,15 +299,15 @@ def _section_release_set(ctx) -> str:
 {audio_html}
 </div>"""
 
-    return f"""<h2>Release Set ({len(ctx['surviving'])} tracks)</h2>
+    return f"""<h2>Release Set ({len(ctx["surviving"])} tracks)</h2>
 <div class="filter-bar">
 <label>Genre: <select id="filter-genre" onchange="filterTracks()">
 <option value="all">All</option>
-{''.join(f'<option value="{g}">{g}</option>' for g in sorted(ctx["genre_counts"].keys()))}
+{"".join(f'<option value="{g}">{g}</option>' for g in sorted(ctx["genre_counts"].keys()))}
 </select></label>
 <label>Tier: <select id="filter-tier" onchange="filterTracks()">
 <option value="all">All</option>
-{''.join(f'<option value="{t}">{t}</option>' for t in ["S","A","B","C","D"])}
+{"".join(f'<option value="{t}">{t}</option>' for t in ["S", "A", "B", "C", "D"])}
 </select></label>
 <label>Confidence: <select id="filter-conf" onchange="filterTracks()">
 <option value="all">All</option>
@@ -328,7 +327,9 @@ def _section_dropped(ctx) -> str:
         failures_html = ""
         for cand in sel.all_candidates:
             fails = ", ".join(cand.gate_failures) if cand.gate_failures else "unknown"
-            failures_html += f"<div style='font-size:12px;margin:2px 0'>{cand.candidate_id}: {fails}</div>"
+            failures_html += (
+                f"<div style='font-size:12px;margin:2px 0'>{cand.candidate_id}: {fails}</div>"
+            )
 
         cards += f"""<div class="dropped-card">
 <div class="track-header">
@@ -350,7 +351,7 @@ def _section_duplicates(ctx) -> str:
     for dup in ctx["duplicates"]:
         cards += f"""<div class="dup-card">
 Dropped <strong>{dup.dropped_id}</strong> (duplicate of <strong>{dup.kept_id}</strong>)
-— similarity: {dup.similarity:.4f} {'(same genre)' if dup.same_genre else '(cross-genre)'}
+— similarity: {dup.similarity:.4f} {"(same genre)" if dup.same_genre else "(cross-genre)"}
 </div>"""
 
     return f"<h2>Duplicates Removed ({len(ctx['duplicates'])})</h2>{cards}"

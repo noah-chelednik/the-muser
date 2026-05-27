@@ -60,7 +60,7 @@ def analyze(
         hop_length = 512
         stft = librosa.stft(y=samples, n_fft=n_fft, hop_length=hop_length)
         magnitude = np.abs(stft)
-        power = magnitude ** 2
+        power = magnitude**2
 
         # Frequency axis
         freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
@@ -79,10 +79,7 @@ def analyze(
             return _empty("silent audio (no spectral energy)")
 
         # Normalize as fractions
-        band_fractions = {
-            name: energy / total_energy
-            for name, energy in band_energies.items()
-        }
+        band_fractions = {name: energy / total_energy for name, energy in band_energies.items()}
 
         # ── Build vectors for cosine similarity ──────────────────────
         band_names = [b[0] for b in _BANDS]
@@ -93,12 +90,14 @@ def analyze(
             # Try to extract frequency band profile
             freq_bands = corpus_profile.get("frequency_bands")
             if freq_bands and isinstance(freq_bands, dict):
-                reference_vec = np.array([
-                    freq_bands.get(name, {}).get("mean", 1.0 / 6.0)
-                    if isinstance(freq_bands.get(name), dict)
-                    else 1.0 / 6.0
-                    for name in band_names
-                ])
+                reference_vec = np.array(
+                    [
+                        freq_bands.get(name, {}).get("mean", 1.0 / 6.0)
+                        if isinstance(freq_bands.get(name), dict)
+                        else 1.0 / 6.0
+                        for name in band_names
+                    ]
+                )
             else:
                 reference_vec = np.ones(6) / 6.0
         else:
@@ -113,9 +112,7 @@ def analyze(
             name="freq_balance",
             score=score,
             raw_metrics={
-                "band_energies": {
-                    name: round(band_fractions[name], 6) for name in band_names
-                },
+                "band_energies": {name: round(band_fractions[name], 6) for name in band_names},
                 "cosine_sim": round(cosine_sim, 4),
             },
         )

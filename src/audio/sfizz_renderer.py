@@ -127,15 +127,21 @@ def render_sfizz(
 
     cmd = [
         sfizz_cmd,
-        "--sfz", str(sfz_path),
-        "--midi", str(midi),
-        "--wav", str(out),
-        "--sample-rate", str(SAMPLE_RATE),
+        "--sfz",
+        str(sfz_path),
+        "--midi",
+        str(midi),
+        "--wav",
+        str(out),
+        "--sample-rate",
+        str(SAMPLE_RATE),
     ]
 
     logger.info(
         "Rendering MIDI via sfizz: %s -> %s (sfz=%s)",
-        midi, out, sfz_path.name,
+        midi,
+        out,
+        sfz_path.name,
     )
 
     try:

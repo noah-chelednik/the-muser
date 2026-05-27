@@ -4,6 +4,7 @@ Pydantic models for validating tool call arguments.
 Local LLMs hallucinate argument types more than Claude does.
 Every tool call passes through validation before execution.
 """
+
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -108,7 +109,10 @@ class ExportFinal(BaseModel):
 
 
 class UpdateMemoryDocument(BaseModel):
-    section: str = Field(..., pattern="^(project|form_plan|theme_catalog|harmonic_plan|orchestration_state|voice_plan|revision_notes)$")
+    section: str = Field(
+        ...,
+        pattern="^(project|form_plan|theme_catalog|harmonic_plan|orchestration_state|voice_plan|revision_notes)$",
+    )
     data: dict
 
 
@@ -175,7 +179,9 @@ class SeparateStemsDemucs(BaseModel):
 
 class FeminizeAudio(BaseModel):
     input_audio: str = Field(..., min_length=1)
-    preset: str = Field(..., pattern=r"^(powerful_mezzo|soft_feminine|androgynous|natural_male|deep_male)$")
+    preset: str = Field(
+        ..., pattern=r"^(powerful_mezzo|soft_feminine|androgynous|natural_male|deep_male)$"
+    )
     voice_id: str = Field(..., min_length=1, max_length=50, pattern=r"^[a-zA-Z0-9_-]+$")
 
 
@@ -241,6 +247,7 @@ class UpdateSectionStatus(BaseModel):
 
 class PlanPieceSection(BaseModel):
     """Inline model for a section within plan_piece."""
+
     name: str = Field(..., min_length=1, max_length=100)
     start_measure: int = Field(..., ge=1)
     end_measure: int = Field(..., ge=1)
@@ -264,6 +271,7 @@ class ZoomOut(BaseModel):
 
 
 # --- New tools (WS5) ---
+
 
 class PlayAudio(BaseModel):
     wav_path: str = Field(..., min_length=1)

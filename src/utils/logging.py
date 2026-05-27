@@ -8,7 +8,6 @@ import json
 import logging
 import time
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 from src.orchestrator.config import PROJECT_ROOT
@@ -38,12 +37,15 @@ class SessionLogger:
         duration_s: float,
     ) -> None:
         """Log a tool call with its input, result, and duration."""
-        self._log_event("tool_call", {
-            "tool": tool_name,
-            "input": tool_input,
-            "result_status": result.get("status", "unknown"),
-            "duration_s": round(duration_s, 2),
-        })
+        self._log_event(
+            "tool_call",
+            {
+                "tool": tool_name,
+                "input": tool_input,
+                "result_status": result.get("status", "unknown"),
+                "duration_s": round(duration_s, 2),
+            },
+        )
 
     def log_generation(
         self,
@@ -53,12 +55,15 @@ class SessionLogger:
         success: bool,
     ) -> None:
         """Log a generation event."""
-        self._log_event("generation", {
-            "generator": generator,
-            "params": params,
-            "output_path": output_path,
-            "success": success,
-        })
+        self._log_event(
+            "generation",
+            {
+                "generator": generator,
+                "params": params,
+                "output_path": output_path,
+                "success": success,
+            },
+        )
 
     def log_validation(
         self,
@@ -68,19 +73,25 @@ class SessionLogger:
         warnings: list[str],
     ) -> None:
         """Log a validation result."""
-        self._log_event("validation", {
-            "target": target,
-            "passed": passed,
-            "error_count": len(errors),
-            "warning_count": len(warnings),
-        })
+        self._log_event(
+            "validation",
+            {
+                "target": target,
+                "passed": passed,
+                "error_count": len(errors),
+                "warning_count": len(warnings),
+            },
+        )
 
     def log_user_message(self, message: str) -> None:
         """Log a user message (content truncated for privacy)."""
-        self._log_event("user_message", {
-            "length": len(message),
-            "preview": message[:100],
-        })
+        self._log_event(
+            "user_message",
+            {
+                "length": len(message),
+                "preview": message[:100],
+            },
+        )
 
     def log_error(self, context: str, error: str) -> None:
         """Log an error event."""

@@ -64,14 +64,16 @@ def analyze(
 
         # ── Abrupt ending check ───────────────────────────────────────
         # Compare outro RMS to track average RMS
-        track_rms = float(np.sqrt(np.mean(samples ** 2)))
-        outro_rms = float(np.sqrt(np.mean(outro ** 2)))
+        track_rms = float(np.sqrt(np.mean(samples**2)))
+        outro_rms = float(np.sqrt(np.mean(outro**2)))
         abrupt_ending = outro_rms > (ABRUPT_ENDING_RATIO * track_rms) and track_rms > 1e-6
 
         # ── Sub-scores ────────────────────────────────────────────────
         # Intro quality: 1.0 if no click, scaled down by how far over threshold
-        intro_quality = 1.0 if not intro_click else max(
-            0.0, 1.0 - (intro_max_diff - edge_threshold) / max(edge_threshold, 1e-6)
+        intro_quality = (
+            1.0
+            if not intro_click
+            else max(0.0, 1.0 - (intro_max_diff - edge_threshold) / max(edge_threshold, 1e-6))
         )
 
         # Outro quality: penalise both clicks and abrupt endings
@@ -99,13 +101,9 @@ def analyze(
 
         reasons: list[str] = []
         if intro_click:
-            reasons.append(
-                f"intro_click: max_diff={intro_max_diff:.3f} > {edge_threshold}"
-            )
+            reasons.append(f"intro_click: max_diff={intro_max_diff:.3f} > {edge_threshold}")
         if outro_click:
-            reasons.append(
-                f"outro_click: max_diff={outro_max_diff:.3f} > {edge_threshold}"
-            )
+            reasons.append(f"outro_click: max_diff={outro_max_diff:.3f} > {edge_threshold}")
 
         return DimensionResult(
             name="edge_clicks",

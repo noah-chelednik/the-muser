@@ -61,9 +61,7 @@ def mix_n_tracks(
         if pan != 0.0:
             left = round(min(1.0, 0.5 - pan * 0.5), 3)
             right = round(min(1.0, 0.5 + pan * 0.5), 3)
-            chain.append(
-                f"pan=stereo|c0={left}*c0+{left}*c1|c1={right}*c0+{right}*c1"
-            )
+            chain.append(f"pan=stereo|c0={left}*c0+{left}*c1|c1={right}*c0+{right}*c1")
 
         delay_ms = track.get("delay_ms", 0.0)
         if delay_ms > 0:
@@ -86,17 +84,24 @@ def mix_n_tracks(
     filter_complex = ";".join(filter_parts) + ";" + amix
 
     cmd = [
-        "ffmpeg", "-y",
+        "ffmpeg",
+        "-y",
         *inputs,
-        "-filter_complex", filter_complex,
-        "-map", map_label,
+        "-filter_complex",
+        filter_complex,
+        "-map",
+        map_label,
         output_path,
     ]
 
     logger.info("Mixing %d tracks -> %s", len(tracks), output_path)
 
     result = subprocess.run(
-        cmd, check=True, capture_output=True, text=True, timeout=FFMPEG_TIMEOUT,
+        cmd,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=FFMPEG_TIMEOUT,
     )
 
     if not Path(output_path).exists():

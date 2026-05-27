@@ -139,8 +139,12 @@ GENERATION_TOOLS = [
                 "period": {
                     "type": "string",
                     "enum": [
-                        "Medieval", "Renaissance", "Baroque", "Classical",
-                        "Romantic", "Modern",
+                        "Medieval",
+                        "Renaissance",
+                        "Baroque",
+                        "Classical",
+                        "Romantic",
+                        "Modern",
                     ],
                     "description": "Musical period style",
                 },
@@ -723,9 +727,13 @@ STATE_TOOLS = [
                 "section": {
                     "type": "string",
                     "enum": [
-                        "project", "form_plan", "theme_catalog",
-                        "harmonic_plan", "orchestration_state",
-                        "voice_plan", "revision_notes",
+                        "project",
+                        "form_plan",
+                        "theme_catalog",
+                        "harmonic_plan",
+                        "orchestration_state",
+                        "voice_plan",
+                        "revision_notes",
                     ],
                     "description": "Which section of the memory document to update",
                 },
@@ -911,11 +919,23 @@ STATE_TOOLS = [
                         "type": "object",
                         "properties": {
                             "name": {"type": "string", "description": "Section name"},
-                            "start_measure": {"type": "integer", "description": "Starting measure number"},
-                            "end_measure": {"type": "integer", "description": "Ending measure number"},
-                            "key": {"type": "string", "description": "Key signature for this section"},
+                            "start_measure": {
+                                "type": "integer",
+                                "description": "Starting measure number",
+                            },
+                            "end_measure": {
+                                "type": "integer",
+                                "description": "Ending measure number",
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Key signature for this section",
+                            },
                             "tempo": {"type": "integer", "description": "Tempo in BPM"},
-                            "description": {"type": "string", "description": "Musical description of the section"},
+                            "description": {
+                                "type": "string",
+                                "description": "Musical description of the section",
+                            },
                         },
                         "required": ["name", "start_measure", "end_measure"],
                     },
@@ -1045,8 +1065,7 @@ POSTPRODUCTION_TOOLS = [
                 "apply_vocal_processing": {
                     "type": "boolean",
                     "description": (
-                        "Whether to apply the vocal processing chain before "
-                        "mixing (default: true)"
+                        "Whether to apply the vocal processing chain before mixing (default: true)"
                     ),
                 },
                 "vocal_style": {
@@ -1073,8 +1092,14 @@ PLAYBACK_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Path to audio file to play"},
-                "start_s": {"type": "number", "description": "Start playback at this offset in seconds (default: 0)"},
-                "duration_s": {"type": "number", "description": "Play for this many seconds (0 = full file)"},
+                "start_s": {
+                    "type": "number",
+                    "description": "Start playback at this offset in seconds (default: 0)",
+                },
+                "duration_s": {
+                    "type": "number",
+                    "description": "Play for this many seconds (0 = full file)",
+                },
             },
             "required": ["wav_path"],
         },
@@ -1089,10 +1114,19 @@ EFFECTS_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Input audio file path"},
-                "frequency_hz": {"type": "integer", "description": "Center frequency in Hz (20-20000)"},
+                "frequency_hz": {
+                    "type": "integer",
+                    "description": "Center frequency in Hz (20-20000)",
+                },
                 "gain_db": {"type": "number", "description": "Gain in dB (-24 to +24)"},
-                "q": {"type": "number", "description": "Q factor / bandwidth (0.1-10, default: 1.0)"},
-                "output_path": {"type": "string", "description": "Output path (auto-generated if omitted)"},
+                "q": {
+                    "type": "number",
+                    "description": "Q factor / bandwidth (0.1-10, default: 1.0)",
+                },
+                "output_path": {
+                    "type": "string",
+                    "description": "Output path (auto-generated if omitted)",
+                },
             },
             "required": ["wav_path", "frequency_hz", "gain_db"],
         },
@@ -1104,10 +1138,19 @@ EFFECTS_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Input audio file path"},
-                "room_size": {"type": "number", "description": "Room size (0.0=small, 1.0=large hall, default: 0.5)"},
+                "room_size": {
+                    "type": "number",
+                    "description": "Room size (0.0=small, 1.0=large hall, default: 0.5)",
+                },
                 "decay": {"type": "number", "description": "Decay amount (0.0-1.0, default: 0.4)"},
-                "mix": {"type": "number", "description": "Wet/dry mix (0.0=dry, 1.0=fully wet, default: 0.3)"},
-                "output_path": {"type": "string", "description": "Output path (auto-generated if omitted)"},
+                "mix": {
+                    "type": "number",
+                    "description": "Wet/dry mix (0.0=dry, 1.0=fully wet, default: 0.3)",
+                },
+                "output_path": {
+                    "type": "string",
+                    "description": "Output path (auto-generated if omitted)",
+                },
             },
             "required": ["wav_path"],
         },
@@ -1119,11 +1162,23 @@ EFFECTS_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Input audio file path"},
-                "threshold_db": {"type": "number", "description": "Threshold in dB (-60 to 0, default: -20)"},
+                "threshold_db": {
+                    "type": "number",
+                    "description": "Threshold in dB (-60 to 0, default: -20)",
+                },
                 "ratio": {"type": "number", "description": "Compression ratio (1-20, default: 4)"},
-                "attack_ms": {"type": "number", "description": "Attack time in ms (0.1-200, default: 10)"},
-                "release_ms": {"type": "number", "description": "Release time in ms (10-2000, default: 200)"},
-                "output_path": {"type": "string", "description": "Output path (auto-generated if omitted)"},
+                "attack_ms": {
+                    "type": "number",
+                    "description": "Attack time in ms (0.1-200, default: 10)",
+                },
+                "release_ms": {
+                    "type": "number",
+                    "description": "Release time in ms (10-2000, default: 200)",
+                },
+                "output_path": {
+                    "type": "string",
+                    "description": "Output path (auto-generated if omitted)",
+                },
             },
             "required": ["wav_path"],
         },
@@ -1135,8 +1190,14 @@ EFFECTS_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Input audio file path"},
-                "gain_db": {"type": "number", "description": "Volume adjustment in dB (-60 to +24)"},
-                "output_path": {"type": "string", "description": "Output path (auto-generated if omitted)"},
+                "gain_db": {
+                    "type": "number",
+                    "description": "Volume adjustment in dB (-60 to +24)",
+                },
+                "output_path": {
+                    "type": "string",
+                    "description": "Output path (auto-generated if omitted)",
+                },
             },
             "required": ["wav_path", "gain_db"],
         },
@@ -1155,10 +1216,22 @@ BRIDGE_TOOLS = [
             "type": "object",
             "properties": {
                 "audio_path": {"type": "string", "description": "Path to input audio file"},
-                "output_path": {"type": "string", "description": "Output MIDI path (auto-generated if omitted)"},
-                "onset_threshold": {"type": "number", "description": "Onset sensitivity 0-1 (default: 0.5)"},
-                "min_frequency_hz": {"type": "number", "description": "Minimum frequency to detect (default: 30)"},
-                "max_frequency_hz": {"type": "number", "description": "Maximum frequency to detect (default: 4000)"},
+                "output_path": {
+                    "type": "string",
+                    "description": "Output MIDI path (auto-generated if omitted)",
+                },
+                "onset_threshold": {
+                    "type": "number",
+                    "description": "Onset sensitivity 0-1 (default: 0.5)",
+                },
+                "min_frequency_hz": {
+                    "type": "number",
+                    "description": "Minimum frequency to detect (default: 30)",
+                },
+                "max_frequency_hz": {
+                    "type": "number",
+                    "description": "Maximum frequency to detect (default: 4000)",
+                },
             },
             "required": ["audio_path"],
         },
@@ -1177,8 +1250,14 @@ CURATION_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Path to audio file to analyze"},
-                "tags": {"type": "string", "description": "Tags used during generation (for future alignment scoring)"},
-                "lyrics": {"type": "string", "description": "Lyrics used during generation (for future alignment scoring)"},
+                "tags": {
+                    "type": "string",
+                    "description": "Tags used during generation (for future alignment scoring)",
+                },
+                "lyrics": {
+                    "type": "string",
+                    "description": "Lyrics used during generation (for future alignment scoring)",
+                },
             },
             "required": ["wav_path"],
         },
@@ -1194,7 +1273,10 @@ CURATION_TOOLS = [
             "type": "object",
             "properties": {
                 "wav_path": {"type": "string", "description": "Path to audio file"},
-                "genre": {"type": "string", "description": "Genre for weight tuning (default: pop)"},
+                "genre": {
+                    "type": "string",
+                    "description": "Genre for weight tuning (default: pop)",
+                },
             },
             "required": ["wav_path"],
         },
@@ -1218,16 +1300,31 @@ MIXER_TOOLS = [
                         "type": "object",
                         "properties": {
                             "path": {"type": "string", "description": "Audio file path"},
-                            "volume_db": {"type": "number", "description": "Gain in dB (default: 0)"},
-                            "pan": {"type": "number", "description": "Stereo pan -1 to 1 (default: 0)"},
-                            "delay_ms": {"type": "number", "description": "Delay in ms (default: 0)"},
+                            "volume_db": {
+                                "type": "number",
+                                "description": "Gain in dB (default: 0)",
+                            },
+                            "pan": {
+                                "type": "number",
+                                "description": "Stereo pan -1 to 1 (default: 0)",
+                            },
+                            "delay_ms": {
+                                "type": "number",
+                                "description": "Delay in ms (default: 0)",
+                            },
                         },
                         "required": ["path"],
                     },
                     "description": "List of tracks to mix (minimum 2)",
                 },
-                "output_path": {"type": "string", "description": "Output file path (auto-generated if omitted)"},
-                "normalize": {"type": "boolean", "description": "Apply loudness normalization (default: true)"},
+                "output_path": {
+                    "type": "string",
+                    "description": "Output file path (auto-generated if omitted)",
+                },
+                "normalize": {
+                    "type": "boolean",
+                    "description": "Apply loudness normalization (default: true)",
+                },
             },
             "required": ["tracks"],
         },
@@ -1241,7 +1338,10 @@ MIXER_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "pid": {"type": "integer", "description": "Process ID of the training job (0 to list all jobs)"},
+                "pid": {
+                    "type": "integer",
+                    "description": "Process ID of the training job (0 to list all jobs)",
+                },
                 "voice_name": {"type": "string", "description": "Filter by voice name"},
             },
             "required": [],
@@ -1272,14 +1372,16 @@ def anthropic_to_openai_tools(anthropic_tools: list[dict]) -> list[dict]:
     """Convert Anthropic tool format to OpenAI format for LiteLLM/Ollama."""
     openai_tools = []
     for tool in anthropic_tools:
-        openai_tools.append({
-            "type": "function",
-            "function": {
-                "name": tool["name"],
-                "description": tool["description"],
-                "parameters": tool.get("input_schema", tool.get("parameters", {})),
+        openai_tools.append(
+            {
+                "type": "function",
+                "function": {
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "parameters": tool.get("input_schema", tool.get("parameters", {})),
+                },
             }
-        })
+        )
     return openai_tools
 
 

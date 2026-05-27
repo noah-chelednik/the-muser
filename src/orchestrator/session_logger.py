@@ -6,6 +6,7 @@ Each line in the log file is a complete conversation turn:
 
 These logs become training data for a future fine-tuned Qwen3-8B.
 """
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -20,8 +21,13 @@ class SessionLogger:
         self.log_path = LOG_DIR / f"session_{timestamp}.jsonl"
         self.turns = []
 
-    def log_turn(self, messages: list[dict], tools: list[dict],
-                 response_content: str | None, tool_calls: list[dict]):
+    def log_turn(
+        self,
+        messages: list[dict],
+        tools: list[dict],
+        response_content: str | None,
+        tool_calls: list[dict],
+    ):
         """Log a single orchestrator turn."""
         turn = {
             "timestamp": datetime.now().isoformat(),
@@ -30,7 +36,7 @@ class SessionLogger:
             "response": {
                 "content": response_content,
                 "tool_calls": tool_calls,
-            }
+            },
         }
         self.turns.append(turn)
         # Append to file immediately (crash-safe)
@@ -55,8 +61,10 @@ class SessionLogger:
                 assistant_msg["tool_calls"] = turn["response"]["tool_calls"]
             msgs.append(assistant_msg)
 
-            examples.append({
-                "messages": msgs,
-                "tools": turn["tools"],
-            })
+            examples.append(
+                {
+                    "messages": msgs,
+                    "tools": turn["tools"],
+                }
+            )
         return examples

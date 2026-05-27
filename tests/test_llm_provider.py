@@ -1,23 +1,25 @@
 """Test the provider-agnostic LLM interface."""
+
 import os
-import pytest
 from src.orchestrator.llm_provider import chat, validate_tool_call, ToolCall
 
-TEST_TOOLS = [{
-    "type": "function",
-    "function": {
-        "name": "generate_melody",
-        "description": "Generate a MIDI melody in the specified key",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "key": {"type": "string", "description": "Musical key (e.g., 'C major')"},
-                "bars": {"type": "integer", "description": "Number of bars"},
+TEST_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_melody",
+            "description": "Generate a MIDI melody in the specified key",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "key": {"type": "string", "description": "Musical key (e.g., 'C major')"},
+                    "bars": {"type": "integer", "description": "Number of bars"},
+                },
+                "required": ["key", "bars"],
             },
-            "required": ["key", "bars"]
-        }
+        },
     }
-}]
+]
 
 
 def test_ollama_basic_chat():
@@ -35,7 +37,10 @@ def test_ollama_tool_calling():
     os.environ["MUSER_LLM_MODE"] = "local"
     response = chat(
         messages=[
-            {"role": "system", "content": "You are a music composition assistant. Use tools when asked to generate music."},
+            {
+                "role": "system",
+                "content": "You are a music composition assistant. Use tools when asked to generate music.",
+            },
             {"role": "user", "content": "Generate a 4-bar melody in D major."},
         ],
         tools=TEST_TOOLS,

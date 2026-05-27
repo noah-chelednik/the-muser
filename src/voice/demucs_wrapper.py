@@ -6,7 +6,6 @@ Meta's Demucs model. Used to isolate vocals before voice conversion.
 
 import logging
 import subprocess
-import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -45,7 +44,9 @@ def separate_stems(
 
     logger.info(
         "Demucs separation: %s (model: %s, two_stems: %s)",
-        input_audio, model, two_stems,
+        input_audio,
+        model,
+        two_stems,
     )
 
     # Try Python API first
@@ -68,8 +69,10 @@ def _separate_via_python(
     import demucs.separate  # type: ignore
 
     args = [
-        "--out", output_dir,
-        "-n", model,
+        "--out",
+        output_dir,
+        "-n",
+        model,
     ]
     if two_stems:
         args.extend(["--two-stems", "vocals"])
@@ -88,9 +91,13 @@ def _separate_via_cli(
 ) -> dict[str, str]:
     """Separate using Demucs CLI."""
     cmd = [
-        "python", "-m", "demucs.separate",
-        "--out", output_dir,
-        "-n", model,
+        "python",
+        "-m",
+        "demucs.separate",
+        "--out",
+        output_dir,
+        "-n",
+        model,
     ]
     if two_stems:
         cmd.extend(["--two-stems", "vocals"])
@@ -98,13 +105,14 @@ def _separate_via_cli(
 
     logger.info("Running Demucs CLI: %s", " ".join(cmd))
     result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=600,
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=600,
     )
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Demucs CLI failed (exit {result.returncode}): {result.stderr}"
-        )
+        raise RuntimeError(f"Demucs CLI failed (exit {result.returncode}): {result.stderr}")
 
     return _collect_outputs(input_audio, output_dir, model, two_stems)
 

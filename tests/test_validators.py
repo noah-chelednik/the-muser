@@ -5,8 +5,7 @@ All score tests programmatically build test fixtures using music21.
 
 from __future__ import annotations
 
-import music21
-from music21 import chord, meter, note, stream
+from music21 import meter, note, stream
 
 import pytest
 
@@ -25,6 +24,7 @@ from src.audio.audio_validator import check_audio, get_audio_info
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_score(
     *,
@@ -77,34 +77,41 @@ def _make_score(
 # Rhythm checks
 # ===========================================================================
 
+
 class TestRhythmConsistency:
     """Tests for check_rhythm_consistency."""
 
     def test_rhythm_error_detection(self):
         """A non-first 4/4 measure with only 3 beats should produce an error."""
-        score = _make_score(measures=[
-            [("C4", 4.0)],  # Full first measure
-            [("D4", 3.0)],  # Only 3 quarter-lengths in a 4/4 bar
-        ])
+        score = _make_score(
+            measures=[
+                [("C4", 4.0)],  # Full first measure
+                [("D4", 3.0)],  # Only 3 quarter-lengths in a 4/4 bar
+            ]
+        )
         errors = check_rhythm_consistency(score)
         assert len(errors) == 1
         assert "3.0" in errors[0]
 
     def test_rhythm_correct(self):
         """A correct 4/4 measure should produce no errors."""
-        score = _make_score(measures=[
-            [("C4", 2.0), ("D4", 2.0)],
-            [("E4", 4.0)],
-        ])
+        score = _make_score(
+            measures=[
+                [("C4", 2.0), ("D4", 2.0)],
+                [("E4", 4.0)],
+            ]
+        )
         errors = check_rhythm_consistency(score)
         assert errors == []
 
     def test_pickup_measure_allowed(self):
         """A shorter first measure (anacrusis) should not be flagged."""
-        score = _make_score(measures=[
-            [("C4", 1.0)],          # Pickup: only 1 beat
-            [("D4", 2.0), ("E4", 2.0)],  # Full bar
-        ])
+        score = _make_score(
+            measures=[
+                [("C4", 1.0)],  # Pickup: only 1 beat
+                [("D4", 2.0), ("E4", 2.0)],  # Full bar
+            ]
+        )
         errors = check_rhythm_consistency(score)
         assert errors == []
 
@@ -112,6 +119,7 @@ class TestRhythmConsistency:
 # ===========================================================================
 # Instrument range checks
 # ===========================================================================
+
 
 class TestInstrumentRanges:
     """Tests for check_instrument_ranges."""
@@ -153,6 +161,7 @@ class TestInstrumentRanges:
 # Repetitiveness checks
 # ===========================================================================
 
+
 class TestRepetitiveness:
     """Tests for check_repetitiveness."""
 
@@ -166,13 +175,15 @@ class TestRepetitiveness:
 
     def test_no_repetitiveness(self):
         """Varied measures should not trigger repetitiveness warnings."""
-        score = _make_score(measures=[
-            [("C4", 4.0)],
-            [("D4", 4.0)],
-            [("E4", 4.0)],
-            [("F4", 4.0)],
-            [("G4", 4.0)],
-        ])
+        score = _make_score(
+            measures=[
+                [("C4", 4.0)],
+                [("D4", 4.0)],
+                [("E4", 4.0)],
+                [("F4", 4.0)],
+                [("G4", 4.0)],
+            ]
+        )
         warnings = check_repetitiveness(score)
         assert warnings == []
 
@@ -188,6 +199,7 @@ class TestRepetitiveness:
 # Empty output checks
 # ===========================================================================
 
+
 class TestEmptyOutput:
     """Tests for check_empty_output."""
 
@@ -199,10 +211,12 @@ class TestEmptyOutput:
 
     def test_rests_only_detection(self):
         """A part containing only rests should be flagged."""
-        score = _make_score(measures=[
-            [("rest", 4.0)],
-            [("rest", 4.0)],
-        ])
+        score = _make_score(
+            measures=[
+                [("rest", 4.0)],
+                [("rest", 4.0)],
+            ]
+        )
         errors = check_empty_output(score)
         assert any("only rests" in e for e in errors)
 
@@ -216,6 +230,7 @@ class TestEmptyOutput:
 # ===========================================================================
 # Parallel motion checks
 # ===========================================================================
+
 
 class TestParallelMotion:
     """Tests for check_parallel_motion."""
@@ -285,6 +300,7 @@ class TestParallelMotion:
 # Integration: validate_score
 # ===========================================================================
 
+
 class TestValidateScore:
     """Tests for the top-level validate_score function."""
 
@@ -347,6 +363,7 @@ class TestValidateScore:
 # Audio validator
 # ===========================================================================
 
+
 class TestAudioValidator:
     """Tests for audio_validator functions."""
 
@@ -380,11 +397,16 @@ class TestAudioValidator:
         wav_path = str(tmp_path / "tone.wav")
         subprocess.run(
             [
-                ffmpeg, "-y",
-                "-f", "lavfi",
-                "-i", "sine=frequency=440:duration=2",
-                "-ar", "44100",
-                "-ac", "1",
+                ffmpeg,
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=440:duration=2",
+                "-ar",
+                "44100",
+                "-ac",
+                "1",
                 wav_path,
             ],
             capture_output=True,

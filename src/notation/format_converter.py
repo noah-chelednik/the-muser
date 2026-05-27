@@ -37,9 +37,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # MusicXML 4.0 schema URL (W3C-hosted).
-_MUSICXML_SCHEMA_URL = (
-    "https://www.w3.org/2021/06/musicxml40/musicxml.xsd"
-)
+_MUSICXML_SCHEMA_URL = "https://www.w3.org/2021/06/musicxml40/musicxml.xsd"
 
 # ---------------------------------------------------------------------------
 # ABC pre-processing helpers
@@ -64,9 +62,7 @@ def _ensure_abc_headers(abc_string: str) -> str:
         ABC string guaranteed to start with ``X:`` and contain ``M:``.
     """
     lines = abc_string.strip().splitlines()
-    header_keys = {
-        line.split(":")[0].strip() for line in lines if ":" in line
-    }
+    header_keys = {line.split(":")[0].strip() for line in lines if ":" in line}
 
     preamble: list[str] = []
     if "X" not in header_keys:
@@ -104,9 +100,7 @@ def _parse_abc(abc_string: str):
     try:
         score = converter.parse(clean, format="abc")
     except Exception as exc:
-        raise ValueError(
-            f"music21 failed to parse the ABC notation: {exc}"
-        ) from exc
+        raise ValueError(f"music21 failed to parse the ABC notation: {exc}") from exc
 
     return score
 
@@ -145,9 +139,7 @@ def abc_to_musicxml(abc_string: str) -> str:
         musicxml_bytes: bytes = exporter.parse()
         return musicxml_bytes.decode("utf-8")
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to serialise score to MusicXML: {exc}"
-        ) from exc
+        raise RuntimeError(f"Failed to serialise score to MusicXML: {exc}") from exc
 
 
 def abc_to_midi(abc_string: str, output_path: str) -> str:
@@ -181,9 +173,7 @@ def abc_to_midi(abc_string: str, output_path: str) -> str:
         logger.info("Wrote MIDI to %s", out)
         return str(out)
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to write MIDI file to {output_path}: {exc}"
-        ) from exc
+        raise RuntimeError(f"Failed to write MIDI file to {output_path}: {exc}") from exc
 
 
 def musicxml_to_midi(musicxml_path: str, output_path: str) -> str:
@@ -219,9 +209,7 @@ def musicxml_to_midi(musicxml_path: str, output_path: str) -> str:
     try:
         score = converter.parse(str(src))
     except Exception as exc:
-        raise ValueError(
-            f"music21 failed to parse MusicXML at {musicxml_path}: {exc}"
-        ) from exc
+        raise ValueError(f"music21 failed to parse MusicXML at {musicxml_path}: {exc}") from exc
 
     try:
         out = Path(output_path)
@@ -230,9 +218,7 @@ def musicxml_to_midi(musicxml_path: str, output_path: str) -> str:
         logger.info("Converted %s -> %s (MIDI)", musicxml_path, out)
         return str(out)
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to write MIDI file to {output_path}: {exc}"
-        ) from exc
+        raise RuntimeError(f"Failed to write MIDI file to {output_path}: {exc}") from exc
 
 
 def musicxml_to_lilypond(musicxml_path: str, output_path: str) -> str:
@@ -275,9 +261,7 @@ def musicxml_to_lilypond(musicxml_path: str, output_path: str) -> str:
     try:
         score = converter.parse(str(src))
     except Exception as exc:
-        raise ValueError(
-            f"music21 failed to parse MusicXML at {musicxml_path}: {exc}"
-        ) from exc
+        raise ValueError(f"music21 failed to parse MusicXML at {musicxml_path}: {exc}") from exc
 
     try:
         out = Path(output_path)
@@ -286,9 +270,7 @@ def musicxml_to_lilypond(musicxml_path: str, output_path: str) -> str:
         logger.info("Converted %s -> %s (LilyPond)", musicxml_path, out)
         return str(out)
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to write LilyPond file to {output_path}: {exc}"
-        ) from exc
+        raise RuntimeError(f"Failed to write LilyPond file to {output_path}: {exc}") from exc
 
 
 def midi_to_musicxml(midi_path: str) -> str:
@@ -329,9 +311,7 @@ def midi_to_musicxml(midi_path: str) -> str:
     try:
         score = converter.parse(str(src))
     except Exception as exc:
-        raise ValueError(
-            f"music21 failed to parse MIDI at {midi_path}: {exc}"
-        ) from exc
+        raise ValueError(f"music21 failed to parse MIDI at {midi_path}: {exc}") from exc
 
     try:
         from music21.musicxml import m21ToXml  # type: ignore[import-untyped]
@@ -340,9 +320,7 @@ def midi_to_musicxml(midi_path: str) -> str:
         musicxml_bytes: bytes = exporter.parse()
         return musicxml_bytes.decode("utf-8")
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to serialise MIDI-derived score to MusicXML: {exc}"
-        ) from exc
+        raise RuntimeError(f"Failed to serialise MIDI-derived score to MusicXML: {exc}") from exc
 
 
 def validate_musicxml(musicxml_path: str) -> list[str]:
@@ -431,9 +409,7 @@ def _get_cached_schema():
             logger.debug("Using cached MusicXML schema at %s", cache_file)
             schema_doc = etree.parse(str(cache_file))
         else:
-            logger.info(
-                "Downloading MusicXML 4.0 schema from %s", _MUSICXML_SCHEMA_URL
-            )
+            logger.info("Downloading MusicXML 4.0 schema from %s", _MUSICXML_SCHEMA_URL)
             response = urllib.request.urlopen(_MUSICXML_SCHEMA_URL, timeout=30)
             xsd_bytes = response.read()
             cache_dir.mkdir(parents=True, exist_ok=True)

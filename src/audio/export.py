@@ -34,9 +34,7 @@ def _ensure_output_dir(path: str) -> Path:
 def _require_ffmpeg() -> None:
     """Raise FileNotFoundError if ffmpeg is not on PATH."""
     if not shutil.which("ffmpeg"):
-        raise FileNotFoundError(
-            "ffmpeg not found. Install ffmpeg and ensure it is on PATH."
-        )
+        raise FileNotFoundError("ffmpeg not found. Install ffmpeg and ensure it is on PATH.")
 
 
 def convert_to_mp3(
@@ -64,10 +62,14 @@ def convert_to_mp3(
     _require_ffmpeg()
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", str(wav),
-        "-codec:a", "libmp3lame",
-        "-b:a", bitrate,
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(wav),
+        "-codec:a",
+        "libmp3lame",
+        "-b:a",
+        bitrate,
         str(out),
     ]
 
@@ -115,9 +117,12 @@ def convert_to_flac(wav_path: str, output_path: str) -> str:
     _require_ffmpeg()
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", str(wav),
-        "-codec:a", "flac",
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(wav),
+        "-codec:a",
+        "flac",
         str(out),
     ]
 
@@ -180,14 +185,16 @@ def normalize_loudness(
     # ------------------------------------------------------------------
     # Pass 1: Analyze loudness
     # ------------------------------------------------------------------
-    analysis_filter = (
-        f"loudnorm=I={target_lufs}:LRA=11:TP=-1.5:print_format=json"
-    )
+    analysis_filter = f"loudnorm=I={target_lufs}:LRA=11:TP=-1.5:print_format=json"
     cmd_pass1 = [
-        "ffmpeg", "-y",
-        "-i", str(wav),
-        "-af", analysis_filter,
-        "-f", "null",
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(wav),
+        "-af",
+        analysis_filter,
+        "-f",
+        "null",
         "-",
     ]
 
@@ -223,15 +230,19 @@ def normalize_loudness(
         f":linear=true:print_format=summary"
     )
     cmd_pass2 = [
-        "ffmpeg", "-y",
-        "-i", str(wav),
-        "-af", norm_filter,
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(wav),
+        "-af",
+        norm_filter,
         str(out),
     ]
 
     logger.info(
         "Applying normalization (pass 2): measured_I=%s, target=%s LUFS",
-        measured["input_i"], target_lufs,
+        measured["input_i"],
+        target_lufs,
     )
 
     try:
@@ -343,6 +354,7 @@ def add_metadata(
 
     if in_place:
         import tempfile
+
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=inp.suffix, dir=str(inp.parent))
         os.close(tmp_fd)
         dest = tmp_path
@@ -386,6 +398,7 @@ def add_metadata(
     if in_place:
         # Swap temp file over the original
         import shutil as _shutil
+
         _shutil.move(dest, str(inp))
         logger.info("Metadata written in-place: %s", inp)
         return str(inp.resolve())
@@ -450,26 +463,39 @@ def export_composition(
         final_wav = str(out_dir / f"{wav.stem}.wav")
         if source_wav != final_wav:
             import shutil as _shutil
+
             _shutil.copy2(source_wav, final_wav)
         outputs["wav"] = add_metadata(
-            final_wav, title=title, artist=artist, genre=genre,
-            year=year, comment=comment,
+            final_wav,
+            title=title,
+            artist=artist,
+            genre=genre,
+            year=year,
+            comment=comment,
         )
 
     if "mp3" in formats:
         mp3_path = str(out_dir / f"{wav.stem}.mp3")
         convert_to_mp3(source_wav, mp3_path)
         outputs["mp3"] = add_metadata(
-            mp3_path, title=title, artist=artist, genre=genre,
-            year=year, comment=comment,
+            mp3_path,
+            title=title,
+            artist=artist,
+            genre=genre,
+            year=year,
+            comment=comment,
         )
 
     if "flac" in formats:
         flac_path = str(out_dir / f"{wav.stem}.flac")
         convert_to_flac(source_wav, flac_path)
         outputs["flac"] = add_metadata(
-            flac_path, title=title, artist=artist, genre=genre,
-            year=year, comment=comment,
+            flac_path,
+            title=title,
+            artist=artist,
+            genre=genre,
+            year=year,
+            comment=comment,
         )
 
     # Clean up intermediate normalized file

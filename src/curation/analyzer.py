@@ -44,6 +44,7 @@ _DIM_MODULE_MAP = {
 def _import_dimension(name: str):
     """Lazily import a dimension module from src.curation.dimensions.<name>."""
     import importlib
+
     module_name = _DIM_MODULE_MAP.get(name, name)
     mod = importlib.import_module(f"src.curation.dimensions.{module_name}")
     return mod
@@ -65,6 +66,7 @@ def _parse_candidate_filename(wav_path: str) -> tuple[str, str]:
 # Composite score
 # ---------------------------------------------------------------------------
 
+
 def compute_composite(
     dimensions: dict[str, DimensionResult],
     config: PipelineConfig,
@@ -83,8 +85,7 @@ def compute_composite(
 
     soft_dims = ["structure", "rhythm", "harmony", "freq_balance", "evolution", "stereo_mix"]
     score = sum(
-        dimensions.get(d, DimensionResult(name=d)).score * weights.get(d, 0)
-        for d in soft_dims
+        dimensions.get(d, DimensionResult(name=d)).score * weights.get(d, 0) for d in soft_dims
     )
     return round(score, 4)
 
@@ -92,6 +93,7 @@ def compute_composite(
 # ---------------------------------------------------------------------------
 # Single candidate analysis
 # ---------------------------------------------------------------------------
+
 
 def analyze_candidate(
     wav_path: str,
@@ -240,6 +242,7 @@ def analyze_candidate(
 # Batch analysis with checkpointing
 # ---------------------------------------------------------------------------
 
+
 def _analyze_one(args: tuple) -> CandidateAnalysis:
     """Top-level wrapper so ProcessPoolExecutor can pickle the call."""
     wav_path, genre, config_dict, profile_dict = args
@@ -302,7 +305,9 @@ def analyze_batch(
 
     logger.info(
         "Analyzing %d candidates (%d cached) with %d workers",
-        len(pending), len(results), config.parallel_workers,
+        len(pending),
+        len(results),
+        config.parallel_workers,
     )
 
     # Serialize config and profiles for pickling
@@ -341,7 +346,9 @@ def analyze_batch(
                     _, cid = _parse_candidate_filename(wav_path)
                     logger.error("Analysis failed for %s: %s", cid, exc)
                     new_results[idx] = CandidateAnalysis(
-                        track_id=cid, candidate_id=cid, wav_path=wav_path,
+                        track_id=cid,
+                        candidate_id=cid,
+                        wav_path=wav_path,
                     )
     except Exception as exc:
         logger.error("ProcessPoolExecutor failed, falling back to sequential: %s", exc)
@@ -357,7 +364,9 @@ def analyze_batch(
                 _, cid = _parse_candidate_filename(wav_path)
                 logger.error("Sequential analysis failed for %s: %s", cid, inner_exc)
                 new_results[i] = CandidateAnalysis(
-                    track_id=cid, candidate_id=cid, wav_path=wav_path,
+                    track_id=cid,
+                    candidate_id=cid,
+                    wav_path=wav_path,
                 )
 
     results.extend(new_results[i] for i in sorted(new_results))
