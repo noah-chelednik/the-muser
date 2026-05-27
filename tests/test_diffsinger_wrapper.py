@@ -1,7 +1,6 @@
 """Tests for DiffSinger wrapper pure-logic functions."""
 
 
-
 class TestVocalExtraction:
     def test_extract_vocal_data(self, sample_musicxml_with_vocals):
         from src.generation.diffsinger_wrapper import _extract_vocal_data

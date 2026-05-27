@@ -1,6 +1,5 @@
 """Tests for the curation pipeline (analyzer, selector, config, models)."""
 
-
 from src.curation.models import (
     PipelineConfig,
     CandidateAnalysis,

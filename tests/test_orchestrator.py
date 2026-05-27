@@ -8,7 +8,6 @@ import os
 from unittest.mock import patch
 
 
-
 class TestToolDefinitions:
     """Tests for tool schema validity."""
 

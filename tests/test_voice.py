@@ -4,7 +4,6 @@ Tests cover voice registry CRUD, RVC wrapper parameter validation,
 and Demucs wrapper parameter validation.
 """
 
-
 import pytest
 
 
