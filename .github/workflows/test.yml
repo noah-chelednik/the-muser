@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
@@ -24,12 +25,24 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg fluidsynth libfluidsynth-dev
+          sudo apt-get install -y ffmpeg fluidsynth libfluidsynth-dev pkg-config
 
       - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev]" 2>&1 || {
+            echo "Full install failed, trying without optional C deps..."
+            pip install -e ".[dev]" --no-build-isolation 2>&1 || {
+              echo "Installing core deps individually..."
+              pip install pytest pytest-cov ruff
+              pip install pydantic click rich gitpython pyyaml lxml numpy scipy
+              pip install librosa soundfile pretty-midi mido
+              pip install litellm ollama music21
+              pip install pyfluidsynth || echo "pyfluidsynth skipped"
+              pip install symusic || echo "symusic skipped"
+              pip install -e . --no-deps
+            }
+          }
 
       - name: Run tests (CPU, no system deps)
         run: |
