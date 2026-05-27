@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  # CPU-only LLM server (keeps GPU free for music models)
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  # CPU-only mode (no GPU required)
+  muser-cpu:
+    build:
+      context: .
+      target: cpu
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - MUSER_LLM_MODE=local
+    volumes:
+      - ./compositions:/app/compositions
+      - ./voices:/app/voices
+      - ./soundfonts:/app/soundfonts
+    depends_on:
+      - ollama
+    stdin_open: true
+    tty: true
+
+  # GPU mode (requires NVIDIA Container Toolkit)
+  muser-gpu:
+    build:
+      context: .
+      target: gpu
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - MUSER_LLM_MODE=local
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./models:/app/models
+      - ./compositions:/app/compositions
+      - ./voices:/app/voices
+      - ./soundfonts:/app/soundfonts
+    depends_on:
+      - ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+
+  # Web UI mode
+  muser-web:
+    build:
+      context: .
+      target: gpu
+    command: ["muser-web"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - MUSER_LLM_MODE=local
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./models:/app/models
+      - ./compositions:/app/compositions
+      - ./voices:/app/voices
+      - ./soundfonts:/app/soundfonts
+    ports:
+      - "7860:7860"
+    depends_on:
+      - ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  ollama_data:

@@ -1,0 +1,108 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "the-muser"
+version = "1.0.0"
+description = "The open-source alternative to Suno and ElevenLabs Music. Natural language music composition — run locally, own everything."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "The Muser Contributors"},
+]
+keywords = ["music", "composition", "ai", "llm", "audio", "generation", "notation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Artistic Software",
+]
+
+dependencies = [
+    "litellm>=1.40,<2.0",
+    "pydantic>=2.0,<3.0",
+    "ollama>=0.3,<1.0",
+    "music21>=9.1,<10.0",
+    "pretty-midi>=0.2.10,<0.3",
+    "mido>=1.3.0,<2.0",
+    "symusic>=0.5.0,<1.0",
+    "pyfluidsynth>=1.3.0,<2.0",
+    "lxml>=5.0,<6.0",
+    "pyyaml>=6.0,<7.0",
+    "click>=8.1,<9.0",
+    "rich>=13.0,<14.0",
+    "gitpython>=3.1,<4.0",
+    "librosa>=0.10,<0.11",
+    "soundfile>=0.12,<0.13",
+    "numpy>=1.24,<2.0",
+    "scipy>=1.11,<2.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "torch>=2.1,<3.0",
+    "torchaudio>=2.1,<3.0",
+    "accelerate>=0.25,<1.0",
+    "safetensors>=0.4,<1.0",
+    "onnxruntime-gpu>=1.16,<2.0",
+]
+anthropic = [
+    "anthropic>=0.39.0,<1.0",
+]
+voice = [
+    "demucs>=4.0,<5.0",
+    "g2p_en>=2.1,<3.0",
+    "huggingface_hub>=0.20,<1.0",
+    "onnxruntime>=1.16,<2.0",
+]
+web = [
+    "gradio>=4.0,<5.0",
+]
+midi = [
+    "basic-pitch>=0.3",
+]
+dev = [
+    "pytest>=7.4,<9.0",
+    "pytest-cov>=4.1,<6.0",
+    "pytest-timeout>=2.2,<3.0",
+    "pytest-asyncio>=0.21,<1.0",
+    "ruff>=0.1,<1.0",
+    "pre-commit>=3.5,<4.0",
+]
+all = [
+    "the-muser[gpu,anthropic,voice,web,midi,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/noah-chelednik/the-muser"
+Repository = "https://github.com/noah-chelednik/the-muser"
+Issues = "https://github.com/noah-chelednik/the-muser/issues"
+Documentation = "https://github.com/noah-chelednik/the-muser/tree/main/docs"
+
+[project.scripts]
+muser = "src.cli:main"
+muser-web = "src.web.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "gpu: requires CUDA GPU",
+    "system: requires system packages (lilypond, fluidsynth, etc.)",
+    "integration: end-to-end integration tests",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100

@@ -1,0 +1,104 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+
+# AI Models (large, downloaded separately)
+models/notagen/
+models/ace-step/
+models/diffsinger/
+models/applio/
+models/demucs/
+
+# Soundfonts (large binary files)
+soundfonts/*.sf2
+soundfonts/*.sfz
+soundfonts/sonatina-sso/
+
+# Training outputs (large)
+muser-orchestrator-lora/
+muser-orchestrator-gguf/
+
+# Composition projects (user data)
+compositions/*/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Launch credentials — contains platform passwords, never commit
+LAUNCH_CHECKLIST.md
+LAUNCH_CREDENTIALS.md
+MUSER_LAUNCH_v*.md
+
+# Personal/business documents (never commit)
+*.pdf
+*.docx
+*.log
+*.tar.gz
+CP_575_G.pdf
+Docs/
+fiverr_lofi_gig_assets/
+kofi_rebrand/
+production_run/
+full_production_run.py
+FASTEST_PATH_TO_REVENUE.md
+THE_MUSER_REVENUE_AND_USAGE_GUIDE.md
+THE_MUSER_TECHNICAL_REPORT.md
+PRODUCTION_RUN_INSTRUCTIONS.md
+MUSER_REVISON_PLAN.md
+MUSER_GPU_COEXISTENCE_AND_TIMELINE.md
+Suggested Revisons.md
+muser-gpu-day.tar.gz
+
+# Training data (user-specific, may contain copyrighted references)
+training_data/song_catalog.yaml
+training_data/sessions/
+
+# Generated assets
+assets/album_covers/
+
+# Demo audio (large files — host as GitHub Release assets, not in repo)
+demos/*.wav
+demos/*.mp3
+demos/*.flac
+
+# User-specific curation config
+curation_config.json
+
+# Internal operational docs (contain personal business details)
+docs/CURATION_RUN_GUIDE.md
+docs/CURATION_PIPELINE_ANALYSIS.md
+docs/AUTOMATED_CURATION_PIPELINE_SPEC.md
+docs/Voice_Cloning_Master_Guide_v5.docx
+MUSER_CLAUDE_CODE_PROMPT.md
+LAUNCH_INSTRUCTIONS.md
+LAUNCH_CHECKLIST.md
+MUSER_LAUNCH_v3.md
+huggingface-space/
+
+# Local tool installs (Ollama, FluidSynth, LilyPond)
+.local/
+
+# Claude Code
+.claude/
+CLAUDE.md

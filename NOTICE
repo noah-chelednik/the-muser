@@ -1,0 +1,187 @@
+The Muser — Third-Party Attributions
+
+This project incorporates or interfaces with the following third-party
+software and models. Each component retains its original license.
+
+================================================================================
+LLM Orchestration
+================================================================================
+
+Qwen3-30B-A3B — Primary Orchestration LLM
+  License: Apache License 2.0
+  Source: https://huggingface.co/Qwen/Qwen3-30B-A3B
+  Usage: Local inference via Ollama for agentic composition orchestration
+
+Ollama — Local LLM Server
+  License: MIT License
+  Source: https://github.com/ollama/ollama
+  Usage: Serves the orchestration LLM on CPU, isolated from GPU
+
+LiteLLM — LLM Provider Abstraction
+  License: MIT License
+  Source: https://github.com/BerriAI/litellm
+  Usage: Provider-agnostic routing between Ollama, Groq, Gemini, Anthropic
+
+================================================================================
+AI Models
+================================================================================
+
+NotaGen — Symbolic Music Generation
+  License: Apache License 2.0
+  Source: https://github.com/ElectricAlexis/NotaGen
+  Usage: Model weights loaded at runtime for ABC notation generation
+
+ACE-Step v1.5 — Text-to-Music Generation
+  License: Apache License 2.0
+  Source: https://github.com/ACE-Step/ACE-Step
+  Usage: Model weights loaded at runtime for audio generation
+
+DiffSinger — Singing Voice Synthesis
+  License: Apache License 2.0 (framework code)
+  Source: https://github.com/openvpi/DiffSinger
+  Usage: Model weights loaded at runtime for vocal synthesis
+
+NSF-HiFiGAN Vocoder (OpenVPI Community)
+  License: CC-BY-NC-SA 4.0 (NON-COMMERCIAL)
+  Source: https://github.com/openvpi/vocoders
+  Usage: OPTIONAL vocoder for DiffSinger. NOT used by default.
+         Requires explicit opt-in via MUSER_VOCODER_NC_ACK=true.
+         Output generated with this vocoder cannot be commercially distributed.
+
+fish-hifigan Vocoder
+  License: Apache License 2.0
+  Source: https://github.com/fishaudio/fish-speech
+  Usage: Recommended commercial-safe vocoder for DiffSinger.
+
+Seed-VC — Zero-Shot Voice Conversion
+  License: MIT License
+  Source: https://github.com/Plachtaa/seed-vc
+  Usage: Zero-shot voice conversion without model training
+
+Demucs — Music Source Separation
+  License: MIT License
+  Source: https://github.com/facebookresearch/demucs
+  Copyright: Meta Platforms, Inc.
+  Usage: Python library for audio stem separation
+
+Applio / RVC — Voice Conversion
+  License: MIT License
+  Source: https://github.com/IAHispano/Applio
+  Usage: Voice conversion engine
+
+SOFA — Singing-Oriented Forced Aligner
+  License: MIT License
+  Source: https://github.com/qiuqiao/SOFA
+  Usage: Phoneme alignment for DiffSinger training
+
+SOME — Singing-Oriented MIDI Extractor
+  License: MIT License
+  Source: https://github.com/openvpi/SOME
+  Usage: Pitch curve estimation for DiffSinger training
+
+================================================================================
+Music Software (Subprocess Only — GPL Isolation)
+================================================================================
+
+LilyPond — Music Engraving
+  License: GNU General Public License v3.0
+  Source: https://lilypond.org
+  Usage: Invoked as external subprocess for PDF score rendering.
+         NOT linked or imported as a library.
+
+MuseScore — Music Notation
+  License: GNU General Public License v3.0
+  Source: https://musescore.org
+  Usage: Invoked as external subprocess for PDF/PNG rendering.
+         NOT linked or imported as a library.
+
+================================================================================
+Optional GPL Components (User Opt-In Only)
+================================================================================
+
+parselmouth — Python Praat Bindings
+  License: GNU General Public License v3.0
+  Source: https://github.com/YannickJadoul/Parselmouth
+  Usage: OPTIONAL formant shifting for voice feminization.
+         NOT used by default (default: Praat CLI subprocess).
+         Only activated when MUSER_FEMINIZE_BACKEND=parselmouth.
+
+phonemizer — Grapheme-to-Phoneme Conversion
+  License: GNU General Public License v3.0
+  Source: https://github.com/bootphon/phonemizer
+  Usage: OPTIONAL G2P backend for DiffSinger.
+         NOT used by default (default: g2p_en, Apache 2.0).
+         Only used if installed and g2p_en is unavailable.
+
+================================================================================
+Audio Libraries
+================================================================================
+
+FluidSynth — SoundFont Synthesizer
+  License: GNU Lesser General Public License v2.1
+  Source: https://www.fluidsynth.org
+  Usage: Dynamic linking via pyfluidsynth for MIDI-to-audio rendering
+
+sfizz — SFZ Sample Player
+  License: BSD 2-Clause License
+  Source: https://sfz.tools/sfizz
+  Usage: Invoked as external subprocess for high-quality audio rendering
+
+================================================================================
+Python Libraries
+================================================================================
+
+music21 — Music Analysis Toolkit
+  License: BSD License
+  Copyright: Michael Scott Asato Cuthbert
+  Source: https://github.com/cuthbertLab/music21
+
+Anthropic Python SDK
+  License: MIT License
+  Source: https://github.com/anthropics/anthropic-sdk-python
+
+PyTorch
+  License: BSD License
+  Copyright: Meta Platforms, Inc.
+  Source: https://pytorch.org
+
+librosa — Audio Analysis
+  License: ISC License
+  Source: https://github.com/librosa/librosa
+
+pretty-midi — MIDI Manipulation
+  License: MIT License
+  Source: https://github.com/craffel/pretty-midi
+
+Pydantic — Data Validation
+  License: MIT License
+  Source: https://github.com/pydantic/pydantic
+
+GitPython
+  License: BSD License
+  Source: https://github.com/gitpython-developers/GitPython
+
+Click — CLI Framework
+  License: BSD License
+  Source: https://github.com/pallets/click
+
+Rich — Terminal Formatting
+  License: MIT License
+  Source: https://github.com/Textualize/rich
+
+================================================================================
+Soundfonts
+================================================================================
+
+FluidR3_GM
+  License: MIT License
+  Usage: General MIDI soundfont for preview audio rendering
+
+GeneralUser GS
+  License: Custom permissive (see included license)
+  Author: S. Christian Collins
+  Usage: General MIDI soundfont for draft audio rendering
+
+Sonatina Symphonic Orchestra
+  License: Creative Commons Sampling Plus 1.0
+  Usage: SFZ orchestral samples for high-quality rendering

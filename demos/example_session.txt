@@ -1,0 +1,46 @@
+The Muser — Example Interactive Session
+========================================
+
+$ muser
+
+┌─────────────────────────────────────────────────────────┐
+│ The Muser — Natural Language Music Composition          │
+│ Type your instructions to compose music. Type quit to   │
+│ exit.                                                   │
+└─────────────────────────────────────────────────────────┘
+
+You: Compose a 2-minute lo-fi hip hop beat with jazzy piano chords and vinyl crackle
+
+[The Muser calls: create_composition_plan]
+[The Muser calls: generate_audio_acestep_v15]
+  → Generated 2 candidates, selected best (grade B)
+[The Muser calls: score_audio_quality]
+  → Composite: 0.72, Grade: B, Recommendation: Good quality, minor issues
+[The Muser calls: play_audio]
+
+The Muser: Your lo-fi beat is ready! I generated a 2-minute track with
+warm jazz piano over a laid-back drum pattern with vinyl texture. The
+quality score is B (0.72) — good for release with light post-production.
+
+The audio is at: compositions/lofi_beat/renders/gen_001_best.wav
+
+Would you like me to:
+- Apply post-production mastering?
+- Adjust the EQ or add more reverb?
+- Generate a different variation?
+
+You: Add more reverb and boost the low end, then master it for streaming
+
+[The Muser calls: apply_reverb(room_size=0.7, decay=0.5, mix=0.4)]
+[The Muser calls: apply_eq(frequency_hz=80, gain_db=3.0, q=0.8)]
+[The Muser calls: apply_postproduction(genre="default")]
+[The Muser calls: export_final(formats=["wav", "mp3", "flac"])]
+
+The Muser: Done! Your lo-fi beat has been mastered to -14 LUFS and
+exported in three formats:
+- compositions/lofi_beat/output/lofi_beat.wav
+- compositions/lofi_beat/output/lofi_beat.mp3
+- compositions/lofi_beat/output/lofi_beat.flac
+
+You: quit
+Goodbye!
