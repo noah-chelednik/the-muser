@@ -52,6 +52,22 @@ MODELS: list[dict[str, Any]] = [
         "stems": 6,
         "gpu": True,
     },
+    # Community Roformer checkpoints. Their authors publish no licence we can verify, so they are
+    # opt-in, labelled, and never picked by default ("weights_license": "unstated").
+    {
+        "file": "mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt",
+        "label": "Karaoke: lead vocal vs backing vocals (Mel-Roformer, licence unstated)",
+        "stems": 2,
+        "gpu": True,
+        "weights_license": "unstated",
+    },
+    {
+        "file": "denoise_mel_band_roformer_aufr33_sdr_27.9959.ckpt",
+        "label": "Denoise a vocal or mix (Mel-Roformer, licence unstated)",
+        "stems": 2,
+        "gpu": True,
+        "weights_license": "unstated",
+    },
 ]
 
 
@@ -66,7 +82,19 @@ def _separator(out_dir: Path):
     from audio_separator.separator import Separator  # type: ignore
 
     SEP_MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    return Separator(output_dir=str(out_dir), model_file_dir=str(SEP_MODEL_DIR), log_level=40)
+    kw: dict[str, Any] = {
+        "output_dir": str(out_dir),
+        "model_file_dir": str(SEP_MODEL_DIR),
+        "log_level": 40,
+        # audio-separator peak-limits every stem to 0.9 on its own, which turns loud stems down by
+        # different amounts so they stop adding up to the song. 1.0 only guards against overs.
+        "normalization_threshold": 1.0,
+    }
+    try:
+        return Separator(**kw)
+    except TypeError:  # an older audio-separator without the option
+        kw.pop("normalization_threshold")
+        return Separator(**kw)
 
 
 def prefetch(model: str = DEFAULT_MODEL) -> None:
@@ -109,8 +137,35 @@ def separate(
     engine: str = "auto",
     model: str | None = None,
     progress: Callable[[str], None] | None = None,
+    fidelity: bool = True,
+    residual: str = "auto",
 ) -> dict[str, Any]:
-    """Split ``path``. Returns {stems: {name: path}, engine, model, note}."""
+    """Split ``path``. Returns {stems: {name: path}, engine, model, note, fidelity}.
+
+    With ``fidelity`` (default) real splits are brought back to the source's sample rate, written
+    as 24-bit WAV and null-tested against the source, see :mod:`.stem_fidelity`. ``residual`` is
+    ``"auto"`` (rebuild the instrumental / other stem as song minus the rest only when the stems
+    do not already sum back), ``"off"``, or a stem name.
+    """
+    res = _separate(path, out_dir, mode, engine, model, progress)
+    if fidelity and res["engine"] != "band-split":
+        from . import stem_fidelity
+
+        fid = stem_fidelity.reconcile(path, res["stems"], residual=residual, progress=progress)
+        res["stems"] = fid["stems"]
+        res["fidelity"] = {k: v for k, v in fid.items() if k != "stems"}
+        res["note"] = f"{res['note']} {stem_fidelity.describe(fid)}"
+    return res
+
+
+def _separate(
+    path: str,
+    out_dir: Path,
+    mode: str,
+    engine: str,
+    model: str | None,
+    progress: Callable[[str], None] | None,
+) -> dict[str, Any]:
     from . import selector
 
     if engine == "auto":

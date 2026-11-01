@@ -35,6 +35,8 @@ The Studio's auto-selector is commercial-safe by default: it only picks tools ma
 | Demucs v4 | MIT | **YES** | |
 | DeepFilterNet 3 | MIT or Apache 2.0 | **YES** | |
 | Audio Separator (UVR models) | MIT, varies per model | **CONDITIONS** | Check each model's card |
+| Karaoke and denoise Roformer weights (aufr33, viperx) | Not stated | **CONDITIONS** | Opt-in, labelled "licence unstated", never auto-picked. The anvuew de-reverb weights are GPL-3.0 and are deliberately not offered. |
+| stemsep, TramEFX stem-separator, nussl | MIT | n/a | Ideas only, no code shipped. nussl is only the inspiration for a dev benchmark script |
 | ACE-Step 1.5 | MIT | **YES** | Default generator, runs on 8 GB cards |
 | DiffRhythm | Apache 2.0 | **YES** | |
 | AudioSR, Resemble Enhance | MIT | **YES** | |

@@ -78,13 +78,21 @@ def is_silent(x: np.ndarray) -> bool:
 
 
 def write(
-    path: str | Path, x: np.ndarray, sr: int, *, allow_silent: bool = False, subtype: str = "PCM_24"
+    path: str | Path,
+    x: np.ndarray,
+    sr: int,
+    *,
+    allow_silent: bool = False,
+    subtype: str = "PCM_24",
+    limit: bool = True,
 ) -> str:
     """Write audio with guardrails.
 
     * NaN / inf are removed.
     * Silent output raises a :class:`FriendlyError` instead of producing a dead file.
-    * Anything above 0 dBFS is caught by a transparent safety limiter (no clipping).
+    * Anything above 0 dBFS is caught by a transparent safety limiter (no clipping). Pass
+      ``limit=False`` to keep sample values exactly as given (hard-clipped at full scale), which
+      is what stem sets need so that they still add up to the song.
     * The file is written atomically and re-opened to prove it is valid.
     """
     x = np.nan_to_num(np.asarray(x, dtype=np.float32), nan=0.0, posinf=0.0, neginf=0.0)
@@ -95,7 +103,9 @@ def write(
             "The result came out silent, so it was not saved.",
             "Check that the stems are not all muted and try again.",
         )
-    if float(np.max(np.abs(x))) > 0.999:
+    if not limit:
+        x = np.clip(x, -1.0, 1.0 - 2.0**-23)
+    elif float(np.max(np.abs(x))) > 0.999:
         from .dsp import true_peak_limit
 
         x = true_peak_limit(x, sr, ceiling_db=-0.3)
