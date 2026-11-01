@@ -3,6 +3,21 @@
 All notable changes to The Muser are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- Stem fidelity pass after every AI split: stems come back at your file's sample rate (one high
+  quality resample), as 24-bit WAV, with a measured "adds back up to the song" check. When a model
+  loses energy, the catch-all stem (instrumental / other) is rebuilt as the song minus the rest.
+  Approach credited to stemsep (MIT).
+- Opt-in karaoke (lead vs backing) and denoise Roformer models in Advanced mode, labelled
+  "licence unstated".
+- `scripts/bench_sdr.py`: developer-only SDR / SI-SDR / null-test benchmark (not shipped).
+
+### Changed
+- audio-separator is asked not to peak-limit stems to 0.9 (`normalization_threshold=1.0`), so loud
+  stems keep the same relative level and still sum to the song.
+
 ## [1.0.0] - 2026-05-26
 
 ### Added

@@ -17,6 +17,9 @@ The Muser Contributors.
 | NotaGen | MIT | Symbolic notation | YES |
 | Applio / RVC | MIT | Voice conversion | YES |
 | Demucs | MIT | Stem separation | YES |
+| stemsep (approach only, no code) | MIT | Null test / residual idea | YES |
+| nussl fork (dev benchmark only, not shipped) | MIT | `scripts/bench_sdr.py` inspiration | n/a |
+| Community Roformer karaoke / denoise weights | **unstated** | Opt-in separation models | **CHECK** |
 | Seed-VC | MIT | Zero-shot voice conversion | YES |
 
 ## Vocoders (Critical for DiffSinger)

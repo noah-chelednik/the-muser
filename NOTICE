@@ -170,6 +170,35 @@ Rich — Terminal Formatting
   Source: https://github.com/Textualize/rich
 
 ================================================================================
+Stem separation: ideas and community model weights
+================================================================================
+
+stemsep (badwolf-ro)
+  License: MIT License
+  Source: https://github.com/badwolf-ro/stemsep
+  Usage: Approach only (one high-quality resample back to the source rate, residual subtraction,
+         null test, 24-bit output). studio/server/engines/stem_fidelity.py is an independent
+         implementation; no stemsep code is copied or shipped.
+
+TramEFX stem-separator
+  License: MIT License
+  Source: https://github.com/TramEFX/stem-separator
+  Usage: Reference for which community Roformer models are worth offering (karaoke lead vs
+         backing, denoise). No code is copied or shipped.
+
+nussl and its modernized fork (Stavion-Colquitt)
+  License: MIT License
+  Source: https://github.com/Stavion-Colquitt/nussl
+  Usage: Inspiration for scripts/bench_sdr.py, a developer-only SDR benchmark. Not imported by
+         the Studio and not shipped to users. No nussl code is used.
+
+Mel-Band Roformer karaoke (aufr33, viperx) and Mel-Band Roformer denoise (aufr33)
+  License: not stated by the authors (weights are community releases)
+  Source: downloaded on demand by audio-separator from the model hosts it lists; never bundled
+  Usage: Opt-in, labelled "licence unstated" in Advanced mode, never selected automatically.
+         Check the weights' terms yourself before releasing audio made with them commercially.
+
+================================================================================
 Soundfonts
 ================================================================================
 
