@@ -1,0 +1,48 @@
+{
+  "id": "vocal/choir-hall",
+  "name": "Choir Hall",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "choir",
+    "gospel",
+    "backing"
+  ],
+  "description": "Big hall for backing vocals and choirs.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 150
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -22,
+        "ratio": 2,
+        "attack_ms": 20,
+        "release_ms": 200,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.85,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.35
+      }
+    },
+    {
+      "type": "width",
+      "params": {
+        "width": 1.4
+      }
+    }
+  ]
+}

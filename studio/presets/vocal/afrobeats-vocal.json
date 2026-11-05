@@ -1,0 +1,57 @@
+{
+  "id": "vocal/afrobeats-vocal",
+  "name": "Afrobeats Vocal",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "afrobeats",
+    "dancehall"
+  ],
+  "description": "Bright vocal with a short slap delay.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 90
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -19,
+        "ratio": 3.5,
+        "attack_ms": 6,
+        "release_ms": 90,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 9000,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 110,
+        "feedback": 0.15,
+        "mix": 0.12
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.4,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.12
+      }
+    }
+  ]
+}

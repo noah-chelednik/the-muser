@@ -1,0 +1,47 @@
+{
+  "id": "genre/trap",
+  "name": "Trap",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "trap",
+    "hip hop"
+  ],
+  "description": "Hard 808s and rolling hats.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "fire",
+  "generate": {
+    "prompt": "dark trap beat, rolling hi-hats, heavy 808, eerie bells",
+    "bpm": 140,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "dark modern trap instrumental, heavy distorted 808 bass with long glide, rolling hi-hats with triplet stutters and fast rolls, crisp snares and claps, eerie bell and pluck melody, sparse minor key atmosphere, club-ready loud mix, 140 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 140,
+      "key_scale": "F# minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 7.0,
+      "duration_s": 32,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/trap-drums",
+    "bass": "mix/808-weight",
+    "keys": "mix/lush-keys",
+    "lead": "mix/dark-lead"
+  },
+  "master": "master/hip-hop-master",
+  "macros": {
+    "energy": 75,
+    "vocals": 55,
+    "bass": 75,
+    "brightness": 55,
+    "space": 40
+  }
+}

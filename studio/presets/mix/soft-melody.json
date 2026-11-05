@@ -1,0 +1,48 @@
+{
+  "id": "mix/soft-melody",
+  "name": "Soft Melody",
+  "category": "mix",
+  "subcategory": "lead",
+  "tags": [
+    "chill",
+    "lofi",
+    "soft"
+  ],
+  "description": "Gentle melody that sits back in the mix.",
+  "version": 1,
+  "factory": true,
+  "role": "lead",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 200
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 9000
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -24,
+        "ratio": 2,
+        "attack_ms": 20,
+        "release_ms": 200,
+        "makeup_db": 1
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.55,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.25
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "mix/808-weight",
+  "name": "808 Weight",
+  "category": "mix",
+  "subcategory": "bass",
+  "tags": [
+    "808",
+    "trap",
+    "hip hop"
+  ],
+  "description": "Big sub with harmonic saturation so it translates on small speakers.",
+  "version": 1,
+  "factory": true,
+  "role": "bass",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 25
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 9,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "lowshelf",
+      "params": {
+        "cutoff_hz": 60,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 4,
+        "attack_ms": 10,
+        "release_ms": 150,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 6000
+      }
+    }
+  ]
+}

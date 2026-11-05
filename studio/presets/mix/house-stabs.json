@@ -1,0 +1,49 @@
+{
+  "id": "mix/house-stabs",
+  "name": "House Stabs",
+  "category": "mix",
+  "subcategory": "keys",
+  "tags": [
+    "house",
+    "dance"
+  ],
+  "description": "Punchy chord stabs that cut through.",
+  "version": 1,
+  "factory": true,
+  "role": "keys",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 150
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 4,
+        "attack_ms": 3,
+        "release_ms": 80,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 375,
+        "feedback": 0.25,
+        "mix": 0.15
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.4,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.15
+      }
+    }
+  ]
+}

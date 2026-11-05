@@ -1,0 +1,35 @@
+{
+  "id": "vocal/megaphone",
+  "name": "Megaphone",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "fx",
+    "creative"
+  ],
+  "description": "Thin bullhorn effect.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 800
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 3500
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 14,
+        "mix": 0.8
+      }
+    }
+  ]
+}

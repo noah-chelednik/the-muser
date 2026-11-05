@@ -1,0 +1,41 @@
+{
+  "id": "mix/airy-bus",
+  "name": "Airy Bus",
+  "category": "mix",
+  "subcategory": "bus",
+  "tags": [
+    "bus",
+    "bright",
+    "wide"
+  ],
+  "description": "Opens up the top and widens.",
+  "version": 1,
+  "factory": true,
+  "role": "bus",
+  "chain": [
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 12000,
+        "gain_db": 2.5,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "width",
+      "params": {
+        "width": 1.15
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -14,
+        "ratio": 1.8,
+        "attack_ms": 30,
+        "release_ms": 200,
+        "makeup_db": 0.5
+      }
+    }
+  ]
+}

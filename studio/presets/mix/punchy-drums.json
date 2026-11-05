@@ -1,0 +1,56 @@
+{
+  "id": "mix/punchy-drums",
+  "name": "Punchy Drums",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "punchy",
+    "modern"
+  ],
+  "description": "Tight low end, snappy transients, glue compression.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 30
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 60,
+        "gain_db": 2.5,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 400,
+        "gain_db": -2.5,
+        "q": 1.5
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 4,
+        "attack_ms": 8,
+        "release_ms": 90,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 8000,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    }
+  ]
+}

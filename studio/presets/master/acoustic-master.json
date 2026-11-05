@@ -1,0 +1,45 @@
+{
+  "id": "master/acoustic-master",
+  "name": "Acoustic Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "acoustic",
+    "folk",
+    "jazz",
+    "genre"
+  ],
+  "description": "Gentle and dynamic, keeps the natural feel.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "apple",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 30
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -22,
+          "ratio": 1.5,
+          "attack_ms": 40,
+          "release_ms": 300,
+          "makeup_db": 0.5
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 12000,
+          "gain_db": 1,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

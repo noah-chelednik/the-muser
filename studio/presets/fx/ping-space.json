@@ -1,0 +1,33 @@
+{
+  "id": "fx/ping-space",
+  "name": "Ping Space",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "delay",
+    "reverb",
+    "dreamy"
+  ],
+  "description": "Delay into reverb for dreamy tails.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 375,
+        "feedback": 0.4,
+        "mix": 0.25
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.7,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.3
+      }
+    }
+  ]
+}

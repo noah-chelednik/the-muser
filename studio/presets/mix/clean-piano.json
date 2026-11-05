@@ -1,0 +1,58 @@
+{
+  "id": "mix/clean-piano",
+  "name": "Clean Piano",
+  "category": "mix",
+  "subcategory": "keys",
+  "tags": [
+    "pop",
+    "piano",
+    "clean"
+  ],
+  "description": "Clear, present piano for pop and ballads.",
+  "version": 1,
+  "factory": true,
+  "role": "keys",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 60
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 250,
+        "gain_db": -2,
+        "q": 1
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 3000,
+        "gain_db": 1.5,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 2,
+        "attack_ms": 15,
+        "release_ms": 150,
+        "makeup_db": 1
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.45,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.15
+      }
+    }
+  ]
+}

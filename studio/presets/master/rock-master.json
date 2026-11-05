@@ -1,0 +1,51 @@
+{
+  "id": "master/rock-master",
+  "name": "Rock Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "rock",
+    "indie",
+    "genre"
+  ],
+  "description": "Mid-forward energy and punch.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "spotify",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 30
+        }
+      },
+      {
+        "type": "peak",
+        "params": {
+          "freq_hz": 2500,
+          "gain_db": 1.5,
+          "q": 0.8
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -16,
+          "ratio": 3,
+          "attack_ms": 20,
+          "release_ms": 150,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 3,
+          "mix": 0.4
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

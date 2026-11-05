@@ -1,0 +1,48 @@
+{
+  "id": "mix/crushed-drums",
+  "name": "Crushed Drums",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "aggressive",
+    "drill",
+    "parallel"
+  ],
+  "description": "Parallel smash for aggressive energy.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 30
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -30,
+        "ratio": 10,
+        "attack_ms": 1,
+        "release_ms": 60,
+        "makeup_db": 8
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 10,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 7000,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "mix/tape-keys",
+  "name": "Tape Keys",
+  "category": "mix",
+  "subcategory": "keys",
+  "tags": [
+    "lofi",
+    "vintage",
+    "warm"
+  ],
+  "description": "Wobbly, warm, lo-fi keys.",
+  "version": 1,
+  "factory": true,
+  "role": "keys",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 100
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 6000
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.3,
+        "depth": 0.4,
+        "centre_delay_ms": 12,
+        "feedback": 0,
+        "mix": 0.35
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 6,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.5,
+        "damping": 0.6,
+        "width": 1.0,
+        "mix": 0.2
+      }
+    }
+  ]
+}

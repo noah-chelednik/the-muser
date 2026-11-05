@@ -1,0 +1,22 @@
+{
+  "id": "fx/bitcrusher",
+  "name": "Bitcrusher",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "distortion",
+    "retro"
+  ],
+  "description": "8-bit video game grit.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "bitcrush",
+      "params": {
+        "bit_depth": 6,
+        "mix": 0.7
+      }
+    }
+  ]
+}

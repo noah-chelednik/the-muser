@@ -1,0 +1,43 @@
+{
+  "id": "master/podcast-master",
+  "name": "Podcast Master",
+  "category": "master",
+  "subcategory": "platform",
+  "tags": [
+    "platform",
+    "podcast"
+  ],
+  "description": "-16 LUFS, -1 dBTP. Spoken word standard.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "podcast",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 70
+        }
+      },
+      {
+        "type": "deesser",
+        "params": {
+          "frequency_hz": 6000,
+          "threshold_db": -28,
+          "ratio": 3
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -20,
+          "ratio": 3,
+          "attack_ms": 10,
+          "release_ms": 150,
+          "makeup_db": 2
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

@@ -1,0 +1,287 @@
+[
+ {
+  "tag": "cathode-Pixel7",
+  "steps": [
+   {
+    "name": "skin applied, cross-origin isolated",
+    "ok": true,
+    "note": "",
+    "ms": 2
+   },
+   {
+    "name": "title and brand say NoDAW Studio PRO",
+    "ok": true,
+    "note": "",
+    "ms": 5
+   },
+   {
+    "name": "NoDAW button opens the v2 teaser panel",
+    "ok": true,
+    "note": "",
+    "ms": 1848
+   },
+   {
+    "name": "Easy generate (genre synth)",
+    "ok": true,
+    "note": "",
+    "ms": 5249
+   },
+   {
+    "name": "Advanced mode: audible with a real tap (RMS > 0.002)",
+    "ok": true,
+    "note": "rms 0.298",
+    "ms": 5254
+   },
+   {
+    "name": "no horizontal overflow (Advanced)",
+    "ok": true,
+    "note": "",
+    "ms": 3
+   },
+   {
+    "name": "Live FX: scenes, limiter, bypass, undo/redo change the sound",
+    "ok": true,
+    "note": "rms 0.409 -> 0.266",
+    "ms": 11298
+   },
+   {
+    "name": "Live FX: export of the mix is non-silent WAV",
+    "ok": true,
+    "note": "rms 0.213 peak 0.95 33.2s",
+    "ms": 3265
+   },
+   {
+    "name": "Sampler: region, crop, undo, BPM detect, chop to pads",
+    "ok": true,
+    "note": "bpm 69.9, 12 pads",
+    "ms": 15335
+   },
+   {
+    "name": "Pads play from the Sampler tab (pad 1 audition)",
+    "ok": true,
+    "note": "ok",
+    "ms": 644
+   },
+   {
+    "name": "Split in browser (mini) on split_clip.wav: stems non-silent, sum ~ mix",
+    "ok": true,
+    "note": "mini: 4 stems 20s 1.43x of clip length WASM multi Light preview (Mini-RoFormer) model | stems 4 SNR 27.0 dB",
+    "ms": 43105
+   },
+   {
+    "name": "split stems play audibly in the mixer",
+    "ok": true,
+    "note": "rms 0.502",
+    "ms": 2729
+   },
+   {
+    "name": "no horizontal overflow (after all tabs)",
+    "ok": true,
+    "note": "",
+    "ms": 1
+   },
+   {
+    "name": "no console errors",
+    "ok": true,
+    "note": "",
+    "ms": 0
+   },
+   {
+    "name": "autoplay blocked: gate banner appears, then a real tap is audible",
+    "ok": true,
+    "note": "first state running, gate 0, rms 0.237",
+    "ms": 11668
+   }
+  ]
+ },
+ {
+  "tag": "terrain-Pixel7",
+  "steps": [
+   {
+    "name": "skin applied, cross-origin isolated",
+    "ok": true,
+    "note": "",
+    "ms": 2
+   },
+   {
+    "name": "title and brand say NoDAW Studio PRO",
+    "ok": true,
+    "note": "",
+    "ms": 15
+   },
+   {
+    "name": "NoDAW button opens the v2 teaser panel",
+    "ok": true,
+    "note": "",
+    "ms": 8148
+   },
+   {
+    "name": "Easy generate (genre synth)",
+    "ok": true,
+    "note": "",
+    "ms": 9253
+   },
+   {
+    "name": "Advanced mode: audible with a real tap (RMS > 0.002)",
+    "ok": true,
+    "note": "rms 0.285",
+    "ms": 12517
+   },
+   {
+    "name": "no horizontal overflow (Advanced)",
+    "ok": true,
+    "note": "",
+    "ms": 2
+   },
+   {
+    "name": "Live FX: scenes, limiter, bypass, undo/redo change the sound",
+    "ok": true,
+    "note": "rms 0.403 -> 0.036",
+    "ms": 31196
+   },
+   {
+    "name": "Live FX: export of the mix is non-silent WAV",
+    "ok": true,
+    "note": "rms 0.213 peak 0.95 33.2s",
+    "ms": 5644
+   },
+   {
+    "name": "Sampler: region, crop, undo, BPM detect, chop to pads",
+    "ok": true,
+    "note": "bpm 69.9, 13 pads",
+    "ms": 41443
+   },
+   {
+    "name": "Pads play from the Sampler tab (pad 1 audition)",
+    "ok": true,
+    "note": "ok",
+    "ms": 3864
+   },
+   {
+    "name": "Split in browser (mini) on split_clip.wav: stems non-silent, sum ~ mix",
+    "ok": true,
+    "note": "mini: 4 stems 20s 1.45x of clip length WASM multi Light preview (Mini-RoFormer) model | stems 4 SNR 27.0 dB",
+    "ms": 43985
+   },
+   {
+    "name": "split stems play audibly in the mixer",
+    "ok": true,
+    "note": "rms 0.498",
+    "ms": 2747
+   },
+   {
+    "name": "no horizontal overflow (after all tabs)",
+    "ok": true,
+    "note": "",
+    "ms": 3
+   },
+   {
+    "name": "no console errors",
+    "ok": true,
+    "note": "",
+    "ms": 0
+   },
+   {
+    "name": "autoplay blocked: gate banner appears, then a real tap is audible",
+    "ok": true,
+    "note": "first state running, gate 0, rms 0.263",
+    "ms": 16227
+   }
+  ]
+ },
+ {
+  "tag": "score-Pixel7",
+  "steps": [
+   {
+    "name": "skin applied, cross-origin isolated",
+    "ok": true,
+    "note": "",
+    "ms": 11
+   },
+   {
+    "name": "title and brand say NoDAW Studio PRO",
+    "ok": true,
+    "note": "",
+    "ms": 4
+   },
+   {
+    "name": "NoDAW button opens the v2 teaser panel",
+    "ok": true,
+    "note": "",
+    "ms": 7267
+   },
+   {
+    "name": "Easy generate (genre synth)",
+    "ok": true,
+    "note": "",
+    "ms": 10448
+   },
+   {
+    "name": "Advanced mode: audible with a real tap (RMS > 0.002)",
+    "ok": true,
+    "note": "rms 0.278",
+    "ms": 11472
+   },
+   {
+    "name": "no horizontal overflow (Advanced)",
+    "ok": true,
+    "note": "",
+    "ms": 1
+   },
+   {
+    "name": "Live FX: scenes, limiter, bypass, undo/redo change the sound",
+    "ok": true,
+    "note": "rms 0.310 -> 0.362",
+    "ms": 157265
+   },
+   {
+    "name": "Live FX: export of the mix is non-silent WAV",
+    "ok": true,
+    "note": "rms 0.213 peak 0.95 33.2s",
+    "ms": 6936
+   },
+   {
+    "name": "Sampler: region, crop, undo, BPM detect, chop to pads",
+    "ok": true,
+    "note": "bpm 69.9, 12 pads",
+    "ms": 44828
+   },
+   {
+    "name": "Pads play from the Sampler tab (pad 1 audition)",
+    "ok": true,
+    "note": "ok",
+    "ms": 3896
+   },
+   {
+    "name": "Split in browser (mini) on split_clip.wav: stems non-silent, sum ~ mix",
+    "ok": true,
+    "note": "mini: 4 stems 20s 1.41x of clip length WASM multi Light preview (Mini-RoFormer) model | stems 4 SNR 27.0 dB",
+    "ms": 40992
+   },
+   {
+    "name": "split stems play audibly in the mixer",
+    "ok": true,
+    "note": "rms 0.610",
+    "ms": 2734
+   },
+   {
+    "name": "no horizontal overflow (after all tabs)",
+    "ok": true,
+    "note": "",
+    "ms": 2
+   },
+   {
+    "name": "no console errors",
+    "ok": true,
+    "note": "",
+    "ms": 0
+   },
+   {
+    "name": "autoplay blocked: gate banner appears, then a real tap is audible",
+    "ok": true,
+    "note": "first state running, gate 0, rms 0.203",
+    "ms": 9359
+   }
+  ]
+ }
+]

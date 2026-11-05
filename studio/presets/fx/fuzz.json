@@ -1,0 +1,27 @@
+{
+  "id": "fx/fuzz",
+  "name": "Fuzz",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "distortion"
+  ],
+  "description": "Heavy saturation.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 28,
+        "mix": 0.8
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 8000
+      }
+    }
+  ]
+}

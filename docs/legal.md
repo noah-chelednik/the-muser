@@ -20,6 +20,39 @@ commercially use your compositions without restriction.
 | LilyPond PDF rendering | GPL (subprocess) | **YES** | GPL does not restrict output |
 | sfizz + VSCO 2 CE rendering | BSD + CC0 | **YES** | |
 
+## Studio tools (all-in-one fork)
+
+The Studio's auto-selector is commercial-safe by default: it only picks tools marked "Yes" or
+"Conditions" below, and it never picks a personal-use tool on its own.
+
+| Tool | License | Commercial output | Notes |
+|---|---|---|---|
+| Built-in sketch synth, band split, DSP, pitch tracker | MIT | **YES** | Part of this repo |
+| Spotify Pedalboard | GPL-3.0 | **YES** | Library use; GPL covers code, not your audio |
+| Matchering 2 | GPL-3.0 | **YES** | Same as Pedalboard |
+| pyloudnorm, noisereduce | MIT | **YES** | |
+| Basic Pitch | Apache 2.0 | **YES** | |
+| Demucs v4 | MIT | **YES** | |
+| DeepFilterNet 3 | MIT or Apache 2.0 | **YES** | |
+| Audio Separator (UVR models) | MIT, varies per model | **CONDITIONS** | Check each model's card |
+| Karaoke and denoise Roformer weights (aufr33, viperx) | Not stated | **CONDITIONS** | Opt-in, labelled "licence unstated", never auto-picked. The anvuew de-reverb weights are GPL-3.0 and are deliberately not offered. |
+| stemsep, TramEFX stem-separator, nussl | MIT | n/a | Ideas only, no code shipped. nussl is only the inspiration for a dev benchmark script |
+| ACE-Step 1.5 | MIT | **YES** | Default generator, runs on 8 GB cards |
+| DiffRhythm | Apache 2.0 | **YES** | |
+| AudioSR, Resemble Enhance | MIT | **YES** | |
+| Stable Audio Open | Stability AI Community License | **CONDITIONS** | Free under 1M USD yearly revenue |
+| YuE | CC BY-NC 4.0 weights per model card, code Apache 2.0 | **CONDITIONS** | Individuals: attribution; companies need a license |
+| Applio (RVC), Seed-VC | MIT / GPL-3.0 | **CONDITIONS** | Get consent for any voice you clone |
+| MusicGen | CC BY-NC 4.0 weights | **NO** | Personal use only |
+| AudioLDM 2 | CC BY-NC-SA 4.0 weights | **NO** | Personal use only |
+| SongGeneration / LeVo | Tencent custom, research only | **NO** | Personal use only |
+
+### GPL tools used as libraries
+
+Pedalboard and Matchering are GPL-3.0 Python libraries. Running them on your own machine and selling
+the audio they process is fine: the GPL applies to the software, not to your output. If you
+redistribute a modified copy of the Studio, publish its source under the GPL as well.
+
 ## Important Caveats
 
 ### Training Data Provenance
@@ -27,7 +60,7 @@ commercially use your compositions without restriction.
 The AI models used by The Muser (ACE-Step, NotaGen, etc.) were trained on
 datasets that may include copyrighted music. This is the same legal gray area
 that every AI music company (Suno, ElevenLabs, etc.) operates in. Your legal
-exposure is no greater than using any commercial AI music service — and
+exposure is no greater than using any commercial AI music service, and
 potentially less, since there is no platform ToS complicating your ownership.
 
 ### Voice Cloning Ethics

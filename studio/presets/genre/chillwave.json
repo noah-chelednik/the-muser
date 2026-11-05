@@ -1,0 +1,47 @@
+{
+  "id": "genre/chillwave",
+  "name": "Chillwave",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "chillwave",
+    "synthwave"
+  ],
+  "description": "Hazy, dreamy summer.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "palm",
+  "generate": {
+    "prompt": "chillwave synthwave, dreamy, hazy summer",
+    "bpm": 95,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "chillwave, hazy dreamy synths, washed-out reverb, slow warm arpeggios, soft side-chained pads, relaxed drum machine groove, summer nostalgia, lo-fi tape warble, 95 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 95,
+      "key_scale": "E major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 5.0,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/dusty-drums",
+    "bass": "mix/retro-synth-bass",
+    "keys": "mix/tape-keys",
+    "lead": "mix/retro-lead"
+  },
+  "master": "master/lo-fi-master",
+  "macros": {
+    "energy": 40,
+    "vocals": 45,
+    "bass": 50,
+    "brightness": 45,
+    "space": 75
+  }
+}

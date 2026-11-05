@@ -1,0 +1,55 @@
+{
+  "id": "vocal/rock-grit",
+  "name": "Rock Grit",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "rock",
+    "gritty"
+  ],
+  "description": "Driven, mid-forward rock vocal.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 100
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 8,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 2000,
+        "gain_db": 2.5,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 4,
+        "attack_ms": 8,
+        "release_ms": 100,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 120,
+        "feedback": 0.1,
+        "mix": 0.1
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "mix/live-rock-kit",
+  "name": "Live Rock Kit",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "rock",
+    "live",
+    "acoustic"
+  ],
+  "description": "Room-y acoustic kit with natural punch.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 35
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 100,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 500,
+        "gain_db": -2,
+        "q": 1.5
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 4000,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 4,
+        "attack_ms": 12,
+        "release_ms": 120,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.35,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.12
+      }
+    }
+  ]
+}

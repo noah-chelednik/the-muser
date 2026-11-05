@@ -1,0 +1,57 @@
+{
+  "id": "master/edm-master",
+  "name": "EDM Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "edm",
+    "dance",
+    "genre"
+  ],
+  "description": "Loud, bright and wide for festival tracks.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "soundcloud",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 28
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -14,
+          "ratio": 3,
+          "attack_ms": 15,
+          "release_ms": 100,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 4,
+          "mix": 0.4
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 11000,
+          "gain_db": 2,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "width",
+        "params": {
+          "width": 1.15
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

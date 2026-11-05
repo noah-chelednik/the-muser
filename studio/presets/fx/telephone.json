@@ -1,0 +1,34 @@
+{
+  "id": "fx/telephone",
+  "name": "Telephone",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "filter",
+    "lofi"
+  ],
+  "description": "Narrow band like a phone call.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 500
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 3000
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 5,
+        "mix": 0.6
+      }
+    }
+  ]
+}

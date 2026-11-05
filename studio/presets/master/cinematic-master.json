@@ -1,0 +1,43 @@
+{
+  "id": "master/cinematic-master",
+  "name": "Cinematic Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "cinematic",
+    "ambient",
+    "orchestral",
+    "genre"
+  ],
+  "description": "Wide dynamic range for film and ambient pieces.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "apple",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 25
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -24,
+          "ratio": 1.5,
+          "attack_ms": 50,
+          "release_ms": 400,
+          "makeup_db": 0.5
+        }
+      },
+      {
+        "type": "width",
+        "params": {
+          "width": 1.1
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

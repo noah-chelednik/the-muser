@@ -18,6 +18,14 @@ models/ace-step/
 models/diffsinger/
 models/applio/
 models/demucs/
+# All-in-one engines (weights and cloned repos, downloaded on demand)
+models/audio-separator/
+models/diffrhythm/
+models/yue/
+models/songgeneration/
+models/seed-vc/
+models/ace-step-v15/
+models/stable-audio-open/
 
 # Soundfonts (large binary files)
 soundfonts/*.sf2
@@ -102,3 +110,8 @@ huggingface-space/
 # Claude Code
 .claude/
 CLAUDE.md
+
+# Studio front end (NoDAW Labs)
+studio_data/
+studio/web/node_modules/
+studio/web/dist/

@@ -1,0 +1,24 @@
+{
+  "id": "fx/big-hall",
+  "name": "Big Hall",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "reverb",
+    "space"
+  ],
+  "description": "Huge concert hall.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.9,
+        "damping": 0.35,
+        "width": 1.0,
+        "mix": 0.4
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "vocal/rap-vocal",
+  "name": "Rap Vocal",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "hip hop",
+    "rap",
+    "dry"
+  ],
+  "description": "Dry, punchy and clear on top of the beat.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 100
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 250,
+        "gain_db": -3,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 5,
+        "attack_ms": 3,
+        "release_ms": 60,
+        "makeup_db": 4
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 4000,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "deesser",
+      "params": {
+        "frequency_hz": 6500,
+        "threshold_db": -26,
+        "ratio": 4
+      }
+    }
+  ]
+}

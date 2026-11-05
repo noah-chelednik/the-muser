@@ -1,0 +1,24 @@
+{
+  "id": "vocal/gentle-de-ess",
+  "name": "Gentle De-ess",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "fix",
+    "clean"
+  ],
+  "description": "Just tames harsh S sounds.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "deesser",
+      "params": {
+        "frequency_hz": 6500,
+        "threshold_db": -32,
+        "ratio": 5
+      }
+    }
+  ]
+}

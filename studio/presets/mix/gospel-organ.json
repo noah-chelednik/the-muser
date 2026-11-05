@@ -1,0 +1,49 @@
+{
+  "id": "mix/gospel-organ",
+  "name": "Gospel Organ",
+  "category": "mix",
+  "subcategory": "keys",
+  "tags": [
+    "gospel",
+    "soul",
+    "organ"
+  ],
+  "description": "Warm organ with rotary-style motion.",
+  "version": 1,
+  "factory": true,
+  "role": "keys",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 70
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 5.5,
+        "depth": 0.2,
+        "centre_delay_ms": 4,
+        "feedback": 0,
+        "mix": 0.35
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 4,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.5,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.2
+      }
+    }
+  ]
+}

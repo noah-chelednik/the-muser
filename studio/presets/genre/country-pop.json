@@ -1,0 +1,47 @@
+{
+  "id": "genre/country-pop",
+  "name": "Country Pop",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "country",
+    "pop"
+  ],
+  "description": "Strummy and sing-along.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "hat",
+  "generate": {
+    "prompt": "country pop, acoustic strum, steady rock drums",
+    "bpm": 104,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "country pop, strummed acoustic guitar, bright twangy electric guitar fills, steady rock drums with tambourine, warm bass, feel-good singalong energy, polished modern Nashville mix, 104 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 104,
+      "key_scale": "G major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.0,
+      "duration_s": 36,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/live-rock-kit",
+    "bass": "mix/tight-bass",
+    "keys": "mix/clean-strum",
+    "lead": "mix/clean-strum"
+  },
+  "master": "master/pop-master",
+  "macros": {
+    "energy": 55,
+    "vocals": 70,
+    "bass": 50,
+    "brightness": 60,
+    "space": 45
+  }
+}

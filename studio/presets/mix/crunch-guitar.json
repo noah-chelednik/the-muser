@@ -1,0 +1,55 @@
+{
+  "id": "mix/crunch-guitar",
+  "name": "Crunch Guitar",
+  "category": "mix",
+  "subcategory": "guitar",
+  "tags": [
+    "rock",
+    "guitar"
+  ],
+  "description": "Driven rhythm guitar with presence.",
+  "version": 1,
+  "factory": true,
+  "role": "guitar",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 90
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 12,
+        "mix": 0.7
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 400,
+        "gain_db": -2,
+        "q": 1
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 3000,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 3,
+        "attack_ms": 10,
+        "release_ms": 120,
+        "makeup_db": 2
+      }
+    }
+  ]
+}

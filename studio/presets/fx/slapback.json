@@ -1,0 +1,23 @@
+{
+  "id": "fx/slapback",
+  "name": "Slapback",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "delay",
+    "vintage"
+  ],
+  "description": "Short 1950s echo.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 110,
+        "feedback": 0.1,
+        "mix": 0.25
+      }
+    }
+  ]
+}

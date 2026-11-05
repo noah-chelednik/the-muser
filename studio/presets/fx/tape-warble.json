@@ -1,0 +1,31 @@
+{
+  "id": "fx/tape-warble",
+  "name": "Tape Warble",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "chorus",
+    "lofi"
+  ],
+  "description": "Wobbly cassette chorus.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.25,
+        "depth": 0.5,
+        "centre_delay_ms": 15,
+        "feedback": 0,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 9000
+      }
+    }
+  ]
+}

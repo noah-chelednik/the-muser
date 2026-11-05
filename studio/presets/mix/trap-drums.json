@@ -1,0 +1,64 @@
+{
+  "id": "mix/trap-drums",
+  "name": "Trap Drums",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "trap",
+    "hip hop",
+    "hard"
+  ],
+  "description": "Hard hats, big low end and a forward snare.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 25
+      }
+    },
+    {
+      "type": "lowshelf",
+      "params": {
+        "cutoff_hz": 80,
+        "gain_db": 3,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 220,
+        "gain_db": 2,
+        "q": 1.4
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -16,
+        "ratio": 5,
+        "attack_ms": 5,
+        "release_ms": 80,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 9000,
+        "gain_db": 3,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 4,
+        "mix": 0.4
+      }
+    }
+  ]
+}

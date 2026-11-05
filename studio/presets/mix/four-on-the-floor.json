@@ -1,0 +1,55 @@
+{
+  "id": "mix/four-on-the-floor",
+  "name": "Four on the Floor",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "house",
+    "dance",
+    "club"
+  ],
+  "description": "Clean, wide house drums with controlled kick.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 30
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 55,
+        "gain_db": 2,
+        "q": 1.0
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 350,
+        "gain_db": -3,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -14,
+        "ratio": 3,
+        "attack_ms": 15,
+        "release_ms": 100,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "width",
+      "params": {
+        "width": 1.15
+      }
+    }
+  ]
+}

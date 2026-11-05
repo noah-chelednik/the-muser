@@ -1,0 +1,39 @@
+/* Semantic tokens every skin must define. Shared components (rack, drawers,
+   dialogs, switcher, palette) draw only from these, so they look native in all
+   three skins without per-skin copies. */
+:root, [data-skin='cathode'] {
+  color-scheme: dark;
+  --bg: #0D0E0F; --p1: #141517; --p2: #1A1B1E; --ln: #2A2C30; --ln2: #3A3D42;
+  --tx: #EDEBE6; --dim: #93959A; --dimmer: #5C5F64;
+  --hot: #9BFF3D; --hot-ink: #000; --hot-d: rgba(155,255,61,.14);
+  --ok: #9BFF3D; --warn: #EDEBE6; --bad: #FF5B4A;
+  --fu: 'Martian Mono', ui-monospace, monospace; --fh: 'Barlow Condensed', 'Arial Narrow', sans-serif; --fm: 'Martian Mono', ui-monospace, monospace;
+  --fs: 11px; --ls: .02em; --hls: .2em; --hcase: uppercase;
+  --k2: #EDEBE6; --k3: #93959A; --pad: #9BFF3D; --stem: #9BFF3D;
+  --wave-rest: rgba(237,235,230,.2); --wave-grid: rgba(237,235,230,.05); --wave-head: #EDEBE6; --wave-label: rgba(237,235,230,.3); --wave-glow: 0;
+  --scrim: rgba(0,0,0,.6); --knob-body: #1A1B1E; --knob-rim: #3A3D42;
+}
+[data-skin='terrain'] {
+  color-scheme: dark;
+  --bg: #000; --p1: rgba(8,9,11,.82); --p2: rgba(238,241,245,.07); --ln: rgba(238,241,245,.14); --ln2: rgba(238,241,245,.28);
+  --tx: #eef1f5; --dim: rgba(238,241,245,.52); --dimmer: rgba(238,241,245,.3);
+  --hot: #eef1f5; --hot-ink: #000; --hot-d: rgba(238,241,245,.1);
+  --ok: #2ff3ff; --warn: #eef1f5; --bad: #ff2e7a;
+  --fu: 'Geist Sans', 'Geist', system-ui, sans-serif; --fh: 'Geist Sans', 'Geist', system-ui, sans-serif; --fm: 'Geist Mono', ui-monospace, monospace;
+  --fs: 12px; --ls: .02em; --hls: .24em; --hcase: uppercase;
+  --k2: #2ff3ff; --k3: #ff2e7a; --pad: #eef1f5; --stem: #eef1f5;
+  --wave-rest: rgba(238,241,245,.22); --wave-grid: rgba(238,241,245,.05); --wave-head: #fff; --wave-label: rgba(238,241,245,.3); --wave-glow: 0;
+  --scrim: rgba(0,0,0,.7); --knob-body: #07080a; --knob-rim: rgba(238,241,245,.28);
+}
+[data-skin='score'] {
+  color-scheme: light;
+  --bg: #ECE9E2; --p1: #E3DFD6; --p2: rgba(11,11,12,.06); --ln: rgba(11,11,12,.14); --ln2: rgba(11,11,12,.9);
+  --tx: #0B0B0C; --dim: rgba(11,11,12,.62); --dimmer: rgba(11,11,12,.42);
+  --hot: #D9361E; --hot-ink: #ECE9E2; --hot-d: rgba(217,54,30,.1);
+  --ok: #0B0B0C; --warn: #D9361E; --bad: #D9361E;
+  --fu: 'Instrument Sans', system-ui, sans-serif; --fh: 'Instrument Serif', Georgia, serif; --fm: 'DM Mono', ui-monospace, monospace;
+  --fs: 13px; --ls: 0; --hls: .02em; --hcase: none;
+  --k2: #0B0B0C; --k3: rgba(11,11,12,.5); --pad: #0B0B0C; --stem: #0B0B0C;
+  --wave-rest: rgba(11,11,12,.25); --wave-grid: rgba(11,11,12,.06); --wave-head: #D9361E; --wave-label: rgba(11,11,12,.4); --wave-glow: 0;
+  --scrim: rgba(11,11,12,.35); --knob-body: #ECE9E2; --knob-rim: #0B0B0C;
+}

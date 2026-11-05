@@ -1,0 +1,47 @@
+{
+  "id": "vocal/metal-scream",
+  "name": "Metal Scream",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "metal",
+    "aggressive"
+  ],
+  "description": "Tight, aggressive and dense.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 120
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -14,
+        "ratio": 8,
+        "attack_ms": 2,
+        "release_ms": 60,
+        "makeup_db": 5
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 10,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 3500,
+        "gain_db": -2,
+        "q": 1.5
+      }
+    }
+  ]
+}

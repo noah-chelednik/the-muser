@@ -1,0 +1,51 @@
+{
+  "id": "master/metal-master",
+  "name": "Metal Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "metal",
+    "rock",
+    "genre"
+  ],
+  "description": "Aggressive and loud with tamed harshness.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "cd",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 35
+        }
+      },
+      {
+        "type": "peak",
+        "params": {
+          "freq_hz": 3500,
+          "gain_db": -1.5,
+          "q": 1.2
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -12,
+          "ratio": 4,
+          "attack_ms": 10,
+          "release_ms": 100,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 4,
+          "mix": 0.3
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

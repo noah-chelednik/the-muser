@@ -1,0 +1,50 @@
+{
+  "id": "vocal/soft-indie-vocal",
+  "name": "Soft Indie Vocal",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "indie",
+    "folk",
+    "soft"
+  ],
+  "description": "Breathy and intimate.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 80
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -24,
+        "ratio": 2.5,
+        "attack_ms": 15,
+        "release_ms": 150,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 11000,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.5,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.18
+      }
+    }
+  ]
+}

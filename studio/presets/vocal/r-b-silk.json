@@ -1,0 +1,67 @@
+{
+  "id": "vocal/r-b-silk",
+  "name": "R&B Silk",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "rnb",
+    "smooth"
+  ],
+  "description": "Smooth top, warm body and lush space.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 80
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 350,
+        "gain_db": -2,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 3,
+        "attack_ms": 10,
+        "release_ms": 120,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "deesser",
+      "params": {
+        "frequency_hz": 7500,
+        "threshold_db": -28,
+        "ratio": 3
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.4,
+        "depth": 0.1,
+        "centre_delay_ms": 6,
+        "feedback": 0,
+        "mix": 0.12
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.6,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.2
+      }
+    }
+  ]
+}

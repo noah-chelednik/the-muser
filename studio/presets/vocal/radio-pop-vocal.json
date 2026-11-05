@@ -1,0 +1,65 @@
+{
+  "id": "vocal/radio-pop-vocal",
+  "name": "Radio Pop Vocal",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "pop",
+    "bright"
+  ],
+  "description": "Bright, compressed and upfront.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 90
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 300,
+        "gain_db": -2.5,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 4,
+        "attack_ms": 5,
+        "release_ms": 80,
+        "makeup_db": 4
+      }
+    },
+    {
+      "type": "deesser",
+      "params": {
+        "frequency_hz": 7000,
+        "threshold_db": -28,
+        "ratio": 4
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 10000,
+        "gain_db": 3,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.45,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.12
+      }
+    }
+  ]
+}

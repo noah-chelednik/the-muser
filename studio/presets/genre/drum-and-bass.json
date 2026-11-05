@@ -1,0 +1,47 @@
+{
+  "id": "genre/drum-and-bass",
+  "name": "Drum and Bass",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "dnb",
+    "edm"
+  ],
+  "description": "Fast breaks, deep sub.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "wave",
+  "generate": {
+    "prompt": "liquid drum and bass edm, fast breakbeats, deep sub",
+    "bpm": 174,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "liquid drum and bass, fast two-step breakbeat at 174 bpm, deep rolling sub bass, atmospheric pads, soulful chord stabs, crisp snares, uplifting and flowing energy, 174 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 174,
+      "key_scale": "F minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.5,
+      "duration_s": 36,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/punchy-drums",
+    "bass": "mix/growl-bass",
+    "keys": "mix/lush-keys",
+    "lead": "mix/bright-lead"
+  },
+  "master": "master/edm-master",
+  "macros": {
+    "energy": 80,
+    "vocals": 40,
+    "bass": 70,
+    "brightness": 60,
+    "space": 55
+  }
+}

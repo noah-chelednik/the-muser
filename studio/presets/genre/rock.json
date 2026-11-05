@@ -1,0 +1,47 @@
+{
+  "id": "genre/rock",
+  "name": "Rock",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "rock",
+    "band"
+  ],
+  "description": "Guitars up, drums loud.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "guitar",
+  "generate": {
+    "prompt": "energetic rock, driving guitars, live drums",
+    "bpm": 120,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "energetic rock band, overdriven rhythm guitars playing power chords, live acoustic drums with big snare, punchy electric bass, driving eighth-note groove, anthemic and raw, room ambience, 120 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 120,
+      "key_scale": "E minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.5,
+      "duration_s": 36,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/live-rock-kit",
+    "bass": "mix/tight-bass",
+    "keys": "mix/crunch-guitar",
+    "lead": "mix/crunch-guitar"
+  },
+  "master": "master/rock-master",
+  "macros": {
+    "energy": 75,
+    "vocals": 60,
+    "bass": 55,
+    "brightness": 55,
+    "space": 35
+  }
+}

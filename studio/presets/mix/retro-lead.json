@@ -1,0 +1,50 @@
+{
+  "id": "mix/retro-lead",
+  "name": "Retro Lead",
+  "category": "mix",
+  "subcategory": "lead",
+  "tags": [
+    "synthwave",
+    "80s",
+    "retro"
+  ],
+  "description": "Chorused 80s lead with big hall.",
+  "version": 1,
+  "factory": true,
+  "role": "lead",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 180
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.8,
+        "depth": 0.35,
+        "centre_delay_ms": 8,
+        "feedback": 0.1,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 450,
+        "feedback": 0.35,
+        "mix": 0.2
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.75,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.25
+      }
+    }
+  ]
+}

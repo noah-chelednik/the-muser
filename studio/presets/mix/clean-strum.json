@@ -1,0 +1,58 @@
+{
+  "id": "mix/clean-strum",
+  "name": "Clean Strum",
+  "category": "mix",
+  "subcategory": "guitar",
+  "tags": [
+    "acoustic",
+    "folk",
+    "guitar"
+  ],
+  "description": "Bright acoustic or clean electric guitar.",
+  "version": 1,
+  "factory": true,
+  "role": "guitar",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 90
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 200,
+        "gain_db": -2.5,
+        "q": 1
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 9000,
+        "gain_db": 2,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -22,
+        "ratio": 2.5,
+        "attack_ms": 15,
+        "release_ms": 150,
+        "makeup_db": 1
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.4,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.15
+      }
+    }
+  ]
+}

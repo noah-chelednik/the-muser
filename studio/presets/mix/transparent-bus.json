@@ -1,0 +1,22 @@
+{
+  "id": "mix/transparent-bus",
+  "name": "Transparent Bus",
+  "category": "mix",
+  "subcategory": "bus",
+  "tags": [
+    "bus",
+    "clean"
+  ],
+  "description": "Only cleans up rumble. Leaves your mix alone.",
+  "version": 1,
+  "factory": true,
+  "role": "bus",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 25
+      }
+    }
+  ]
+}

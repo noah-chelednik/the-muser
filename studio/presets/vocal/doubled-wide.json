@@ -1,0 +1,48 @@
+{
+  "id": "vocal/doubled-wide",
+  "name": "Doubled Wide",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "wide",
+    "chorus"
+  ],
+  "description": "Fake double-tracking for a wide chorus vocal.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 90
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 3,
+        "attack_ms": 8,
+        "release_ms": 100,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.9,
+        "depth": 0.15,
+        "centre_delay_ms": 12,
+        "feedback": 0,
+        "mix": 0.35
+      }
+    },
+    {
+      "type": "width",
+      "params": {
+        "width": 1.5
+      }
+    }
+  ]
+}

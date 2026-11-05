@@ -1,0 +1,51 @@
+{
+  "id": "vocal/lo-fi-vocal",
+  "name": "Lo-fi Vocal",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "lofi",
+    "vintage"
+  ],
+  "description": "Muffled vintage tone.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 300
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 5000
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 6,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "bitcrush",
+      "params": {
+        "bit_depth": 12,
+        "mix": 0.2
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.4,
+        "damping": 0.6,
+        "width": 1.0,
+        "mix": 0.2
+      }
+    }
+  ]
+}

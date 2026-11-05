@@ -1,0 +1,59 @@
+{
+  "id": "master/hip-hop-master",
+  "name": "Hip Hop Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "hip hop",
+    "trap",
+    "genre"
+  ],
+  "description": "Weighty low end, crisp top, controlled transients.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "spotify",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 25
+        }
+      },
+      {
+        "type": "lowshelf",
+        "params": {
+          "cutoff_hz": 70,
+          "gain_db": 2,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -16,
+          "ratio": 3,
+          "attack_ms": 15,
+          "release_ms": 120,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 3,
+          "mix": 0.4
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 10000,
+          "gain_db": 1.5,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

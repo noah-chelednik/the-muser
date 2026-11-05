@@ -1,0 +1,48 @@
+{
+  "id": "mix/upright-bass",
+  "name": "Upright Bass",
+  "category": "mix",
+  "subcategory": "bass",
+  "tags": [
+    "jazz",
+    "acoustic"
+  ],
+  "description": "Natural woody tone for jazz and acoustic.",
+  "version": 1,
+  "factory": true,
+  "role": "bass",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 40
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 250,
+        "gain_db": -2,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 1500,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -24,
+        "ratio": 2.5,
+        "attack_ms": 20,
+        "release_ms": 200,
+        "makeup_db": 2
+      }
+    }
+  ]
+}

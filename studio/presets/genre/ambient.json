@@ -1,0 +1,47 @@
+{
+  "id": "genre/ambient",
+  "name": "Ambient",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "ambient",
+    "calm"
+  ],
+  "description": "Floating, calm textures.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "cloud",
+  "generate": {
+    "prompt": "ambient soundscape, slow evolving pads, calm",
+    "bpm": 70,
+    "duration_s": 40,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "ambient soundscape, slow evolving pads, deep shimmering reverb, soft textural drones, distant piano notes, no drums, calm and spacious, gentle movement, meditative, 70 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 70,
+      "key_scale": "D major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 4.5,
+      "duration_s": 45,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/brushed-jazz",
+    "bass": "mix/warm-bass",
+    "keys": "mix/lush-keys",
+    "lead": "mix/soft-melody"
+  },
+  "master": "master/cinematic-master",
+  "macros": {
+    "energy": 15,
+    "vocals": 30,
+    "bass": 35,
+    "brightness": 45,
+    "space": 90
+  }
+}

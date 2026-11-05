@@ -1,0 +1,46 @@
+{
+  "id": "mix/tight-bass",
+  "name": "Tight Bass",
+  "category": "mix",
+  "subcategory": "bass",
+  "tags": [
+    "clean",
+    "modern"
+  ],
+  "description": "Controlled sub with defined midrange so it reads on phones.",
+  "version": 1,
+  "factory": true,
+  "role": "bass",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 30
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 4,
+        "attack_ms": 15,
+        "release_ms": 120,
+        "makeup_db": 3
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 800,
+        "gain_db": 2,
+        "q": 1.2
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 9000
+      }
+    }
+  ]
+}

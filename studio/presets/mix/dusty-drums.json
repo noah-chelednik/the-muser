@@ -1,0 +1,46 @@
+{
+  "id": "mix/dusty-drums",
+  "name": "Dusty Drums",
+  "category": "mix",
+  "subcategory": "drums",
+  "tags": [
+    "lofi",
+    "warm",
+    "vintage"
+  ],
+  "description": "Rolled-off highs and tape-style saturation for lo-fi beats.",
+  "version": 1,
+  "factory": true,
+  "role": "drums",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 40
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 7500
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 8,
+        "mix": 0.6
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 3,
+        "attack_ms": 20,
+        "release_ms": 150,
+        "makeup_db": 2
+      }
+    }
+  ]
+}

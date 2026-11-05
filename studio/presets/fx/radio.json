@@ -1,0 +1,41 @@
+{
+  "id": "fx/radio",
+  "name": "Radio",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "filter",
+    "vintage"
+  ],
+  "description": "AM radio color.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 300
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 5000
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 8,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "bitcrush",
+      "params": {
+        "bit_depth": 10,
+        "mix": 0.3
+      }
+    }
+  ]
+}

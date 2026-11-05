@@ -1,0 +1,50 @@
+{
+  "id": "mix/ambient-guitar",
+  "name": "Ambient Guitar",
+  "category": "mix",
+  "subcategory": "guitar",
+  "tags": [
+    "ambient",
+    "guitar",
+    "post rock"
+  ],
+  "description": "Shimmering delays and long tails.",
+  "version": 1,
+  "factory": true,
+  "role": "guitar",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 120
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 500,
+        "feedback": 0.5,
+        "mix": 0.3
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.5,
+        "depth": 0.3,
+        "centre_delay_ms": 10,
+        "feedback": 0,
+        "mix": 0.3
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.9,
+        "damping": 0.3,
+        "width": 1.0,
+        "mix": 0.4
+      }
+    }
+  ]
+}

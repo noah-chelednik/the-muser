@@ -1,0 +1,42 @@
+{
+  "id": "fx/shimmer-pad",
+  "name": "Shimmer Pad",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "reverb",
+    "ambient"
+  ],
+  "description": "Bright, washed-out ambience.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.6,
+        "depth": 0.4,
+        "centre_delay_ms": 10,
+        "feedback": 0.2,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.95,
+        "damping": 0.2,
+        "width": 1.0,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 8000,
+        "gain_db": 3,
+        "q": 0.7
+      }
+    }
+  ]
+}

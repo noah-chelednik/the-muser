@@ -1,0 +1,53 @@
+{
+  "id": "master/techno-master",
+  "name": "Techno Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "techno",
+    "house",
+    "club",
+    "genre"
+  ],
+  "description": "Hypnotic, dense and steady.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "club",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 28
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -14,
+          "ratio": 4,
+          "attack_ms": 10,
+          "release_ms": 100,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "lowshelf",
+        "params": {
+          "cutoff_hz": 60,
+          "gain_db": 1,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 9000,
+          "gain_db": 1,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

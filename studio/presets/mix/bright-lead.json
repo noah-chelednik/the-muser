@@ -1,0 +1,58 @@
+{
+  "id": "mix/bright-lead",
+  "name": "Bright Lead",
+  "category": "mix",
+  "subcategory": "lead",
+  "tags": [
+    "edm",
+    "pop",
+    "lead"
+  ],
+  "description": "Upfront synth lead with delay throws.",
+  "version": 1,
+  "factory": true,
+  "role": "lead",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 200
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 2500,
+        "gain_db": 2,
+        "q": 1
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -18,
+        "ratio": 3,
+        "attack_ms": 8,
+        "release_ms": 100,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "delay",
+      "params": {
+        "time_ms": 375,
+        "feedback": 0.3,
+        "mix": 0.18
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.5,
+        "damping": 0.5,
+        "width": 1.0,
+        "mix": 0.15
+      }
+    }
+  ]
+}

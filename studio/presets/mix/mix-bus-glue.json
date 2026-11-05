@@ -1,0 +1,26 @@
+{
+  "id": "mix/mix-bus-glue",
+  "name": "Mix Bus Glue",
+  "category": "mix",
+  "subcategory": "bus",
+  "tags": [
+    "bus",
+    "glue"
+  ],
+  "description": "Gentle bus compression that makes parts feel like one record.",
+  "version": 1,
+  "factory": true,
+  "role": "bus",
+  "chain": [
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -14,
+        "ratio": 2,
+        "attack_ms": 30,
+        "release_ms": 200,
+        "makeup_db": 1
+      }
+    }
+  ]
+}

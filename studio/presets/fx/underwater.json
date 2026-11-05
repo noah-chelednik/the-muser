@@ -1,0 +1,30 @@
+{
+  "id": "fx/underwater",
+  "name": "Underwater",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "filter",
+    "transition"
+  ],
+  "description": "Muffled, far-away filter.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 700
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.6,
+        "damping": 0.8,
+        "width": 1.0,
+        "mix": 0.3
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "genre/reggaeton",
+  "name": "Reggaeton",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "reggaeton",
+    "latin"
+  ],
+  "description": "Dembow bounce.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "maracas",
+  "generate": {
+    "prompt": "reggaeton dembow pop beat, latin percussion, catchy synth",
+    "bpm": 95,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "reggaeton dembow pop beat, classic dembow kick and snare pattern, latin percussion, catchy plucked synth hook, deep punchy bass, warm club energy, 95 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 95,
+      "key_scale": "A minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.5,
+      "duration_s": 36,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/punchy-drums",
+    "bass": "mix/808-weight",
+    "keys": "mix/house-stabs",
+    "lead": "mix/bright-lead"
+  },
+  "master": "master/pop-master",
+  "macros": {
+    "energy": 70,
+    "vocals": 65,
+    "bass": 70,
+    "brightness": 60,
+    "space": 40
+  }
+}

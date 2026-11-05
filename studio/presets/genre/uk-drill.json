@@ -1,0 +1,47 @@
+{
+  "id": "genre/uk-drill",
+  "name": "UK Drill",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "drill",
+    "uk"
+  ],
+  "description": "Dark slides and sharp hats.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "skull",
+  "generate": {
+    "prompt": "uk drill beat, sliding 808, dark piano, triplet hats",
+    "bpm": 142,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "UK drill instrumental, sliding 808 bass, dark minor piano melody, skippy triplet hi-hats, sharp snare on the third beat, cold ominous London night mood, tight dry mix, 142 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 142,
+      "key_scale": "G minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 7.0,
+      "duration_s": 32,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/crushed-drums",
+    "bass": "mix/808-weight",
+    "keys": "mix/clean-piano",
+    "lead": "mix/dark-lead"
+  },
+  "master": "master/drill-master",
+  "macros": {
+    "energy": 75,
+    "vocals": 55,
+    "bass": 80,
+    "brightness": 50,
+    "space": 35
+  }
+}

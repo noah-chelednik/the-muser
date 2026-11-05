@@ -1,0 +1,50 @@
+{
+  "id": "mix/warm-bus",
+  "name": "Warm Bus",
+  "category": "mix",
+  "subcategory": "bus",
+  "tags": [
+    "bus",
+    "warm",
+    "analog"
+  ],
+  "description": "Analog-style warmth and soft top.",
+  "version": 1,
+  "factory": true,
+  "role": "bus",
+  "chain": [
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 3,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "lowshelf",
+      "params": {
+        "cutoff_hz": 120,
+        "gain_db": 1,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "highshelf",
+      "params": {
+        "cutoff_hz": 10000,
+        "gain_db": -1,
+        "q": 0.7
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -16,
+        "ratio": 2,
+        "attack_ms": 30,
+        "release_ms": 250,
+        "makeup_db": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "genre/edm-anthem",
+  "name": "EDM Anthem",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "edm",
+    "dance"
+  ],
+  "description": "Big drops and bright leads.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "rocket",
+  "generate": {
+    "prompt": "festival edm anthem, big supersaw drop, euphoric",
+    "bpm": 128,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "festival EDM anthem, euphoric supersaw chords, big sidechain-pumping drop, rising white noise riser build-up, punchy kick, bright plucked lead hook, emotional major key melody, huge wide mix, 128 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 128,
+      "key_scale": "C major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 7.0,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/punchy-drums",
+    "bass": "mix/growl-bass",
+    "keys": "mix/lush-keys",
+    "lead": "mix/bright-lead"
+  },
+  "master": "master/edm-master",
+  "macros": {
+    "energy": 85,
+    "vocals": 55,
+    "bass": 65,
+    "brightness": 70,
+    "space": 55
+  }
+}

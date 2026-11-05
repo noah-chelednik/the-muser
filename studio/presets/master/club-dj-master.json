@@ -1,0 +1,58 @@
+{
+  "id": "master/club-dj-master",
+  "name": "Club / DJ Master",
+  "category": "master",
+  "subcategory": "platform",
+  "tags": [
+    "platform",
+    "club"
+  ],
+  "description": "-8 LUFS, -0.5 dBTP. Loud and dense for DJ sets.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "club",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 28
+        }
+      },
+      {
+        "type": "lowshelf",
+        "params": {
+          "cutoff_hz": 70,
+          "gain_db": 1.5,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -14,
+          "ratio": 3,
+          "attack_ms": 20,
+          "release_ms": 150,
+          "makeup_db": 2
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 3,
+          "mix": 0.4
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 9000,
+          "gain_db": 1.5,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

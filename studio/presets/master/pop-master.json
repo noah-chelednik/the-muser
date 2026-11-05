@@ -1,0 +1,51 @@
+{
+  "id": "master/pop-master",
+  "name": "Pop Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "pop",
+    "genre"
+  ],
+  "description": "Polished, bright and present.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "spotify",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 25
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -15,
+          "ratio": 2.5,
+          "attack_ms": 25,
+          "release_ms": 150,
+          "makeup_db": 1.5
+        }
+      },
+      {
+        "type": "peak",
+        "params": {
+          "freq_hz": 3000,
+          "gain_db": 1,
+          "q": 0.8
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 12000,
+          "gain_db": 2,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

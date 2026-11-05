@@ -1,0 +1,45 @@
+{
+  "id": "mix/dark-lead",
+  "name": "Dark Lead",
+  "category": "mix",
+  "subcategory": "lead",
+  "tags": [
+    "drill",
+    "trap",
+    "dark"
+  ],
+  "description": "Filtered, gritty melody for drill and trap.",
+  "version": 1,
+  "factory": true,
+  "role": "lead",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 150
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 7000
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 6,
+        "mix": 0.5
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.6,
+        "damping": 0.6,
+        "width": 1.0,
+        "mix": 0.2
+      }
+    }
+  ]
+}

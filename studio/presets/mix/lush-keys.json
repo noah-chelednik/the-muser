@@ -1,0 +1,56 @@
+{
+  "id": "mix/lush-keys",
+  "name": "Lush Keys",
+  "category": "mix",
+  "subcategory": "keys",
+  "tags": [
+    "pads",
+    "ambient",
+    "wide"
+  ],
+  "description": "Wide, soft and spacious pads and chords.",
+  "version": 1,
+  "factory": true,
+  "role": "keys",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 120
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 300,
+        "gain_db": -2,
+        "q": 1
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.6,
+        "depth": 0.3,
+        "centre_delay_ms": 9,
+        "feedback": 0,
+        "mix": 0.3
+      }
+    },
+    {
+      "type": "reverb",
+      "params": {
+        "room_size": 0.7,
+        "damping": 0.4,
+        "width": 1.0,
+        "mix": 0.3
+      }
+    },
+    {
+      "type": "width",
+      "params": {
+        "width": 1.3
+      }
+    }
+  ]
+}

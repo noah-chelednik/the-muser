@@ -1,0 +1,49 @@
+{
+  "id": "mix/retro-synth-bass",
+  "name": "Retro Synth Bass",
+  "category": "mix",
+  "subcategory": "bass",
+  "tags": [
+    "synthwave",
+    "retro",
+    "80s"
+  ],
+  "description": "Analog-style bass with gentle chorus.",
+  "version": 1,
+  "factory": true,
+  "role": "bass",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 35
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -20,
+        "ratio": 3,
+        "attack_ms": 10,
+        "release_ms": 120,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "chorus",
+      "params": {
+        "rate_hz": 0.4,
+        "depth": 0.15,
+        "centre_delay_ms": 8,
+        "feedback": 0,
+        "mix": 0.2
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 8000
+      }
+    }
+  ]
+}

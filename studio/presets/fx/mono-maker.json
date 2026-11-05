@@ -1,0 +1,21 @@
+{
+  "id": "fx/mono-maker",
+  "name": "Mono Maker",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "width",
+    "utility"
+  ],
+  "description": "Collapse to mono for checks or bass.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "width",
+      "params": {
+        "width": 0.0
+      }
+    }
+  ]
+}

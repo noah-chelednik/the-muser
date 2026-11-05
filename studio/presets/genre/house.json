@@ -1,0 +1,47 @@
+{
+  "id": "genre/house",
+  "name": "House",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "house",
+    "dance"
+  ],
+  "description": "Warm dance floor groove.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "disco",
+  "generate": {
+    "prompt": "deep house groove, warm chords, four on the floor",
+    "bpm": 124,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "deep house groove, four-on-the-floor kick with swung hi-hats and claps, warm Rhodes and organ chord stabs, round plucked bass line, smooth late-night club feel, soft pads, groovy and uplifting, 124 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 124,
+      "key_scale": "A minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.0,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/four-on-the-floor",
+    "bass": "mix/tight-bass",
+    "keys": "mix/house-stabs",
+    "lead": "mix/bright-lead"
+  },
+  "master": "master/techno-master",
+  "macros": {
+    "energy": 65,
+    "vocals": 45,
+    "bass": 60,
+    "brightness": 55,
+    "space": 50
+  }
+}

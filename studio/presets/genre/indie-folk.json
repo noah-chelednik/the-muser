@@ -1,0 +1,47 @@
+{
+  "id": "genre/indie-folk",
+  "name": "Indie Folk",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "indie",
+    "folk"
+  ],
+  "description": "Warm and acoustic.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "leaf",
+  "generate": {
+    "prompt": "indie folk rock, acoustic guitar, warm and intimate",
+    "bpm": 100,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "indie folk rock, fingerpicked acoustic guitar, soft brushed drums, warm upright bass, gentle harmonium, intimate and heartfelt, airy room sound, 100 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 100,
+      "key_scale": "D major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 5.5,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/brushed-jazz",
+    "bass": "mix/upright-bass",
+    "keys": "mix/clean-strum",
+    "lead": "mix/clean-strum"
+  },
+  "master": "master/acoustic-master",
+  "macros": {
+    "energy": 40,
+    "vocals": 70,
+    "bass": 45,
+    "brightness": 55,
+    "space": 50
+  }
+}

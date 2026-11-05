@@ -1,0 +1,47 @@
+{
+  "id": "genre/techno",
+  "name": "Techno",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "techno",
+    "club"
+  ],
+  "description": "Hypnotic and relentless.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "bolt",
+  "generate": {
+    "prompt": "driving techno, hypnotic synth, pounding kick",
+    "bpm": 130,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "driving techno, relentless four-on-the-floor kick, off-beat open hi-hats, rumbling rolling bassline, hypnotic filtered synth stabs that evolve slowly, dark warehouse atmosphere, tension building with filter sweeps, powerful club mix, 130 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 130,
+      "key_scale": "A minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.0,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/four-on-the-floor",
+    "bass": "mix/growl-bass",
+    "keys": "mix/house-stabs",
+    "lead": "mix/dark-lead"
+  },
+  "master": "master/techno-master",
+  "macros": {
+    "energy": 80,
+    "vocals": 30,
+    "bass": 65,
+    "brightness": 50,
+    "space": 45
+  }
+}

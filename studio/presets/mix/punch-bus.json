@@ -1,0 +1,34 @@
+{
+  "id": "mix/punch-bus",
+  "name": "Punch Bus",
+  "category": "mix",
+  "subcategory": "bus",
+  "tags": [
+    "bus",
+    "punchy"
+  ],
+  "description": "Slower attack lets drums hit, then holds the mix together.",
+  "version": 1,
+  "factory": true,
+  "role": "bus",
+  "chain": [
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -16,
+        "ratio": 3,
+        "attack_ms": 40,
+        "release_ms": 120,
+        "makeup_db": 2
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 80,
+        "gain_db": 1,
+        "q": 1
+      }
+    }
+  ]
+}

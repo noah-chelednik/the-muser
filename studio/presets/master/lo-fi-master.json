@@ -1,0 +1,49 @@
+{
+  "id": "master/lo-fi-master",
+  "name": "Lo-fi Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "lofi",
+    "chill",
+    "genre"
+  ],
+  "description": "Soft, warm and not too loud.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "spotify",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 30
+        }
+      },
+      {
+        "type": "lowpass",
+        "params": {
+          "cutoff_hz": 15000
+        }
+      },
+      {
+        "type": "saturation",
+        "params": {
+          "drive_db": 4,
+          "mix": 0.5
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -18,
+          "ratio": 2,
+          "attack_ms": 30,
+          "release_ms": 250,
+          "makeup_db": 1
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

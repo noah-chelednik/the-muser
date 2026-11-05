@@ -1,0 +1,57 @@
+{
+  "id": "vocal/podcast-voice",
+  "name": "Podcast Voice",
+  "category": "vocal",
+  "subcategory": "vocals",
+  "tags": [
+    "speech",
+    "podcast"
+  ],
+  "description": "Clean, even speech.",
+  "version": 1,
+  "factory": true,
+  "role": "vocals",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 80
+      }
+    },
+    {
+      "type": "gate",
+      "params": {
+        "threshold_db": -50,
+        "ratio": 4,
+        "attack_ms": 1,
+        "release_ms": 120
+      }
+    },
+    {
+      "type": "deesser",
+      "params": {
+        "frequency_hz": 6000,
+        "threshold_db": -30,
+        "ratio": 3
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -22,
+        "ratio": 3.5,
+        "attack_ms": 10,
+        "release_ms": 150,
+        "makeup_db": 4
+      }
+    },
+    {
+      "type": "peak",
+      "params": {
+        "freq_hz": 3000,
+        "gain_db": 1.5,
+        "q": 1
+      }
+    }
+  ]
+}

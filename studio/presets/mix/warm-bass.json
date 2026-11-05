@@ -1,0 +1,46 @@
+{
+  "id": "mix/warm-bass",
+  "name": "Warm Bass",
+  "category": "mix",
+  "subcategory": "bass",
+  "tags": [
+    "warm",
+    "lofi",
+    "chill"
+  ],
+  "description": "Rounded, soft low end for chill styles.",
+  "version": 1,
+  "factory": true,
+  "role": "bass",
+  "chain": [
+    {
+      "type": "highpass",
+      "params": {
+        "cutoff_hz": 35
+      }
+    },
+    {
+      "type": "lowpass",
+      "params": {
+        "cutoff_hz": 3500
+      }
+    },
+    {
+      "type": "saturation",
+      "params": {
+        "drive_db": 5,
+        "mix": 0.4
+      }
+    },
+    {
+      "type": "compressor",
+      "params": {
+        "threshold_db": -22,
+        "ratio": 3,
+        "attack_ms": 20,
+        "release_ms": 180,
+        "makeup_db": 2
+      }
+    }
+  ]
+}

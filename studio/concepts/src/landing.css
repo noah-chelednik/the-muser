@@ -1,0 +1,10 @@
+.land{ min-height:100vh; padding:28px 6vw 40px; background:#0B0B0C; color:#EDEBE6; font-family:'Geist Mono',ui-monospace,monospace; font-size:12px; }
+.land header{ display:flex; justify-content:space-between; letter-spacing:.2em; color:#8D8F94; } .land header b{ color:#EDEBE6; }
+.land h1{ font-family:'Geist Sans',system-ui,sans-serif; font-weight:600; font-size:clamp(40px,7vw,104px); line-height:.95; letter-spacing:-.04em; margin:9vh 0 7vh; }
+.land ul{ list-style:none; padding:0; margin:0; border-top:1px solid #2A2C30; }
+.land li{ display:grid; grid-template-columns:70px 1fr auto; gap:20px; align-items:center; padding:26px 0; border-bottom:1px solid #2A2C30; }
+.land li>i{ font-style:normal; font-family:'Geist Sans',sans-serif; font-size:54px; font-weight:300; color:#5C5F64; }
+.land h2{ margin:0 0 6px; font-family:'Geist Sans',sans-serif; font-size:28px; font-weight:500; letter-spacing:-.02em; } .land p{ margin:0 0 8px; color:#A9ABB0; max-width:60ch; line-height:1.5; font-size:13px; } .land small{ color:#5C5F64; letter-spacing:.08em; }
+.land nav{ display:flex; gap:8px; } .land nav a{ color:#EDEBE6; text-decoration:none; border:1px solid #3A3D42; padding:10px 16px; letter-spacing:.16em; text-transform:uppercase; font-size:10px; transition:background .2s,color .2s; } .land nav a:hover{ background:#EDEBE6; color:#000; }
+.land footer{ margin-top:28px; color:#5C5F64; }
+@media(max-width:760px){ .land li{ grid-template-columns:1fr; } .land li>i{ font-size:30px; } }

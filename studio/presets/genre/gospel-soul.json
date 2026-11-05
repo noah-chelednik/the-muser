@@ -1,0 +1,47 @@
+{
+  "id": "genre/gospel-soul",
+  "name": "Gospel Soul",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "gospel",
+    "soul"
+  ],
+  "description": "Uplifting organ and choir.",
+  "version": 1,
+  "factory": true,
+  "easy": false,
+  "icon": "church",
+  "generate": {
+    "prompt": "gospel soul pop, organ, choir, uplifting",
+    "bpm": 88,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "gospel soul, Hammond organ with rotary speaker, warm choir pads, uplifting piano chords, gentle shuffle drums, rich bass, joyful and reverent, live church room warmth, 88 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 88,
+      "key_scale": "Ab major",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 5.5,
+      "duration_s": 40,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/punchy-drums",
+    "bass": "mix/warm-bass",
+    "keys": "mix/gospel-organ",
+    "lead": "mix/soft-melody"
+  },
+  "master": "master/r-b-master",
+  "macros": {
+    "energy": 60,
+    "vocals": 75,
+    "bass": 55,
+    "brightness": 55,
+    "space": 65
+  }
+}

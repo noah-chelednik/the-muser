@@ -1,0 +1,47 @@
+{
+  "id": "genre/hip-hop",
+  "name": "Hip Hop",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "hip hop",
+    "rap"
+  ],
+  "description": "Head-nod boom bap.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "mic",
+  "generate": {
+    "prompt": "boom bap hip hop beat, hard drums, soulful sample chops",
+    "bpm": 90,
+    "duration_s": 30,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "boom bap hip hop instrumental, hard punchy kick and crisp snare, dusty soul sample chops with vinyl texture, deep round bass line, head-nodding groove with slight swing, 90s New York feel, gritty analog mix, 90 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 90,
+      "key_scale": "F minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.0,
+      "duration_s": 36,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/punchy-drums",
+    "bass": "mix/tight-bass",
+    "keys": "mix/clean-piano",
+    "lead": "mix/soft-melody"
+  },
+  "master": "master/hip-hop-master",
+  "macros": {
+    "energy": 60,
+    "vocals": 60,
+    "bass": 60,
+    "brightness": 50,
+    "space": 35
+  }
+}

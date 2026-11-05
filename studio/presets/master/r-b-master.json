@@ -1,0 +1,60 @@
+{
+  "id": "master/r-b-master",
+  "name": "R&B Master",
+  "category": "master",
+  "subcategory": "genre",
+  "tags": [
+    "rnb",
+    "soul",
+    "genre"
+  ],
+  "description": "Smooth highs, rich low end.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "spotify",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 25
+        }
+      },
+      {
+        "type": "lowshelf",
+        "params": {
+          "cutoff_hz": 90,
+          "gain_db": 1.5,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -17,
+          "ratio": 2.5,
+          "attack_ms": 25,
+          "release_ms": 180,
+          "makeup_db": 1.5
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 9000,
+          "gain_db": 1,
+          "q": 0.7
+        }
+      },
+      {
+        "type": "deesser",
+        "params": {
+          "frequency_hz": 7500,
+          "threshold_db": -26,
+          "ratio": 2
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

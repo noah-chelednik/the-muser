@@ -1,0 +1,25 @@
+{
+  "id": "fx/jet-phaser",
+  "name": "Jet Phaser",
+  "category": "fx",
+  "subcategory": "creative",
+  "tags": [
+    "phaser",
+    "modulation"
+  ],
+  "description": "Sweeping phaser for synths and drums.",
+  "version": 1,
+  "factory": true,
+  "chain": [
+    {
+      "type": "phaser",
+      "params": {
+        "rate_hz": 0.3,
+        "depth": 0.7,
+        "centre_frequency_hz": 1000,
+        "feedback": 0.5,
+        "mix": 0.6
+      }
+    }
+  ]
+}

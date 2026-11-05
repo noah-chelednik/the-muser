@@ -17,6 +17,9 @@ The Muser Contributors.
 | NotaGen | MIT | Symbolic notation | YES |
 | Applio / RVC | MIT | Voice conversion | YES |
 | Demucs | MIT | Stem separation | YES |
+| stemsep (approach only, no code) | MIT | Null test / residual idea | YES |
+| nussl fork (dev benchmark only, not shipped) | MIT | `scripts/bench_sdr.py` inspiration | n/a |
+| Community Roformer karaoke / denoise weights | **unstated** | Opt-in separation models | **CHECK** |
 | Seed-VC | MIT | Zero-shot voice conversion | YES |
 
 ## Vocoders (Critical for DiffSinger)
@@ -87,3 +90,16 @@ choose to install them accept the GPL implications.
 
 LLM providers generate orchestration instructions only — they do not generate
 the music itself. The LLM's license does not affect ownership of your compositions.
+
+## NoDAW Studio PRO browser models and runtime
+
+| Component | Source | License |
+|---|---|---|
+| onnxruntime-web 1.30 | Microsoft | MIT |
+| HTDemucs ONNX with embedded weights (181 MB) | huggingface.co/timcsy/demucs-web-onnx | Code MIT. Pretrained weight terms not stated; personal and research use |
+| Mini-BS-RoFormer V2.5 46.2M (97 MB) | huggingface.co/HiDolen/Mini-BS-RoFormer-V2.5-46.2M | MIT |
+| Mel-Band RoFormer Duality student (219 MB) | huggingface.co/musetric/mel-band-roformer-duality-student-onnx | Apache-2.0 |
+| MusicGen small (researched, not shipped) | huggingface.co/Xenova/musicgen-small | Code MIT, weights CC-BY-NC-4.0 (personal use only) |
+
+The browser demo synthesizer is original DSP code and uses no samples or models.
+

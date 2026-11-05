@@ -1,0 +1,43 @@
+{
+  "id": "master/soundcloud-master",
+  "name": "SoundCloud Master",
+  "category": "master",
+  "subcategory": "platform",
+  "tags": [
+    "platform",
+    "soundcloud"
+  ],
+  "description": "-10 LUFS, -1 dBTP. SoundCloud doesn't normalize, so it runs louder.",
+  "version": 1,
+  "factory": true,
+  "master": {
+    "target": "soundcloud",
+    "chain": [
+      {
+        "type": "highpass",
+        "params": {
+          "cutoff_hz": 25
+        }
+      },
+      {
+        "type": "compressor",
+        "params": {
+          "threshold_db": -16,
+          "ratio": 2,
+          "attack_ms": 30,
+          "release_ms": 200,
+          "makeup_db": 1
+        }
+      },
+      {
+        "type": "highshelf",
+        "params": {
+          "cutoff_hz": 10000,
+          "gain_db": 1,
+          "q": 0.7
+        }
+      }
+    ],
+    "release_ms": 80
+  }
+}

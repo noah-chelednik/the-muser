@@ -1,0 +1,47 @@
+{
+  "id": "genre/cinematic",
+  "name": "Cinematic",
+  "category": "genre",
+  "subcategory": "starter",
+  "tags": [
+    "cinematic",
+    "orchestral"
+  ],
+  "description": "Epic film score.",
+  "version": 1,
+  "factory": true,
+  "easy": true,
+  "icon": "film",
+  "generate": {
+    "prompt": "cinematic orchestral score, epic strings, heroic brass",
+    "bpm": 90,
+    "duration_s": 40,
+    "lyrics": "",
+    "acestep": {
+      "profile": "8gb",
+      "tags": "cinematic orchestral score, sweeping legato strings, powerful low brass, taiko-style percussion hits, rising tension then heroic climax, timpani rolls, epic and emotional, wide concert hall reverb, 90 bpm",
+      "lyrics": "[instrumental]",
+      "bpm": 90,
+      "key_scale": "D minor",
+      "time_signature": "4",
+      "infer_step": 8,
+      "guidance_scale": 6.5,
+      "duration_s": 45,
+      "num_candidates": 1
+    }
+  },
+  "stems": {
+    "drums": "mix/live-rock-kit",
+    "bass": "mix/warm-bass",
+    "keys": "mix/lush-keys",
+    "lead": "mix/retro-lead"
+  },
+  "master": "master/cinematic-master",
+  "macros": {
+    "energy": 55,
+    "vocals": 40,
+    "bass": 50,
+    "brightness": 50,
+    "space": 80
+  }
+}
