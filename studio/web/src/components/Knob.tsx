@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { midi } from '../midi'
 
 export type KnobProps = {
   label: string
@@ -18,6 +19,8 @@ export type KnobProps = {
   /** One-shot change (double-click reset, keyboard). */
   onCommit?: (v: number) => void
   title?: string
+  /** Unique id for MIDI learn mapping. Right-click the knob to learn a CC. */
+  midiId?: string
 }
 
 const ARC = 270
@@ -39,12 +42,13 @@ function arcPath(cx: number, cy: number, r: number, a0: number, a1: number) {
 
 export function Knob({
   label, value, min, max, defaultValue, step = 0, size = 56, color = 'var(--hot)', bipolar,
-  format = (v) => v.toFixed(1), onBegin, onChange, onEnd, onCommit, title,
+  format = (v) => v.toFixed(1), onBegin, onChange, onEnd, onCommit, title, midiId,
 }: KnobProps) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ y: number; v: number } | null>(null)
   const wheelTimer = useRef<number | null>(null)
   const [active, setActive] = useState(false)
+  const [learning, setLearning] = useState(false)
   const latest = useRef({ value, onBegin, onChange, onEnd })
   latest.current = { value, onBegin, onChange, onEnd }
 
@@ -54,6 +58,20 @@ export function Knob({
     if (step) x = Math.round(x / step) * step
     return x
   }
+
+  // MIDI learn and control
+  useEffect(() => {
+    if (!midiId) return
+    const onMidi = (e: Event) => {
+      const { target, value: v } = (e as CustomEvent).detail
+      if (target.kind === 'knob' && target.id === midiId) {
+        const nv = min + v * (max - min)
+        onChange(clamp(nv))
+      }
+    }
+    window.addEventListener('midi-control', onMidi)
+    return () => window.removeEventListener('midi-control', onMidi)
+  }, [midiId, min, max, onChange])
 
   // Non-passive wheel listener so we can preventDefault page scroll.
   useEffect(() => {
@@ -107,6 +125,12 @@ export function Knob({
       onEnd?.()
     }
   }
+  const onContextMenu = (e: React.MouseEvent) => {
+    if (!midiId) return
+    e.preventDefault()
+    setLearning(true)
+    midi.startLearn({ kind: 'knob', id: midiId }, () => setLearning(false))
+  }
   const onKey = (e: React.KeyboardEvent) => {
     const d = (max - min) * (e.shiftKey ? 0.01 : 0.05)
     let nv: number | null = null
@@ -138,9 +162,10 @@ export function Knob({
 
   return (
     <div
-      className={`knob ${active ? 'is-active' : ''}`}
+      className={`knob ${active ? 'is-active' : ''} ${learning ? 'learning' : ''}`}
       style={{ ['--knob-color' as string]: color, width: s + 8 }}
-      title={title ?? `${label}: drag / scroll (Shift = fine), double-click to reset`}
+      title={title ?? `${label}: drag / scroll (Shift = fine), double-click to reset, right-click to MIDI learn`}
+      onContextMenu={onContextMenu}
     >
       <div
         ref={ref}
