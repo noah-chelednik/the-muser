@@ -1,6 +1,8 @@
 import { Composer } from '../../components/Composer'
 import { Deck } from '../../components/Deck'
 import { Library } from '../../components/Library'
+import { SampleLibrary } from '../../components/SampleLibrary'
+import '../../components/SampleLibrary.css'
 import { useStudio } from '../../studio/StudioContext'
 
 export function ComposerPane() {
@@ -10,7 +12,12 @@ export function ComposerPane() {
 
 export function LibraryPane() {
   const { tracks, current, loadTrack, deleteTrack, uploadFile } = useStudio()
-  return <Library tracks={tracks} currentId={current?.id ?? null} onSelect={loadTrack} onDelete={deleteTrack} onUpload={uploadFile} />
+  return (
+    <div className="library-stack">
+      <Library tracks={tracks} currentId={current?.id ?? null} onSelect={loadTrack} onDelete={deleteTrack} onUpload={uploadFile} />
+      <SampleLibrary />
+    </div>
+  )
 }
 
 export function DeckPane() {
