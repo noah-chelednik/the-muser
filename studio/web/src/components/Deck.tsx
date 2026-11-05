@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { PADS, noteOff, noteOn, sequencer } from '../audio/instruments'
 import { padBank } from '../audio/samples'
 import { audio } from '../audio/engine'
+import { midi } from '../midi'
 import type { History } from '../state/history'
 import type { PadParams, Project, SynthParams } from '../types'
 import { Knob } from './Knob'
@@ -52,6 +53,20 @@ export function Deck({ history }: Props) {
     setHeld((s) => { const x = new Set(s); x.delete(n); return x })
   }, [])
 
+  // MIDI control for pads and keys
+  useEffect(() => {
+    const onMidi = (e: Event) => {
+      const { target, value } = (e as CustomEvent).detail
+      if (target.kind === 'pad' && value > 0.1) hitPad(target.index)
+      if (target.kind === 'key') {
+        if (value > 0.05) on(target.note, value)
+        else off(target.note)
+      }
+    }
+    window.addEventListener('midi-control', onMidi)
+    return () => window.removeEventListener('midi-control', onMidi)
+  }, [hitPad, on, off])
+
   // sequencer wiring
   useEffect(() => {
     sequencer.getPattern = () => projRef.current.pattern
@@ -95,6 +110,7 @@ export function Deck({ history }: Props) {
   const synthKnob = (key: keyof SynthParams, label: string, min: number, max: number, def: number, fmt: (v: number) => string) => (
     <Knob
       key={key}
+      midiId={`synth-${key}`}
       label={label}
       value={proj.synth[key] as number}
       min={min}
@@ -112,6 +128,7 @@ export function Deck({ history }: Props) {
   const padKnob = (key: keyof PadParams, label: string, min: number, max: number, def: number, fmt: (v: number) => string, step = 0) => (
     <Knob
       key={key}
+      midiId={`pads-${key}`}
       label={label}
       value={proj.pads[key]}
       min={min}
@@ -152,7 +169,7 @@ export function Deck({ history }: Props) {
           </button>
         </div>
         <div className="deck-hint">
-          {tab === 'pads' ? 'Keys 1-4 / Q-R / A-F / Z-V trigger pads' : 'Keys A-; play notes, W E T Y U O P sharps, Z / X octave'}
+          {tab === 'pads' ? 'Keys 1-4 / Q-R / A-F / Z-V trigger pads · right-click pads or knobs for MIDI learn' : 'Keys A-; play notes, W E T Y U O P sharps, Z / X octave · right-click knobs for MIDI learn'}
         </div>
       </div>
 
@@ -164,6 +181,7 @@ export function Deck({ history }: Props) {
                 key={p.name}
                 className={`pad ${hitPads.has(i) ? 'hit' : ''} ${selPad === i ? 'sel' : ''}`}
                 onPointerDown={(e) => { e.preventDefault(); hitPad(i); setSelPad(i) }}
+                onContextMenu={(e) => { e.preventDefault(); midi.startLearn({ kind: 'pad', index: i }) }}
               >
                 <span className="pad-name">{padName(i)}</span>
                 <span className="pad-key">{p.key.toUpperCase()}</span>
@@ -181,6 +199,7 @@ export function Deck({ history }: Props) {
                 {seqOn ? '■ Stop' : '▶ Play pattern'}
               </button>
               <Knob
+                midiId="bpm"
                 label="BPM"
                 value={proj.bpm}
                 min={60}
@@ -297,6 +316,7 @@ function PianoKey({ n, black, held, pointerNote, on, off }: {
         if (pointerNote.current !== null) off(pointerNote.current)
         pointerNote.current = null
       }}
+      onContextMenu={(e) => { e.preventDefault(); midi.startLearn({ kind: 'key', note: n }) }}
       data-note={n}
     >
       {label && <span className="pkey-label">{label}</span>}
