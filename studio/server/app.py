@@ -182,8 +182,10 @@ if (WEB_DIST / "assets").exists():
 
 
 from .routes_v2 import router as _v2_router
+from .routes_library import router as _library_router
 
 app.include_router(_v2_router)
+app.include_router(_library_router)
 
 
 @app.get("/{path:path}", include_in_schema=False)
