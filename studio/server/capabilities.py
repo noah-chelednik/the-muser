@@ -154,7 +154,7 @@ def _check_acestep() -> Capability:
             "acestep",
             "ACE-Step",
             False,
-            f"No ACE-Step weights in {model_dir.relative_to(muser_config.PROJECT_ROOT)}.",
+            f"No ACE-Step weights in {model_dir.relative_to(getattr(muser_config, 'USER_ROOT', muser_config.PROJECT_ROOT))}.",
             "Run scripts/setup_models.sh (Git Bash/WSL) or download the weights manually.",
         )
     return Capability("acestep", "ACE-Step", True, f"Weights found in {model_dir.name}")

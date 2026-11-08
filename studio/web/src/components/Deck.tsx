@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { cloneSteps, ensureBeat, syncActivePattern } from '../audio/arrange'
 import { audio } from '../audio/engine'
 import { PADS, allNotesOff, noteOff, noteOn, sequencer } from '../audio/instruments'
 import { KEY_CATS, KEY_PRESETS, keySampler, presetById } from '../audio/keys'
 import { padBank } from '../audio/samples'
+import * as soundfont from '../audio/soundfont'
+import { UploadError, validateAudioFile } from '../audio/upload'
 import { midi, routeNote, type MidiRouting } from '../midi'
 import type { History } from '../state/history'
 import type { KeyNote, Project, SynthParams } from '../types'
+import { Arranger } from './Arranger'
 import { claimDeck, ownsInput } from './deck/focus'
 import { PadEditor } from './deck/PadEditor'
 import { Slider } from './deck/Slider'
@@ -13,7 +17,7 @@ import { SoundBrowser } from './deck/SoundBrowser'
 import './deck/deck.css'
 
 type Props = { history: History<Project> }
-type View = 'pads' | 'keys' | 'sounds'
+type View = 'pads' | 'keys' | 'sounds' | 'arrange'
 
 const KEY_MAP = ['a', 'w', 's', 'e', 'd', 'f', 't', 'g', 'y', 'h', 'u', 'j', 'k', 'o', 'l', 'p', ';', "'"]
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -83,14 +87,14 @@ export function Deck({ history }: Props) {
   const writePad = (i: number) => {
     const st = recStep()
     history.commit(`Record ${padName(i)} on step ${st + 1}`, (s) =>
-      s.pattern[i][st] ? s : { ...s, pattern: s.pattern.map((row, p) => (p === i ? row.map((v, k) => (k === st ? true : v)) : row)) })
+      s.pattern[i][st] ? s : syncActivePattern(s, s.pattern.map((row, p) => (p === i ? row.map((v, k) => (k === st ? true : v)) : row))))
   }
   const pendingNotes = useRef(new Map<number, { t: number; step: number; vel: number }>())
 
   const hitPad = useCallback((i: number, vel = 1) => {
     audio.unlock()
     const ctx = audio.ensure()
-    PADS[i].play(ctx.currentTime + 0.005, projRef.current.pads, vel)
+    PADS[i].play(ctx.currentTime + 0.005, projRef.current.pads, undefined, vel)
     flash(i)
     if (live.current.rec && sequencer.running) writePad(i)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,9 +148,14 @@ export function Deck({ history }: Props) {
     sequencer.getPad = () => projRef.current.pads
     sequencer.getKeyNotes = () => projRef.current.keyNotes ?? []
     sequencer.getSynth = () => projRef.current.synth
+    sequencer.getArrangement = () => {
+      const beat = ensureBeat(projRef.current)
+      return { arrangement: beat.arrangement!, patterns: beat.patterns! }
+    }
     sequencer.onStep = (s) => {
-      setStep(s)
-      if (s >= 0) projRef.current.pattern.forEach((row, p) => row[s] && flash(p))
+      const st = s < 0 ? -1 : s % 16
+      setStep(st)
+      if (st >= 0) projRef.current.pattern.forEach((row, p) => row[st] && flash(p))
     }
     setSeqOn(sequencer.running)
   }, [])
@@ -155,13 +164,14 @@ export function Deck({ history }: Props) {
 
   const togglePlay = () => {
     audio.unlock()
-    if (sequencer.running) { sequencer.stop(); setSeqOn(false); setRec(false) } else { sequencer.start(); setSeqOn(true) }
+    if (sequencer.running) { sequencer.stop(); setSeqOn(false); setRec(false) } else { sequencer.mode = 'pattern'; sequencer.start(); setSeqOn(true) }
   }
   const toggleRec = () => {
     audio.unlock()
     if (rec) { setRec(false); return }
     setRec(true)
-    if (!sequencer.running) { sequencer.start(); setSeqOn(true) }
+    if (sequencer.running && sequencer.mode === 'arrange') sequencer.stop()
+    if (!sequencer.running) { sequencer.mode = 'pattern'; sequencer.start(); setSeqOn(true) }
   }
 
   // computer keyboard
@@ -194,10 +204,8 @@ export function Deck({ history }: Props) {
 
   const toggleStep = (pad: number, st: number) => {
     audio.unlock()
-    history.commit(`${padName(pad)} step ${st + 1}`, (s) => ({
-      ...s,
-      pattern: s.pattern.map((row, p) => (p === pad ? row.map((v, i) => (i === st ? !v : v)) : row)),
-    }))
+    history.commit(`${padName(pad)} step ${st + 1}`, (s) =>
+      syncActivePattern(s, s.pattern.map((row, p) => (p === pad ? row.map((v, i) => (i === st ? !v : v)) : row))))
   }
 
   const setSynth = (label: string, patch: Partial<SynthParams>) => history.commit(label, (s) => ({ ...s, synth: { ...s.synth, ...patch } }))
@@ -205,9 +213,39 @@ export function Deck({ history }: Props) {
     audio.unlock()
     const p = presetById(id)
     if (!p) return
+    if (soundfont.hasFont()) soundfont.unloadFont()
     setSynth(`Keys preset ${p.name}`, { wave: 'sawtooth', ...p.base, preset: id, volume: projRef.current.synth.volume, octave: p.base.octave ?? 0 })
     // a short preview note
     window.setTimeout(() => { noteOn(60 + (p.base.octave ?? 0) * 12, { ...projRef.current.synth }, 0.8); window.setTimeout(() => noteOff(60 + (p.base.octave ?? 0) * 12, projRef.current.synth), 260) }, 0)
+  }
+
+  const beat = ensureBeat(proj)
+  const [dropPad, setDropPad] = useState<number | null>(null)
+  const [dropErr, setDropErr] = useState('')
+  const sfRef = useRef<HTMLInputElement>(null)
+  const [, bumpFont] = useState(0)
+  /** A file dropped on a pad goes through the same checks as an upload. */
+  const dropOnPad = async (i: number, file: File) => {
+    setDropErr('')
+    try {
+      const v = await validateAudioFile(file)
+      padBank.set(i, { name: v.name, buffer: v.buffer, pitch: 0, rate: 1, gain: 1, source: { kind: 'upload' } })
+      setSelPad(i)
+      hitPad(i)
+    } catch (e) {
+      setDropErr(e instanceof UploadError ? e.message : 'Could not load that file.')
+    }
+  }
+  const loadFont = async (file: File) => {
+    setDropErr('')
+    try {
+      if (!/\.sf2$/i.test(file.name)) throw new Error('Pick an .sf2 soundfont.')
+      if (file.size > 200 * 1024 * 1024) throw new Error('That soundfont is over 200 MB.')
+      await soundfont.loadFile(file)
+      bumpFont((n) => n + 1)
+    } catch (e) {
+      setDropErr(e instanceof Error ? e.message : 'Could not load that soundfont.')
+    }
   }
 
   const rows = useMemo(() => {
@@ -244,7 +282,7 @@ export function Deck({ history }: Props) {
     <section className="panel deck nd" data-testid="deck" data-view={view}>
       <div className="nd-head">
         <div className="nd-tabs" role="tablist" aria-label="Deck">
-          {([['pads', 'Pads'], ['keys', 'Keys'], ['sounds', 'Sounds']] as [View, string][]).map(([k, l]) => (
+          {([['pads', 'Pads'], ['keys', 'Keys'], ['sounds', 'Sounds'], ['arrange', 'Arrange']] as [View, string][]).map(([k, l]) => (
             <button key={k} role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setView(k)} data-testid={`deck-${k}`}>{l}</button>
           ))}
         </div>
@@ -271,11 +309,14 @@ export function Deck({ history }: Props) {
                 return (
                   <button
                     key={i}
-                    className={`nd-pad ${hitPads.has(i) ? 'hit' : ''} ${selPad === i ? 'sel' : ''} ${s ? 'smp' : ''}`}
+                    className={`nd-pad ${hitPads.has(i) ? 'hit' : ''} ${selPad === i ? 'sel' : ''} ${s ? 'smp' : ''} ${dropPad === i ? 'drop' : ''}`}
                     data-testid={`pad-${i}`}
                     onPointerDown={(e) => { e.preventDefault(); hitPad(i); setSelPad(i) }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hitPad(i); setSelPad(i) } }}
                     onContextMenu={(e) => { e.preventDefault(); if (midi.supported) midi.startLearn({ kind: 'pad', index: i }) }}
+                    onDragOver={(e) => { e.preventDefault(); setDropPad(i) }}
+                    onDragLeave={() => setDropPad((c) => (c === i ? null : c))}
+                    onDrop={(e) => { e.preventDefault(); setDropPad(null); const f = e.dataTransfer.files[0]; if (f) void dropOnPad(i, f) }}
                     aria-label={`Pad ${i + 1} ${padName(i)}`}
                   >
                     <span className="nd-pad-n">{padName(i)}</span>
@@ -288,7 +329,8 @@ export function Deck({ history }: Props) {
                 )
               })}
             </div>
-            <p className="nd-hint">{narrow ? 'Tap a pad to play it and edit it below.' : 'Keys 1-4, Q-R, A-F, Z-V play pads. Right-click a pad to MIDI learn.'}</p>
+            <p className="nd-hint">{narrow ? 'Tap a pad to play it and edit it below.' : 'Keys 1-4, Q-R, A-F, Z-V play pads. Drop an audio file on a pad. Right-click a pad to MIDI learn.'}</p>
+            {dropErr && <p className="nd-err" role="alert">{dropErr}</p>}
           </div>
 
           <div className="nd-side">
@@ -302,7 +344,23 @@ export function Deck({ history }: Props) {
                   </span>
                 )}
                 <button className="nd-btn small ghost" onClick={() => setAllRows((v) => !v)}>{allRows ? 'Fewer rows' : 'All 16 rows'}</button>
-                <button className="nd-btn small ghost" onClick={() => history.commit('Clear pattern', (s) => ({ ...s, pattern: s.pattern.map((r) => r.map(() => false)) }))} data-testid="clear-pattern">Clear</button>
+                <button className="nd-btn small ghost" onClick={() => history.commit('Clear pattern', (s) => syncActivePattern(s, s.pattern.map((r) => r.map(() => false))))} data-testid="clear-pattern">Clear</button>
+                <select
+                  className="nd-select"
+                  aria-label="Pattern"
+                  value={beat.activePatternId}
+                  onChange={(e) => {
+                    const id = e.target.value
+                    history.commit('Select pattern', (s) => {
+                      const next = ensureBeat(s)
+                      const pat = next.patterns!.find((item) => item.id === id)
+                      return pat ? { ...next, activePatternId: id, pattern: cloneSteps(pat.steps) } : next
+                    })
+                  }}
+                  data-testid="pattern-select"
+                >
+                  {beat.patterns!.map((pat) => <option key={pat.id} value={pat.id}>{pat.name}</option>)}
+                </select>
               </div>
               <div className="nd-seq-rows" style={{ ['--steps' as string]: steps.length }}>
                 {rows.map((pad) => (
@@ -337,6 +395,12 @@ export function Deck({ history }: Props) {
         </div>
       )}
 
+      {view === 'arrange' && (
+        <div className="nd-body nd-arrange" data-testid="deck-arrange-body">
+          <Arranger history={history} />
+        </div>
+      )}
+
       {view === 'sounds' && (
         <div className="nd-body">
           <SoundBrowser pad={selPad} setPad={setSelPad} onAssigned={(i) => { hitPad(i); setSelPad(i) }} onKeys={() => { pickPreset('lib-sampler'); setView('keys') }} />
@@ -357,7 +421,12 @@ export function Deck({ history }: Props) {
                 </button>
               ))}
             </div>
-            <p className="nd-hint">{KEY_PRESETS.length} presets, all synthesized in the browser. <b>{cur?.name ?? 'Custom'}</b> is loaded.</p>
+            <p className="nd-hint">
+              {KEY_PRESETS.length} presets, all synthesized in the browser. <b>{soundfont.hasFont() ? `Soundfont: ${soundfont.fontName()}` : (cur?.name ?? 'Custom')}</b> is loaded.{' '}
+              <button className="nd-btn small ghost" onClick={() => sfRef.current?.click()} data-testid="load-sf2">Load .sf2</button>
+              <input ref={sfRef} type="file" hidden accept=".sf2" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void loadFont(f) }} />
+            </p>
+            {view === 'keys' && dropErr && <p className="nd-err" role="alert">{dropErr}</p>}
           </div>
 
           <div className="nd-oct">

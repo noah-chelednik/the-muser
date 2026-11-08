@@ -1,12 +1,14 @@
 /**
- * Premium Sample Library Browser
- * Cyber-HUD / chromatic nihilism aesthetic. Searchable drive-scanned library
- * of samples and soundfonts. Assign directly to pads or audition.
+ * Sample Library Browser
+ * Searchable drive-scanned library of samples and soundfonts.
+ * Assign samples to pads or load soundfonts onto the keyboard.
  */
 import { useCallback, useEffect, useState } from 'react'
-import { padBank } from '../audio/samples'
-import { validateAudioFile } from '../audio/upload'
 import { PADS } from '../audio/instruments'
+import { loadPadBuffer, padBank } from '../audio/samples'
+import * as soundfont from '../audio/soundfont'
+import { validateAudioFile } from '../audio/upload'
+import './SampleLibrary.css'
 
 type LibItem = {
   path: string
@@ -15,11 +17,14 @@ type LibItem = {
   size: number
   mtime: number
   duration?: number | null
+  sample_rate?: number | null
 }
 
 type Props = {
   onAssign?: (item: LibItem, padIndex: number) => void
 }
+
+const fileUrl = (path: string) => `/api/library/file?path=${encodeURIComponent(path)}`
 
 export function SampleLibrary({ onAssign }: Props) {
   const [query, setQuery] = useState('')
@@ -30,6 +35,9 @@ export function SampleLibrary({ onAssign }: Props) {
   const [scanPaths, setScanPaths] = useState('C:\\Users\\Public\\Music\\Samples')
   const [selected, setSelected] = useState<LibItem | null>(null)
   const [targetPad, setTargetPad] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [preview, setPreview] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     try {
@@ -51,6 +59,7 @@ export function SampleLibrary({ onAssign }: Props) {
     const paths = scanPaths.split(/[;\n]/).map((s) => s.trim()).filter(Boolean)
     if (!paths.length) return
     setScanning(true)
+    setMsg('')
     try {
       await fetch('/api/library/scan', {
         method: 'POST',
@@ -63,21 +72,41 @@ export function SampleLibrary({ onAssign }: Props) {
     }
   }
 
-  const [assignErr, setAssignErr] = useState('')
   const assign = async (item: LibItem) => {
-    if (item.type !== 'sample') return
-    setAssignErr('')
+    setBusy(true)
+    setMsg('')
     try {
-      // the server only serves files its scanner indexed; the bytes still go through the upload guard
-      const r = await fetch(`/api/library/file?path=${encodeURIComponent(item.path)}`)
-      if (!r.ok) throw new Error('The file is no longer in the library. Scan again.')
-      const blob = await r.blob()
+      if (item.type === 'soundfont') {
+        await soundfont.loadFromLibrary(item.path)
+        setMsg(`Loaded ${item.name} on the keyboard`)
+        onAssign?.(item, -1)
+        return
+      }
+      const res = await fetch(fileUrl(item.path))
+      if (!res.ok) throw new Error(res.status === 403 ? 'File is not in the scanned library.' : 'Could not load file')
+      // the server only serves files its scanner indexed; the bytes still go through the upload checks
+      const blob = await res.blob()
       const v = await validateAudioFile(new File([blob], item.path.split(/[\\/]/).pop() || 'sample.wav', { type: blob.type || '' }))
-      padBank.set(targetPad, { name: v.name, buffer: v.buffer, pitch: 0, rate: 1, gain: 1, source: { kind: 'upload' } })
+      await loadPadBuffer(targetPad, v.name, v.buffer, { kind: 'upload' })
+      setMsg(`Loaded onto pad ${targetPad + 1}`)
       onAssign?.(item, targetPad)
-    } catch (e) {
-      setAssignErr((e as Error).message)
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : 'Load failed')
+    } finally {
+      setBusy(false)
     }
+  }
+
+  const pick = (item: LibItem) => {
+    setSelected(item)
+    setPreview(item.type === 'sample' ? fileUrl(item.path) : null)
+  }
+
+  const detail = (it: LibItem) => {
+    const parts = [it.type, `${(it.size / 1024 / 1024).toFixed(1)} MB`]
+    if (it.duration) parts.push(`${it.duration.toFixed(1)}s`)
+    if (it.sample_rate) parts.push(`${Math.round(it.sample_rate / 1000)} kHz`)
+    return parts.join(' · ')
   }
 
   return (
@@ -119,12 +148,12 @@ export function SampleLibrary({ onAssign }: Props) {
           <div
             key={it.path}
             className={`lib-item ${selected?.path === it.path ? 'on' : ''} ${it.type}`}
-            onClick={() => setSelected(it)}
+            onClick={() => pick(it)}
           >
             <span className={`src-dot src-${it.type}`} />
             <div className="lib-body">
               <div className="lib-title">{it.name}</div>
-              <div className="lib-sub">{it.type} · {(it.size / 1024 / 1024).toFixed(1)} MB</div>
+              <div className="lib-sub">{detail(it)}</div>
             </div>
           </div>
         ))}
@@ -135,13 +164,28 @@ export function SampleLibrary({ onAssign }: Props) {
           <label>
             Assign to pad
             <select value={targetPad} onChange={(e) => setTargetPad(+e.target.value)}>
-              {PADS.map((p, i) => <option key={i} value={i}>{i + 1} {p.name}</option>)}
+              {PADS.map((p, i) => <option key={i} value={i}>{i + 1} {padBank.get(i)?.name ?? p.name}</option>)}
             </select>
           </label>
-          <button className="btn pri" onClick={() => void assign(selected)}>Load onto pad</button>
-          {assignErr && <p className="nd-err" role="alert">{assignErr}</p>}
+          <button className="btn pri" disabled={busy} onClick={() => void assign(selected)}>
+            {busy ? 'Loading…' : 'Load onto pad'}
+          </button>
         </div>
       )}
+
+      {selected && selected.type === 'soundfont' && (
+        <div className="lib-assign">
+          <button className="btn pri" disabled={busy} onClick={() => void assign(selected)}>
+            {busy ? 'Loading…' : 'Load onto keyboard'}
+          </button>
+        </div>
+      )}
+
+      {preview && (
+        <audio className="lib-preview" src={preview} controls preload="none" />
+      )}
+      {msg && <div className="muted pad-s">{msg}</div>}
+      {soundfont.hasFont() && <div className="muted pad-s">Keyboard: {soundfont.fontName()}</div>}
     </section>
   )
 }

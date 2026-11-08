@@ -34,8 +34,11 @@ def stats() -> dict:
 
 @router.get("/file")
 def file(path: str) -> FileResponse:
-    """Serve one indexed sample (only paths the scanner indexed; nothing else on disk)."""
-    p = library.indexed_file(path)
-    if not p:
-        raise HTTPException(404, "Not in the sample library")
-    return FileResponse(p)
+    """Stream a file that is already in the scanned library index."""
+    try:
+        resolved = library.resolve_indexed(path)
+    except FileNotFoundError:
+        raise HTTPException(404, "File not found") from None
+    except PermissionError:
+        raise HTTPException(403, "File is not in the scanned library") from None
+    return FileResponse(resolved, filename=resolved.name)

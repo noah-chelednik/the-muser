@@ -9,6 +9,7 @@
 import type { SynthParams } from '../types'
 import { audio } from './engine'
 import { padBank } from './samples'
+import * as soundfont from './soundfont'
 
 type Osc = { type?: OscillatorType | 'main'; semi?: number; det?: number; gain?: number }
 export type KeyPreset = {
@@ -219,8 +220,13 @@ function voice(note: number, s: SynthParams, vel: number, t: number): Voice | nu
   }
 }
 
+/** A soundfont the user loaded (.sf2 file or scanned library) replaces the preset until a preset is picked. */
 export function noteOn(note: number, s: SynthParams, velocity = 0.8) {
   const ctx = audio.ensure()
+  if (soundfont.hasFont()) {
+    soundfont.noteOff(note)
+    if (soundfont.noteOn(note, out(), undefined, velocity * s.volume)) return
+  }
   noteOff(note, s, true)
   const pr = presetById(s.preset)
   if (pr?.mono) held.forEach((v, n) => { v.stop(ctx.currentTime, 0.02); held.delete(n) })
@@ -229,6 +235,7 @@ export function noteOn(note: number, s: SynthParams, velocity = 0.8) {
 }
 
 export function noteOff(note: number, s: SynthParams, immediate = false) {
+  if (soundfont.hasFont()) soundfont.noteOff(note)
   const v = held.get(note)
   if (!v || !audio.ctx) return
   held.delete(note)
@@ -237,8 +244,9 @@ export function noteOff(note: number, s: SynthParams, immediate = false) {
 
 /** Scheduled note for the sequencer: start at `t`, release after `dur` seconds. */
 export function playNote(note: number, s: SynthParams, velocity: number, t: number, dur: number) {
+  if (soundfont.hasFont() && soundfont.noteOn(note, out(), t, velocity * s.volume)) { soundfont.noteOff(note, t + Math.max(0.02, dur)); return }
   const v = voice(note, s, velocity, t)
   if (v) v.stop(t + Math.max(0.02, dur), Math.max(0.02, s.release))
 }
 
-export const allNotesOff = () => { if (!audio.ctx) return; held.forEach((v) => v.stop(audio.ctx!.currentTime, 0.02)); held.clear() }
+export const allNotesOff = () => { soundfont.allNotesOff(); if (!audio.ctx) return; held.forEach((v) => v.stop(audio.ctx!.currentTime, 0.02)); held.clear() }

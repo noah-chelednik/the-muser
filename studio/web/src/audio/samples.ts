@@ -4,7 +4,7 @@
  */
 import type { PadParams } from '../types'
 import { audio } from './engine'
-import { padDestination, type FxSlot } from './padfx'
+import { buildPadChain, padDestination, type FxSlot } from './padfx'
 import { bufferToWav, planesToBuffer, safeName } from './wav'
 import { zipFiles } from '../demo/zip'
 
@@ -39,11 +39,30 @@ export const samplePlaybackRate = (s: PadSample, p?: PadParams, extraSemis = 0) 
 /** Destination node for pad i (its own FX chain, or the instrument bus). */
 export const padOut = (i: number) => padDestination(i, settings[i]?.fx)
 
+/**
+ * Where pad i's hit goes. Live: the pad's own FX chain. With an explicit destination (playlist track
+ * or an offline export) a chain for that destination is built once per FX layout and reused.
+ */
+const extChains = new WeakMap<AudioNode, Map<number, { sig: string; input: AudioNode }>>()
+export function padRoute(i: number, dest?: AudioNode): AudioNode {
+  if (!dest) return padOut(i)
+  const slots = (settings[i]?.fx ?? []).filter((x) => x.on)
+  if (!slots.length) return dest
+  let m = extChains.get(dest)
+  if (!m) { m = new Map(); extChains.set(dest, m) }
+  const sig = JSON.stringify(slots)
+  const cur = m.get(i)
+  if (cur && cur.sig === sig) return cur.input
+  const ch = buildPadChain(dest.context, slots, dest, false)
+  m.set(i, { sig, input: ch.input })
+  return ch.input
+}
+
 /** Fire a pad sample. Returns false when the pad has none. */
-export function playPadSample(i: number, when: number, p: PadParams, vel = 1): boolean {
+export function playPadSample(i: number, when: number, p: PadParams, vel = 1, dest?: AudioNode): boolean {
   const s = bank[i]
   if (!s) return false
-  const ctx = audio.ensure()
+  const ctx = (dest?.context ?? audio.ensure()) as BaseAudioContext
   const st = settings[i]
   const src = ctx.createBufferSource()
   src.buffer = s.buffer
@@ -57,10 +76,21 @@ export function playPadSample(i: number, when: number, p: PadParams, vel = 1): b
   g.gain.setValueAtTime(v, t + Math.max(0, dur - 0.004))
   g.gain.linearRampToValueAtTime(0, t + dur)
   src.connect(g)
-  g.connect(padOut(i))
+  g.connect(padRoute(i, dest))
   src.start(t)
   src.onended = () => { try { g.disconnect() } catch { /* gone */ } }
   return true
+}
+
+/** Put a decoded buffer on a pad (the session kit autosaves it). */
+export async function loadPadBuffer(i: number, name: string, buffer: AudioBuffer, source?: PadSource) {
+  padBank.set(i, { name, buffer, pitch: 0, rate: 1, gain: 1, ...(source ? { source } : {}) })
+}
+
+export async function decodeAndLoadPad(i: number, name: string, data: ArrayBuffer) {
+  const buffer = await audio.decodeBytes(data.slice(0))
+  await loadPadBuffer(i, name.replace(/\.[^.]+$/, ''), buffer)
+  return buffer
 }
 
 /** Audition outside the sequencer (sampler tab). */

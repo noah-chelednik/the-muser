@@ -203,3 +203,9 @@ body:not(.browser-demo) .beats-fab { bottom: calc(16px + env(safe-area-inset-bot
   .nd-roll-row { grid-template-columns: 44px max-content; }
   .nd-slot-tools .nd-icon { min-width: var(--tap); }
 }
+
+/* merged from the playlist work: pattern picker, drop target, arranger inside the deck */
+.nd .nd-select { min-height: 32px; background: var(--p2); color: var(--tx); border: 1px solid var(--ln); font: inherit; font-size: 12px; padding: 0 6px; }
+.nd .nd-pad.drop { outline: 2px dashed var(--hot); outline-offset: -4px; }
+.nd .nd-arrange { overflow-x: auto; }
+@media (pointer: coarse), (max-width: 820px) { .nd .nd-select { min-height: 44px; } }

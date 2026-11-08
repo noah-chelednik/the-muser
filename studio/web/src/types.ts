@@ -135,14 +135,28 @@ export type KeyNote = { step: number; note: number; len: number; vel: number }
 
 export type PadParams = { volume: number; pitch: number; tone: number }
 
+export type BeatPattern = { id: string; name: string; steps: boolean[][] }
+export type ArrangeClip = { id: string; patternId: string; track: number; startBar: number; lengthBars: number }
+export type ArrangeTrack = { name: string; fx: StemParams }
+export type Arrangement = {
+  bars: number
+  clips: ArrangeClip[]
+  tracks: ArrangeTrack[]
+  masterFx: StemParams
+}
+
 export type Project = {
   mixer: Record<string, StemParams> // key: stem id (or "<trackId>:mix")
   master: { gain_db: number; normalize: boolean; limiter?: boolean }
   synth: SynthParams
   pads: PadParams
-  pattern: boolean[][] // 16 pads x 16 steps
+  pattern: boolean[][] // 16 pads x 16 steps (the pattern currently being edited)
   keyNotes: KeyNote[] // key sequence, played with the current keys preset
   bpm: number
+  /** Named patterns the playlist can place. Hydrated by ensureBeat(). */
+  patterns?: BeatPattern[]
+  activePatternId?: string
+  arrangement?: Arrangement
 }
 
 export type ChatItem =

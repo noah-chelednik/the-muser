@@ -6,7 +6,6 @@ SoundFonts, indexes them with metadata, and exposes search endpoints.
 
 from __future__ import annotations
 
-import json
 import sqlite3
 import threading
 from pathlib import Path
@@ -43,10 +42,34 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
+def _audio_meta(path: Path) -> tuple[float | None, int | None, int | None]:
+    """Best-effort duration / sample rate / channel count."""
+    suffix = path.suffix.lower()
+    if suffix in SOUNDFONT_EXT:
+        return None, None, None
+    try:
+        import soundfile as sf
+
+        info = sf.info(str(path))
+        return float(info.duration), int(info.samplerate), int(info.channels)
+    except Exception:
+        pass
+    if suffix in {".wav", ".aif", ".aiff"}:
+        try:
+            import wave
+
+            with wave.open(str(path), "rb") as handle:
+                sr = handle.getframerate()
+                frames = handle.getnframes()
+                return (frames / sr if sr else None), sr, handle.getnchannels()
+        except Exception:
+            pass
+    return None, None, None
+
+
 def scan_paths(paths: list[str], progress_cb: Any = None) -> dict:
     """Scan one or more directories and update the library index."""
     added = 0
-    updated = 0
     with _lock:
         conn = _connect()
         for root in paths:
@@ -59,18 +82,17 @@ def scan_paths(paths: list[str], progress_cb: Any = None) -> dict:
                 try:
                     stat = p.stat()
                     kind = "soundfont" if p.suffix.lower() in SOUNDFONT_EXT else "sample"
-                    # Minimal metadata; full duration requires audio libs (optional)
-                    duration = None
-                    sr = None
-                    ch = None
+                    duration, sr, ch = _audio_meta(p)
                     conn.execute(
                         """
                         INSERT INTO items (path, name, type, size, mtime, duration, sample_rate, channels)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(path) DO UPDATE SET
-                            name=excluded.name, size=excluded.size, mtime=excluded.mtime
+                            name=excluded.name, size=excluded.size, mtime=excluded.mtime,
+                            duration=excluded.duration, sample_rate=excluded.sample_rate,
+                            channels=excluded.channels
                         """,
-                        (str(p), p.stem, kind, stat.st_size, stat.st_mtime, duration, sr, ch),
+                        (str(p.resolve()), p.stem, kind, stat.st_size, stat.st_mtime, duration, sr, ch),
                     )
                     added += 1
                 except Exception:
@@ -86,7 +108,7 @@ def search(query: str = "", kind: str | None = None, limit: int = 200) -> list[d
     """Search the library by name or path."""
     with _lock:
         conn = _connect()
-        sql = "SELECT path, name, type, size, mtime, duration FROM items WHERE 1=1"
+        sql = "SELECT path, name, type, size, mtime, duration, sample_rate, channels FROM items WHERE 1=1"
         params: list[Any] = []
         if query:
             sql += " AND (name LIKE ? OR path LIKE ?)"
@@ -125,3 +147,29 @@ def get_stats() -> dict:
         fonts = conn.execute("SELECT COUNT(*) FROM items WHERE type='soundfont'").fetchone()[0]
         conn.close()
     return {"total": total, "samples": samples, "soundfonts": fonts, "db": str(DB_PATH)}
+
+
+def resolve_indexed(path: str) -> Path:
+    """Return a scanned library file, or raise FileNotFoundError / PermissionError.
+
+    Paths are canonicalized first so ``..`` segments cannot escape the index.
+    Only files already stored in the SQLite library are served.
+    """
+    try:
+        resolved = Path(path).expanduser().resolve()
+    except OSError as exc:
+        raise FileNotFoundError(path) from exc
+    if not resolved.is_file():
+        raise FileNotFoundError(path)
+    key = str(resolved)
+    with _lock:
+        conn = _connect()
+        row = conn.execute("SELECT path FROM items WHERE path = ?", (key,)).fetchone()
+        if row is None:
+            row = conn.execute(
+                "SELECT path FROM items WHERE lower(path) = lower(?)", (key,)
+            ).fetchone()
+        conn.close()
+    if row is None:
+        raise PermissionError("not in library")
+    return resolved
