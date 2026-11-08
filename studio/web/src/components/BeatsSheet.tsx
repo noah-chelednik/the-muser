@@ -40,7 +40,9 @@ export function BeatsSheet() {
         const under = document.elementsFromPoint(r.left + r.width * fx, r.top + r.height * fy).find((n) => n !== el && !el.contains(n))
         const hit = under?.closest(INTERACTIVE)
         const bar = hit ? pinned(hit) : null
-        if (bar) top = Math.min(top, bar.getBoundingClientRect().top)
+        const bt = bar ? bar.getBoundingClientRect().top : Infinity
+        // only bars pinned to the lower part of the screen; a tall sticky column is not a bottom bar
+        if (bt >= window.innerHeight * 0.55) top = Math.min(top, bt)
       }
       if (top < Infinity) el.style.bottom = `${Math.max(0, window.innerHeight - top) + 8}px`
     }
