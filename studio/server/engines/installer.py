@@ -85,6 +85,12 @@ def install(key: str, log: Log = print, dry_run: bool = False) -> dict:
     spec = registry.get(key)
     if spec.install.kind == "builtin":
         return {"engine": key, "installed": True, "log": ["Built in, nothing to install."]}
+    if getattr(sys, "frozen", False) and not dry_run:
+        raise FriendlyError(
+            f"{spec.name} can't be added from inside the desktop installer build.",
+            "Engines that are not bundled need the source install: "
+            "https://github.com/myaiplug/the-muser#installation",
+        )
     lines: list[str] = []
 
     def emit(s: str) -> None:

@@ -148,6 +148,7 @@ kbd { font-family: var(--fm); font-size: 9px; border: 1px solid var(--ln2); padd
 .pad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .pad { --pad: var(--hot); aspect-ratio: 1; position: relative; overflow: hidden; touch-action: none; border: 1px solid var(--ln2); background: var(--p2); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 6px; transition: transform .06s, background .2s, border-color .2s; }
 .pad.sel { border-color: var(--tx); }
+.pad.drop { border-color: var(--hot); background: color-mix(in srgb, var(--hot) 22%, var(--p2)); }
 .pad.hit { background: var(--hot); border-color: var(--hot); transform: scale(.96); transition: none; }
 .pad.hit .pad-name, .pad.hit .pad-key { color: var(--hot-ink); }
 .pad-name { font: 500 9px var(--fm); letter-spacing: .1em; text-transform: uppercase; }

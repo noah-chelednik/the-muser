@@ -193,6 +193,24 @@ See [docs/legal.md](docs/legal.md) for the full ownership guide.
 
 ---
 
+## Beat maker, library, and desktop installer
+
+The beat maker has three related views in the Deck:
+
+- **Pads + Sequencer** — 16 MPC-style pads, a 16-step pattern editor, MIDI learn, and drag-and-drop or file-picker loading of custom samples onto each pad.
+- **Keys** — the on-screen keyboard, either the built-in synth or a scanned `.sf2` / `.sfz` soundfont (`.sf3` is not supported yet).
+- **Arrange** — an FL Studio–style playlist: multiple named patterns as clips on tracks, per-track and master effects, and 16-bit / 24-bit WAV export (optional normalize).
+
+The Sample Library pane scans folders for samples and soundfonts, stores an index in `~/.nodaw/sample_library.db` (or `%USERPROFILE%\.nodaw` on Windows), and serves only those indexed files through `/api/library/file`.
+
+For a native Windows app with Start Menu / desktop shortcuts and an uninstaller, build the Inno Setup package:
+
+```powershell
+.\packaging\windows\build-installer.ps1
+```
+
+See [packaging/windows/README.md](packaging/windows/README.md). The installer writes user data to `%LOCALAPPDATA%\TheMuser`. Source-tree use (`setup_windows.bat` / `start_studio.bat`) still works as below.
+
 ## Windows setup step by step
 
 ### 1. Install the prerequisites (once)
