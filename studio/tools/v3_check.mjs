@@ -226,6 +226,9 @@ async function run(skin, devName) {
     const st = await p2.evaluate(() => ({ s: window.__muser.audio.state, blocked: window.__muser.audio.blocked }))
     const gate = await p2.locator('[data-testid=audio-gate]').count()
     if (st.s !== 'running') must(gate > 0 || st.blocked, 'context ' + st.s + ' but no gate banner')
+    // phones get the first-run "Tap to enable sound" sheet over everything: that tap is the real gesture
+    const sheet = p2.locator('[data-testid=sound-gate-sheet]')
+    if (await sheet.count()) { await p2.locator('[data-testid=sound-gate]').tap(); await sheet.waitFor({ state: 'detached', timeout: 15000 }) }
     const real = p2.locator('[data-testid=play]').first()
     if (mobile) await real.tap(); else await real.click()
     await p2.waitForTimeout(400)
