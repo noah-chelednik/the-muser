@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "predev": "node scripts/copy-ort.mjs",
-    "prebuild": "node scripts/copy-ort.mjs"
+    "prebuild": "node scripts/copy-ort.mjs",
+    "test:phone-audio": "node --experimental-vm-modules --test scripts/test-phone-audio.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

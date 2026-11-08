@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { audio } from '../audio/engine'
 import { ACCEPT } from '../audio/upload'
 import { api, waitJob } from '../api'
 import type { FinishTarget, MacroKey, Preset, Slider, Track } from '../types'
@@ -79,6 +80,7 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   const upload = useRef<HTMLInputElement>(null)
   const refUpload = useRef<HTMLInputElement>(null)
   const renderTimer = useRef<number | undefined>(undefined)
+  const autoplayTrack = useRef<string | null>(null)
   const saveTimer = useRef<number | undefined>(undefined)
   const macrosRef = useRef(macros)
   macrosRef.current = macros
@@ -131,7 +133,10 @@ export function EasyProvider({ children }: { children: ReactNode }) {
 
   // the engine always plays the Easy version you are looking at
   useEffect(() => {
-    if (mode === 'easy' && track) loadTrack(track, true)
+    if (mode === 'easy' && track) {
+      loadTrack(track, true, autoplayTrack.current === track.id)
+      autoplayTrack.current = null
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, track?.id])
 
@@ -144,6 +149,7 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   }, [working])
 
   const push = useCallback((t: Track, label: string, m: Record<MacroKey, number>) => {
+    autoplayTrack.current = t.id
     setVersions((vs) => [...vs.slice(0, idx + 1), { track: t, label, macros: m }].slice(-40))
     setIdx((i) => Math.min(i + 1, 39))
     setFiles(null)
@@ -164,6 +170,7 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   }
 
   const make = async () => {
+    audio.unlock()
     if (!genreId && !vibe.trim()) {
       toast('Pick a vibe tile or describe the vibe first.', 'info')
       return
@@ -201,6 +208,7 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   }
 
   const doExport = async () => {
+    audio.unlock()
     if (!track) return
     const finished = !!track.meta?.finished
     const res = await run<{ files: Record<string, string> }>('Exporting...', () =>
@@ -227,6 +235,7 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   }
 
   const onUpload = async (f: File) => {
+    audio.unlock()
     setBusy(`Importing ${f.name}...`)
     try {
       const { track: t } = await api.upload(f)

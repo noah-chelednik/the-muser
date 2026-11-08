@@ -29,22 +29,22 @@ type AudioSessionNav = Navigator & { audioSession?: { type: string } }
 
 /**
  * How the mix leaves the AudioContext.
- * - 'direct': ctx.destination (desktop, Android).
- * - 'stream': a MediaStreamAudioDestinationNode played by an <audio> element. iPhone and iPad default
- *   to this: Safari can report a running AudioContext whose destination is muted (ringer switch,
- *   audio session category) while <audio> elements stay audible, which is exactly how the library
- *   previews were heard and the pads, keys and generated beats were not.
+ * - 'direct': ctx.destination (desktop and live Android instruments).
+ * - 'stream': optional non-Apple diagnostic route. Never selected on Apple touch.
+ * Loaded phone tracks use a primed HTMLAudioElement with a file URL or offline WAV bounce.
  * Override with localStorage 'nodaw-audio-route' = 'direct' | 'stream' or ?route=direct|stream.
  */
 export type OutRoute = 'direct' | 'stream'
 function preferredRoute(): OutRoute {
+  // A resolved MediaStream play() is not evidence of audible output on Safari.
+  if (isAppleTouch()) return 'direct'
   try {
     const q = new URLSearchParams(location.search).get('route')
     if (q === 'direct' || q === 'stream') { localStorage.setItem('nodaw-audio-route', q); return q }
     const v = localStorage.getItem('nodaw-audio-route')
     if (v === 'direct' || v === 'stream') return v
   } catch { /* storage blocked */ }
-  return isAppleTouch() ? 'stream' : 'direct'
+  return 'direct'
 }
 const AC: typeof AudioContext = (window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)
 
@@ -84,7 +84,7 @@ class StudioAudio {
   /** Route that is live right now ('stream' only once its element is actually playing). */
   route: OutRoute = 'direct'
   readonly wantRoute: OutRoute = typeof window !== 'undefined' ? preferredRoute() : 'direct'
-  /** Media element primed inside a gesture, used to play a bounce when Web Audio stays suspended. */
+  /** Gesture-primed HTMLAudioElement: primary loaded-track output on touch devices. */
   private fallbackEl: HTMLAudioElement | null = null
   private fallbackUrl = ''
   path: OutputPath = 'webaudio'
@@ -220,7 +220,7 @@ class StudioAudio {
         } catch { /* ignore */ }
       } else if (this.keepAlive.paused) void this.keepAlive.play().catch(() => undefined)
     }
-    if (this.wantRoute === 'stream') this.startStreamRoute(ctx)
+    if (this.wantRoute === 'stream' && !isAppleTouch()) this.startStreamRoute(ctx)
     // Prime the fallback media element inside this gesture so a later play() of a bounce is allowed.
     if (!this.fallbackEl && isTouchDevice()) {
       try {
@@ -228,11 +228,30 @@ class StudioAudio {
         f.setAttribute('playsinline', '')
         f.setAttribute('webkit-playsinline', '')
         f.preload = 'auto'
+        f.loop = true
+        f.muted = false
+        f.volume = 1
         f.src = silentWavUrl()
         this.fallbackEl = f
-        void f.play().then(() => { if (this.path !== 'media') f.pause() }).catch(() => { this.fallbackEl = null })
-        f.onended = () => { if (this.path === 'media' && !f.loop) { this.playing = false; this.offset = 0; this.emit() } }
+        // Keep THIS element playing through async generation; don't discard its media permission.
+        void f.play().catch(() => { this.blocked = true; this.emit() })
+        f.onended = () => {
+          if (f.src === chimeUrl) {
+            // The first-run sound check must not leave the primed element ended
+            // while the user spends seconds choosing/generating their first beat.
+            f.loop = true
+            f.src = silentWavUrl()
+            this.path = 'webaudio'
+            void f.play().catch(() => undefined)
+          } else if (this.path === 'media' && !f.loop) {
+            this.playing = false
+            this.offset = 0
+          }
+          this.emit()
+        }
       } catch { /* ignore */ }
+    } else if (this.fallbackEl?.paused && this.fallbackEl.src === silentUrl && this.path !== 'media') {
+      void this.fallbackEl.play().catch(() => undefined)
     }
   }
 
@@ -269,7 +288,7 @@ class StudioAudio {
   }
 
   private setRoute(r: OutRoute) {
-    if (r === 'stream' && (!this.streamEl || this.streamEl.paused)) r = 'direct'
+    if (r === 'stream' && (isAppleTouch() || !this.streamEl || this.streamEl.paused)) r = 'direct'
     this.route = r
     const g = this.directGain
     if (g && this.ctx) {
@@ -290,7 +309,7 @@ class StudioAudio {
     const ctx = this.ctx!
     if (ctx.state !== 'running') await this.resume()
     let rms = 0
-    if ((ctx.state as string) === 'running') {
+    if ((ctx.state as string) === 'running' && !isTouchDevice()) {
       // a fresh context can take a few hundred ms before its clock moves (device start-up)
       const c0 = ctx.currentTime
       for (let i = 0; i < 40 && ctx.currentTime === c0; i++) await new Promise((r) => setTimeout(r, 20))
@@ -364,12 +383,17 @@ class StudioAudio {
   }
 
   /** Replace the loaded channel set. */
-  async load(list: { id: string; url: string }[], opts: { keepPosition?: boolean } = {}): Promise<void> {
-    const wasPlaying = this.playing
+  private loadSeq = 0
+  private trackMediaUrl = ''
+  async load(list: { id: string; url: string }[], opts: { keepPosition?: boolean; mediaUrl?: string } = {}): Promise<void> {
+    const seq = ++this.loadSeq
+    const wasPlaying = this.playing || this.pendingPlay
     const keep = opts.keepPosition ? this.currentTime() : 0
     this.stop()
     this.disposeChannels()
     const buffers = await Promise.all(list.map((s) => this.decode(s.url)))
+    if (seq !== this.loadSeq) return
+    this.trackMediaUrl = opts.mediaUrl ?? ''
     this.install(list.map((s, i) => ({ id: s.id, buffer: buffers[i] })), keep)
     if (wasPlaying || this.pendingPlay) this.play()
     this.emit()
@@ -388,6 +412,8 @@ class StudioAudio {
 
   /** Install already-decoded buffers (used by the stem separator and tests). */
   loadBuffers(list: { id: string; buffer: AudioBuffer }[], keep = 0) {
+    this.loadSeq++
+    this.trackMediaUrl = ''
     this.stop()
     this.disposeChannels()
     this.install(list, keep)
@@ -402,6 +428,7 @@ class StudioAudio {
   }
 
   private setChannels(list: { id: string; buffer: AudioBuffer }[], keep: number) {
+    this.bufferRev++
     const ctx = this.ensure()
     list.forEach((s) => {
       const chain = buildChain(ctx, { meter: true })
@@ -424,6 +451,7 @@ class StudioAudio {
     const t = this.currentTime()
     if (was) this.killSources()
     c.buffer = next
+    this.trackMediaUrl = ''
     this.bufferRev++
     this.duration = Math.max(0, ...[...this.channels.values()].map((x) => x.buffer.duration))
     this.offset = Math.min(t, this.duration)
@@ -445,15 +473,19 @@ class StudioAudio {
   }
 
   applyParams(id: string, p: StemParams, anySolo: boolean) {
+    const changed = JSON.stringify(this.lastMixer[id]) !== JSON.stringify(p)
     this.lastMixer[id] = p
+    if (changed) this.refreshMedia()
     const c = this.channels.get(id)
     if (!c || !this.ctx) return
     c.chain.apply(p, { audible: !p.mute && (!anySolo || p.solo) })
   }
 
   applyMaster(p: StemParams, gainDb: number, limiter = true) {
+    const changed = JSON.stringify([this.lastMixer[MASTER_ID], this.lastMaster]) !== JSON.stringify([p, { gain_db: gainDb, limiter }])
     this.lastMixer[MASTER_ID] = p
     this.lastMaster = { gain_db: gainDb, limiter }
+    if (changed) this.refreshMedia()
     if (!this.ctx) return
     const t = this.ctx.currentTime
     this.masterChain.apply({ ...p, pan: 0, mute: false, solo: false, gain_db: 0 })
@@ -477,7 +509,7 @@ class StudioAudio {
   }
 
   currentTime(): number {
-    if (this.path === 'media' && this.playing && this.fallbackEl) return this.fallbackEl.currentTime + (this.region?.start ?? 0)
+    if (this.path === 'media') return this.playing && this.fallbackEl && !this.blocked ? this.fallbackEl.currentTime + (this.region?.start ?? 0) : this.offset
     if (!this.ctx || !this.playing || !this.sourcesLive) return this.offset
     const t = Math.max(0, this.ctx.currentTime - this.startedAt)
     const r = this.region
@@ -498,7 +530,12 @@ class StudioAudio {
     }
     this.pendingPlay = false
     this.playing = true
-    if (ctx.state === 'running') {
+    if (isTouchDevice() && this.fallbackEl) {
+      // Phones use normal file media playback even when a RUNNING context is inaudible.
+      this.path = 'media'
+      this.blocked = true
+      void this.playViaMedia()
+    } else if (ctx.state === 'running') {
       this.path = 'webaudio'
       this.startSources()
     } else {
@@ -512,44 +549,85 @@ class StudioAudio {
   }
 
   /**
-   * Fallback for phones where Web Audio stays suspended after a tap: bounce what you would hear
-   * (same chains, OfflineAudioContext) to WAV and play it through the media element primed in a gesture.
+   * Phone primary output: a full mix URL while untouched, otherwise the identical offline FX graph
+   * bounced to WAV. Never depends on a running-but-inaudible iOS destination or a MediaStream.
    */
+  private mediaRefresh: ReturnType<typeof setTimeout> | undefined
+  private refreshMedia() {
+    if (this.path !== 'media' || !this.playing) return
+    clearTimeout(this.mediaRefresh)
+    this.mediaRefresh = setTimeout(() => {
+      if (this.path !== 'media' || !this.playing) return
+      this.offset = this.currentTime()
+      void this.playViaMedia()
+    }, 180)
+  }
   private mediaSeq = 0
   private fallbackKey = ''
   private async playViaMedia() {
     const el = this.fallbackEl
     if (!el || !this.channels.size) return
     const seq = ++this.mediaSeq
+    let usedTrackUrl = false
     try {
       const r = this.region
       const key = JSON.stringify([
         Array.from(this.channels, ([id, c]) => [id, c.buffer.length]),
-        this.lastMixer, this.lastMaster, r,
+        this.bufferRev, this.lastMixer, this.lastMaster, r,
       ])
-      if (key !== this.fallbackKey || !this.fallbackUrl) {
+      // The track URL is its full mixdown. Only use it while the mix is untouched.
+      const neutral = [...this.channels.keys(), MASTER_ID].every((id) => {
+        const p = this.lastMixer[id] ?? DEFAULT_STEM
+        return Object.keys(DEFAULT_STEM).every((k) => p[k as keyof StemParams] === DEFAULT_STEM[k as keyof StemParams])
+      }) && this.lastMaster.gain_db === 0 && !r
+      let url = neutral ? this.trackMediaUrl : ''
+      usedTrackUrl = !!url
+      if (!url && (key !== this.fallbackKey || !this.fallbackUrl)) {
         const buf = await this.bounce({ mixer: this.lastMixer, masterGainDb: this.lastMaster.gain_db, limiter: this.lastMaster.limiter, range: r, tail: 0, sampleRate: 44100 })
         if (!this.playing || seq !== this.mediaSeq) return
         if (this.fallbackUrl) URL.revokeObjectURL(this.fallbackUrl)
         this.fallbackUrl = URL.createObjectURL(bufferToWav(buf, 16))
         this.fallbackKey = key
       }
+      url ||= this.fallbackUrl
       if (!this.playing || seq !== this.mediaSeq) return
+      this.path = 'media'
+      el.muted = false
+      el.volume = 1
       el.loop = this.loop
-      if (el.src !== this.fallbackUrl) el.src = this.fallbackUrl
-      el.currentTime = Math.max(0, this.offset - (r?.start ?? 0))
+      if (el.getAttribute('src') !== url) el.src = url
+      const start = r?.start ?? 0
+      const end = r?.end ?? this.duration
+      const off = this.offset < start || this.offset >= end - 0.01 ? start : this.offset
+      const seek = () => {
+        if (seq !== this.mediaSeq) return
+        try { el.currentTime = Math.max(0, off - start) } catch { /* seek again on metadata */ }
+      }
+      // Safari can reject seeks until metadata arrives after a src replacement.
+      if (el.readyState >= 1) seek()
+      else el.addEventListener('loadedmetadata', seek, { once: true })
       await el.play()
       if (seq !== this.mediaSeq) return
       this.path = 'media'
       this.blocked = false
-    } catch {
-      if (seq === this.mediaSeq) this.blocked = true
+    } catch (error) {
+      if (seq === this.mediaSeq && this.playing && usedTrackUrl && (error as Error).name !== 'NotAllowedError') {
+        // Missing/unsupported server mix: render decoded channels instead, on the same element.
+        this.trackMediaUrl = ''
+        await this.playViaMedia()
+        return
+      }
+      if (seq === this.mediaSeq) {
+        this.blocked = true
+        this.playing = false // allow the next Play tap to retry permission/network failures
+      }
     }
     this.emit()
   }
 
   private stopMedia() {
     this.mediaSeq++
+    clearTimeout(this.mediaRefresh)
     if (this.path !== 'media') return
     try { this.fallbackEl?.pause() } catch { /* ignore */ }
     this.path = 'webaudio'
@@ -636,6 +714,7 @@ class StudioAudio {
     const t = this.currentTime()
     this.loop = on
     if (this.playing) {
+      this.stopMedia()
       this.killSources()
       this.playing = false
       this.offset = Math.max(0, t)
@@ -650,6 +729,7 @@ class StudioAudio {
     const t = this.currentTime()
     this.region = r && r.end - r.start > 0.01 ? { start: Math.max(0, r.start), end: Math.min(this.duration, r.end) } : null
     if (was) {
+      this.stopMedia()
       this.killSources()
       this.playing = false
       this.offset = Math.max(0, t)

@@ -97,7 +97,8 @@ function TopBar() {
   const { setHelpOpen } = useSkin()
   const lufs = easy.report?.lufs ?? easy.analysis?.lufs
   return (
-    <header className="ca-top">
+    <header className="ca-top studio-top">
+      <div className="studio-top-scroll" tabIndex={0} aria-label="Studio toolbar; scroll for more controls">
       <div className="ca-brand"><Logo /><b>NODAW STUDIO PRO</b><i>BUILT ON THE-MUSER</i></div>
       <nav className="ca-modes" data-mode={mode} role="tablist" aria-label="Studio mode">
         <button role="tab" aria-selected={mode === 'easy'} data-testid="mode-easy" className={mode === 'easy' ? 'on' : ''} onClick={() => setMode('easy')}><i>01</i>EASY</button>
@@ -110,11 +111,13 @@ function TopBar() {
         <span className="ca-n"><i>LUFS</i><b>{lufs != null ? lufs.toFixed(1) : '--.-'}</b></span>
         <DemoBadge />
         <NoDawButton />
-        <SkinButton />
+
         <SysLeds />
         <EnginesButton><i>ENGINES</i><b>8 GB</b></EnginesButton>
         <button className="ca-help-btn" onClick={() => setHelpOpen(true)} aria-label="Shortcuts">?</button>
       </div>
+
+      </div><div className="studio-top-pin"><SkinButton /></div>
     </header>
   )
 }
@@ -277,7 +280,7 @@ function TransportBar({ adv }: { adv?: boolean }) {
         </div>
       )}
       <div className="ca-play-row">
-        <button className="ca-play" data-testid="play" onClick={() => (audio.playing ? audio.pause() : audio.play())} aria-label={audio.playing ? 'Pause' : 'Play'} data-playing={audio.playing}>
+        <button className="ca-play" data-testid="play" onClick={() => { audio.unlock(); if (audio.playing) audio.pause(); else audio.play() }} aria-label={audio.playing ? 'Pause' : 'Play'} data-playing={audio.playing}>
           {audio.playing ? <svg viewBox="0 0 16 16"><path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" /></svg> : <svg viewBox="0 0 16 16"><path d="M3 1.5v13L14 8z" /></svg>}
           <kbd>SPACE</kbd>
         </button>
@@ -350,7 +353,7 @@ function Advanced() {
           </div>
         )}
         <div className="ca-adv-bot">
-          <button className="ca-play sm" data-testid="play" onClick={() => (audio.playing ? audio.pause() : audio.play())} data-playing={audio.playing} aria-label="Play">{audio.playing ? <svg viewBox="0 0 16 16"><path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" /></svg> : <svg viewBox="0 0 16 16"><path d="M3 1.5v13L14 8z" /></svg>}</button>
+          <button className="ca-play sm" data-testid="play" onClick={() => { audio.unlock(); if (audio.playing) audio.pause(); else audio.play() }} data-playing={audio.playing} aria-label="Play">{audio.playing ? <svg viewBox="0 0 16 16"><path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" /></svg> : <svg viewBox="0 0 16 16"><path d="M3 1.5v13L14 8z" /></svg>}</button>
           <Timecode />
           <Overview className="ca-over ca-over-s" color="var(--tx)" />
           <HistoryControls />

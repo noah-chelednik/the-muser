@@ -32,7 +32,7 @@ export function Transport({ lcd = true }: { lcd?: boolean }) {
   return (
     <div className="transport" role="group" aria-label="Transport">
       <button className="tbtn" onClick={() => audio.stop()} title="Stop (return to start)" aria-label="Stop">■</button>
-      <button className={`tbtn play ${audio.playing ? 'on' : ''}`} data-testid="play" onClick={() => (audio.playing ? audio.pause() : audio.play())} title="Play / pause (Space)" aria-label={audio.playing ? 'Pause' : 'Play'}>
+      <button className={`tbtn play ${audio.playing ? 'on' : ''}`} data-testid="play" onClick={() => { audio.unlock(); if (audio.playing) audio.pause(); else audio.play() }} title="Play / pause (Space)" aria-label={audio.playing ? 'Pause' : 'Play'}>
         {audio.playing ? '❚❚' : '▶'}
       </button>
       <button className={`tbtn ${audio.loop ? 'on' : ''}`} onClick={() => audio.setLoop(!audio.loop)} title="Loop" aria-label="Loop" aria-pressed={audio.loop}>⟲</button>

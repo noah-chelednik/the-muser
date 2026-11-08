@@ -101,7 +101,8 @@ function Top() {
   useEffect(() => audio.subscribe(() => force((x) => x + 1)), [])
   const lufs = easy.report?.lufs ?? easy.analysis?.lufs
   return (
-    <header className="cc-top">
+    <header className="cc-top studio-top">
+      <div className="studio-top-scroll" tabIndex={0} aria-label="Studio toolbar; scroll for more controls">
       <div className="cc-brand">
         <svg viewBox="0 0 24 24" aria-hidden><path d="M2 12h4l2-7 3 14 3-10 2 3h6" /></svg>
         <b>NODAW STUDIO <u>PRO</u></b>
@@ -119,11 +120,13 @@ function Top() {
         <span>{lufs != null ? lufs.toFixed(1) : '--.-'} <i>LUFS</i></span>
         <DemoBadge />
         <NoDawButton />
-        <SkinButton />
+
         <SysLeds />
         <EnginesButton>ENGINES<b>8 GB</b></EnginesButton>
         <button className="cc-q" onClick={() => setHelpOpen(true)} aria-label="Shortcuts">?</button>
       </div>
+
+      </div><div className="studio-top-pin"><SkinButton /></div>
     </header>
   )
 }
@@ -275,7 +278,7 @@ function Transport({ adv }: { adv?: boolean }) {
   const { versions, idx, setIdx } = easy
   return (
     <div className="cc-transport">
-      <button className="cc-play" data-testid="play" onClick={() => (audio.playing ? audio.pause() : audio.play())} data-playing={audio.playing} aria-label={audio.playing ? 'Pause' : 'Play'}>
+      <button className="cc-play" data-testid="play" onClick={() => { audio.unlock(); if (audio.playing) audio.pause(); else audio.play() }} data-playing={audio.playing} aria-label={audio.playing ? 'Pause' : 'Play'}>
         {audio.playing ? <svg viewBox="0 0 16 16"><path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" /></svg> : <svg viewBox="0 0 16 16"><path d="M3 1.5v13L14 8z" /></svg>}
       </button>
       <div className="cc-tc"><span ref={tc}>00:00</span><i>/ {fmtTime(audio.duration)}</i></div>

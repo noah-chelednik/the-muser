@@ -49,7 +49,7 @@ export function AudioGate() {
   }
   if (!audio.blocked) return null
   return (
-    <button className="audio-gate" data-testid="audio-gate" onClick={() => { audio.unlock(); void audio.resume() }}>
+    <button className="audio-gate" data-testid="audio-gate" onClick={() => { audio.unlock(); if (!audio.playing && audio.ids().length) audio.play(); else void audio.resume() }}>
       <b>Tap to enable sound</b>
       <span>Your browser is holding audio until you tap.</span>
     </button>

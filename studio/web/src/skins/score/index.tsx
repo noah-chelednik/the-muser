@@ -105,7 +105,8 @@ function Top() {
   const { setHelpOpen } = useSkin()
   const lufs = easy.report?.lufs ?? easy.analysis?.lufs
   return (
-    <header className="cb-top">
+    <header className="cb-top studio-top">
+      <div className="studio-top-scroll" tabIndex={0} aria-label="Studio toolbar; scroll for more controls">
       <a className="cb-brand" href="#/" onClick={(e) => e.preventDefault()}><span>NoDAW Studio <em>PRO</em></span><i>built on the-muser</i></a>
       <nav className="cb-modes" data-mode={mode} role="tablist" aria-label="Studio mode">
         <button role="tab" aria-selected={mode === 'easy'} data-testid="mode-easy" className={mode === 'easy' ? 'on' : ''} onClick={() => setMode('easy')}>Easy</button>
@@ -118,11 +119,13 @@ function Top() {
         <span className="cb-r">{lufs != null ? `${lufs.toFixed(1)} LUFS` : 'unmastered'}</span>
         <DemoBadge />
         <NoDawButton />
-        <SkinButton />
+
         <SysLeds />
         <EnginesButton>Engines <b>8 GB</b></EnginesButton>
         <button className="cb-q" onClick={() => setHelpOpen(true)} aria-label="Shortcuts">?</button>
       </div>
+
+      </div><div className="studio-top-pin"><SkinButton /></div>
     </header>
   )
 }
@@ -311,7 +314,7 @@ function Transport({ adv, onDock, dock }: { adv?: boolean; onDock?: (d: Dock) =>
         </div>
       )}
       <div className="cb-tr-row">
-        <button className="cb-play" data-testid="play" onClick={() => (audio.playing ? audio.pause() : audio.play())} data-playing={audio.playing} aria-label={audio.playing ? 'Pause' : 'Play'}>
+        <button className="cb-play" data-testid="play" onClick={() => { audio.unlock(); if (audio.playing) audio.pause(); else audio.play() }} data-playing={audio.playing} aria-label={audio.playing ? 'Pause' : 'Play'}>
           {audio.playing ? <svg viewBox="0 0 16 16"><path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" /></svg> : <svg viewBox="0 0 16 16"><path d="M3 1.5v13L14 8z" /></svg>}
         </button>
         <Timecode /><span className="cb-dur">/ {fmtTime(audio.duration)}</span>

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api, waitJob } from '../api'
-import { audio, MASTER_ID } from '../audio/engine'
+import { audio, isTouchDevice, MASTER_ID } from '../audio/engine'
 import { useHistory, type History } from '../state/history'
 import { DEFAULT_STEM, SERVER_STEM_KEYS, type Mode, type Project, type Status, type StemParams, type Track } from '../types'
 import { viz } from './viz'
@@ -70,7 +70,7 @@ export interface Studio {
   setShowSystem: (v: boolean) => void
   showExport: boolean
   setShowExport: (v: boolean) => void
-  loadTrack: (t: Track, keepPosition?: boolean) => void
+  loadTrack: (t: Track, keepPosition?: boolean, autoplay?: boolean) => void
   addTrack: (t: Track) => void
   refreshStatus: (force?: boolean) => Promise<void>
   deleteTrack: (t: Track) => Promise<void>
@@ -153,7 +153,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }, [current])
 
   const keepPos = useRef(false)
-  const channelKey = channels.map((c) => c.id).join('|')
+  const autoStart = useRef(false)
+  const channelKey = JSON.stringify([current?.id, current?.url, channels.map((c) => [c.id, c.url])])
   useEffect(() => {
     if (!channels.length) return
     let cancelled = false
@@ -164,11 +165,17 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       return mixer === s.mixer ? s : { ...s, mixer, bpm: current?.bpm ?? s.bpm }
     })
     if (current?.bpm) viz.bpm = current.bpm
+    const shouldPlay = autoStart.current
+    autoStart.current = false
     const keepPosition = keepPos.current
     keepPos.current = false
     audio
-      .load(channels.map((c) => ({ id: c.id, url: c.url })), { keepPosition })
-      .then(() => !cancelled && setBuffersVersion((v) => v + 1))
+      .load(channels.map((c) => ({ id: c.id, url: c.url })), { keepPosition, mediaUrl: current?.url })
+      .then(() => {
+        if (cancelled) return
+        setBuffersVersion((v) => v + 1)
+        if (shouldPlay && isTouchDevice() && audio.gestured) audio.play()
+      })
       .catch((e) => toast(`Audio load failed: ${e.message}`, 'error'))
     return () => {
       cancelled = true
@@ -212,7 +219,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }, [history])
 
   const addTrack = useCallback((t: Track) => setTracks((xs) => (xs.some((x) => x.id === t.id) ? xs : [t, ...xs])), [])
-  const loadTrack = useCallback((t: Track, keep = false) => {
+  const loadTrack = useCallback((t: Track, keep = false, autoplay = false) => {
+    autoStart.current = autoplay
     // Phones only allow the AudioContext to start inside a gesture; loading never creates it.
     if (audio.gestured) audio.unlock()
     // a re-render of the same sound keeps the playhead where the listener is
@@ -235,10 +243,11 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
   const uploadFile = useCallback(
     async (f: File) => {
+      audio.unlock()
       setBusy(`Importing ${f.name}...`)
       try {
         const { track } = await api.upload(f)
-        loadTrack(track)
+        loadTrack(track, false, true)
         toast(`Imported ${f.name}`, 'ok')
       } catch (e) {
         toast(String((e as Error).message), 'error')
@@ -250,12 +259,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   )
 
   const onGenerate: Studio['onGenerate'] = async (args) => {
+    audio.unlock()
     setGenerating(true)
     setBusy('Generating...')
     try {
       const { job_id } = await api.generate(args)
       const res = await waitJob<{ track: Track; engine: string; reason?: string }>(job_id, setBusy)
-      loadTrack(res.track)
+      loadTrack(res.track, false, true)
       toast(res.engine === 'demo-synth' ? `Demo synth sketch ready (${res.reason})` : 'ACE-Step generation complete', 'ok')
     } catch (e) {
       toast(String((e as Error).message), 'error')
@@ -300,6 +310,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }
 
   const onExport: Studio['onExport'] = async (o) => {
+    audio.unlock()
     if (!current) return null
     try {
       const { job_id } = await api.export({ track_id: current.id, ...o })

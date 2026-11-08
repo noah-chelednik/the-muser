@@ -37,3 +37,15 @@
   --wave-rest: rgba(11,11,12,.25); --wave-grid: rgba(11,11,12,.06); --wave-head: #D9361E; --wave-label: rgba(11,11,12,.4); --wave-glow: 0;
   --scrim: rgba(11,11,12,.35); --knob-body: #ECE9E2; --knob-rim: #0B0B0C;
 }
+
+/* Native shared DAW/dialog tokens for the three additional compositions. */
+:is([data-skin='horology'],[data-skin='metro'],[data-skin='vend']){
+  color-scheme:light;--bg:#f5f1e7;--p1:#eae5d9;--p2:#ded8cb;--ln:#cfc6b0;--ln2:#9d9279;
+  --tx:#20384a;--dim:#52616a;--dimmer:#687781;--hot:#244f78;--hot-ink:#fffdf5;--hot-d:#244f781a;
+  --ok:#245d45;--warn:#8b6928;--bad:#c32e4b;--fu:Arial,Helvetica,sans-serif;--fh:Georgia,serif;--fm:'DM Mono',monospace;
+  --fs:12px;--ls:0;--hls:.08em;--hcase:none;--k2:#244f78;--k3:#997c3f;--pad:#244f78;--stem:#244f78;
+  --wave-rest:#244f7838;--wave-grid:#244f7815;--wave-head:#244f78;--wave-label:#20384a99;--wave-glow:0;
+  --scrim:#18263577;--knob-body:#f5f1e7;--knob-rim:#9d9279;
+}
+[data-skin='metro']{--bg:#fafaf5;--p1:#f0f0e9;--p2:#e4e5df;--tx:#141414;--hot:#0075be;--hot-d:#0075be18;--ln:#c9cbc9;--ln2:#777;--dim:#555;--dimmer:#666;--fh:Arial,Helvetica,sans-serif;--wave-head:#e52a2e;--knob-body:#fafaf5;--knob-rim:#141414;--k2:#0075be;--k3:#e52a2e;--pad:#0075be;--stem:#0075be}
+[data-skin='vend']{--bg:#d5d9df;--p1:#c9cfd8;--p2:#bcc5d1;--tx:#18202a;--hot:#c21d53;--hot-d:#e91e601a;--ln:#969da9;--ln2:#778191;--dim:#465262;--dimmer:#566476;--fh:Arial,Helvetica,sans-serif;--fu:'DM Mono',monospace;--wave-head:#c21d53;--knob-body:#d5d9df;--knob-rim:#778191;--k2:#c21d53;--k3:#007b9c;--pad:#c21d53;--stem:#c21d53}

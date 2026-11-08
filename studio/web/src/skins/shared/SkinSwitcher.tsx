@@ -4,7 +4,8 @@ import { useSkin } from '../SkinProvider'
 
 /** Tiny inline previews: real colours and shapes of each skin, no images to load. */
 export function Thumb({ id }: { id: SkinId }) {
-  if (id === 'cathode')
+  switch (id) {
+  case 'cathode':
     return (
       <svg viewBox="0 0 160 96" role="img" aria-label="Cathode preview">
         <rect width="160" height="96" fill="#0D0E0F" />
@@ -24,7 +25,7 @@ export function Thumb({ id }: { id: SkinId }) {
         ))}
       </svg>
     )
-  if (id === 'terrain')
+  case 'terrain':
     return (
       <svg viewBox="0 0 160 96" role="img" aria-label="Terrain preview">
         <rect width="160" height="96" fill="#000" />
@@ -40,7 +41,7 @@ export function Thumb({ id }: { id: SkinId }) {
         <rect x="68" y="86" width="2" height="1.5" fill="#ff2e7a" />
       </svg>
     )
-  return (
+  case 'score': return (
     <svg viewBox="0 0 160 96" role="img" aria-label="Score preview">
       <rect width="160" height="96" fill="#ECE9E2" />
       <rect x="0" y="0" width="160" height="9" fill="none" stroke="#0B0B0C" strokeWidth=".6" />
@@ -59,6 +60,12 @@ export function Thumb({ id }: { id: SkinId }) {
       <text x="116" y="80" fontFamily="Georgia, serif" fontStyle="italic" fontWeight="700" fontSize="14" fill="#0B0B0C">mf</text>
     </svg>
   )
+  case 'horology': return <svg viewBox="0 0 160 96" role="img" aria-label="Horology preview"><rect width="160" height="96" fill="#f5f1e7" /><circle cx="80" cy="48" r="41" fill="#fffaf0" stroke="#b99a5b" strokeWidth="3" />{[34, 28, 22].map((r) => <circle key={r} cx="80" cy="48" r={r} fill="none" stroke="#b99a5b" strokeWidth=".7" />)}<path d="M80 48 L82 16 L78 48 L101 61" stroke="#244f78" fill="#244f78" /><circle cx="80" cy="48" r="3" fill="#b99a5b" /><rect x="66" y="61" width="28" height="9" fill="#e9e5d4" /><text x="70" y="68" fontSize="6" fill="#244f78">00:00</text><rect x="122" y="44" width="9" height="12" rx="3" fill="#b99a5b" /></svg>
+  case 'metro': return <svg viewBox="0 0 160 96" role="img" aria-label="Metro preview"><rect width="160" height="96" fill="#fafaf5" /><rect width="160" height="14" fill="#141414" /><text x="7" y="10" fontFamily="Arial" fontWeight="900" fontSize="9" fill="#fff">METRO ↗</text><path d="M10 32 H118 Q134 32 134 48 V82" stroke="#e52a2e" strokeWidth="6" fill="none" /><path d="M10 58 H94 L119 82 H150" stroke="#0075be" strokeWidth="6" fill="none" /><path d="M36 22 V83" stroke="#f6b900" strokeWidth="6" />{[20, 60, 100].map((x) => <g key={x}><circle cx={x} cy="32" r="4" fill="#fff" stroke="#e52a2e" strokeWidth="2" /><circle cx={x} cy="58" r="4" fill="#fff" stroke="#0075be" strokeWidth="2" /></g>)}<circle cx="36" cy="58" r="6" fill="#fff" stroke="#141414" strokeWidth="2" /></svg>
+  case 'vend': return <svg viewBox="0 0 160 96" role="img" aria-label="Vend preview"><rect width="160" height="96" fill="#bdc5d1" /><rect x="17" y="3" width="126" height="90" rx="6" fill="#d9dfe8" stroke="#808c9f" /><rect x="23" y="8" width="114" height="15" rx="3" fill="#fbf4e5" /><text x="28" y="19" fontFamily="Arial" fontStyle="italic" fontWeight="900" fontSize="12" fill="#e91e60">VEND!</text><rect x="23" y="28" width="78" height="47" fill="#141a24" />{['#ff5699','#6de3ff','#f6d753','#b1fa76','#ab9bff','#ff874a'].map((c, i) => <rect key={c} x={28 + (i % 3) * 24} y={32 + Math.floor(i / 3) * 22} width="15" height="17" rx="3" fill={c} />)}<rect x="107" y="28" width="28" height="18" fill="#111c24" /><text x="109" y="39" fill="#97fcad" fontSize="6">READY</text><rect x="107" y="53" width="28" height="10" rx="3" fill="#e91e60" /><rect x="27" y="80" width="105" height="9" rx="3" fill="#111c24" /></svg>
+  }
+  const unreachable: never = id
+  throw new Error(`Unknown skin preview: ${unreachable}`)
 }
 
 export const SkinIcon = () => (
@@ -112,27 +119,39 @@ export function SkinPopover() {
       const t = e.target as HTMLElement
       if (!ref.current?.contains(t) && !t.closest('[data-testid=skin-button]')) setSwitcherOpen(false)
     }
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setSwitcherOpen(false)
+    const previous = document.activeElement as HTMLElement | null
+    ref.current?.querySelector<HTMLElement>('button')?.focus()
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSwitcherOpen(false)
+      if (e.key !== 'Tab') return
+      const items = ref.current?.querySelectorAll<HTMLElement>('button')
+      if (!items?.length) return
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
     window.addEventListener('mousedown', off)
     window.addEventListener('keydown', esc)
     return () => {
       window.removeEventListener('mousedown', off)
       window.removeEventListener('keydown', esc)
+      if (previous?.isConnected) previous.focus()
     }
   }, [switcherOpen, setSwitcherOpen])
   if (!switcherOpen) return null
   return (
-    <div className="sw-pop" ref={ref} role="dialog" aria-label="Choose a skin" data-testid="skin-popover">
+    <div className="sw-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setSwitcherOpen(false) }}><div className="sw-pop" ref={ref} role="dialog" aria-modal="true" aria-label="Choose a skin" data-testid="skin-popover">
       <h3>
         <span>Skins</span>
         <span>
+          <button className="sw-close" onClick={() => setSwitcherOpen(false)} aria-label="Close skin picker">✕</button>
           <kbd>Alt S</kbd>
           <kbd>Ctrl K</kbd>
         </span>
       </h3>
       <div className="sw-grid" role="radiogroup">
         {SKINS.map((s) => (
-          <button key={s.id} role="radio" aria-checked={skin === s.id} className="sw-card" data-skin-option={s.id} onClick={() => { void setSkin(s.id); setSwitcherOpen(false) }}>
+          <button key={s.id} role="radio" aria-checked={skin === s.id} className="sw-card" data-skin-option={s.id} onClick={() => { void setSkin(s.id).then(() => document.querySelector<HTMLButtonElement>('[data-testid=skin-button]')?.focus()); setSwitcherOpen(false) }}>
             <Thumb id={s.id} />
             <b>{s.name}</b>
             <i>{s.tag.toUpperCase()}</i>
@@ -140,6 +159,6 @@ export function SkinPopover() {
           </button>
         ))}
       </div>
-    </div>
+    </div></div>
   )
 }
