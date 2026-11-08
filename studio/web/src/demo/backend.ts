@@ -389,8 +389,8 @@ let loopCache: Promise<Awaited<ReturnType<typeof renderSpec>>> | null = null
 const demoLoop = () => (loopCache ??= renderSpec(parsePrompt('lofi hip hop, 85 bpm, in A minor', null, null, 16)))
 
 async function decodeUpload(file: File): Promise<D.Audio> {
-  const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-  const ctx = new Ctx()
+  // OfflineAudioContext: decoding must not open another live AudioContext (phones allow very few).
+  const ctx = new OfflineAudioContext(2, 1, 44100)
   try {
     const buf = await ctx.decodeAudioData(await file.arrayBuffer())
     const l = buf.getChannelData(0), r = buf.numberOfChannels > 1 ? buf.getChannelData(1) : l
@@ -398,8 +398,6 @@ async function decodeUpload(file: File): Promise<D.Audio> {
     return D.resample({ sr: buf.sampleRate, ch: [l.slice(0, max), r.slice(0, max)] }, SR)
   } catch {
     throw new Friendly("This browser couldn't decode that file.", 'Try a WAV or MP3.')
-  } finally {
-    void ctx.close()
   }
 }
 

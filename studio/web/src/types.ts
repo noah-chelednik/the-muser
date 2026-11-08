@@ -127,7 +127,11 @@ export type SynthParams = {
   detune: number // cents
   volume: number // 0..1
   octave: number // -2..2
+  preset?: string // keys preset id (audio/keys.ts)
 }
+
+/** A recorded or drawn note in the 16-step key sequence. */
+export type KeyNote = { step: number; note: number; len: number; vel: number }
 
 export type PadParams = { volume: number; pitch: number; tone: number }
 
@@ -137,6 +141,7 @@ export type Project = {
   synth: SynthParams
   pads: PadParams
   pattern: boolean[][] // 16 pads x 16 steps
+  keyNotes: KeyNote[] // key sequence, played with the current keys preset
   bpm: number
 }
 

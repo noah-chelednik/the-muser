@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { audio } from '../audio/engine'
+import { audio, isTouchDevice } from '../audio/engine'
 
 /**
  * Live visual feed for every skin. One place turns the real audio graph into a
@@ -45,6 +45,10 @@ const taps = new Map<HTMLAudioElement, { an: AnalyserNode; ctx: AudioContext }>(
  */
 export function tapAudioElement(el: HTMLAudioElement) {
   if (taps.has(el)) return
+  // Routing a media element into Web Audio silences it whenever the context is suspended or
+  // interrupted, which is common on phones. Visuals are not worth that: only tap on desktop
+  // and only when the context is already running.
+  if (isTouchDevice() || !audio.ctx || audio.ctx.state !== 'running') return
   try {
     const ctx = audio.ensure()
     const src = ctx.createMediaElementSource(el)

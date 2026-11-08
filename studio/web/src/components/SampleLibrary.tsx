@@ -4,7 +4,6 @@
  * of samples and soundfonts. Assign directly to pads or audition.
  */
 import { useCallback, useEffect, useState } from 'react'
-import { api } from '../api'
 import { padBank } from '../audio/samples'
 import { PADS } from '../audio/instruments'
 

@@ -1,3 +1,4 @@
+import { toSafeFile, validateAudioFile } from './audio/upload'
 import type { Analysis, EngineInfo, EnginePick, FinishTarget, Hardware, Job, PluginSpec, Preset, Slider, Status, Track } from './types'
 
 async function j<T>(res: Response): Promise<T> {
@@ -86,8 +87,15 @@ let demo: Api | null = null
 export const isBrowserDemo = () => demo !== null
 
 /** Calls go to the Python server, or to the in-browser demo backend when no server answers. */
+const safeUpload = async (file: File) => {
+  // Validate on the client first (type, size, magic bytes, real decode), then send only the checked bytes.
+  const v = await validateAudioFile(file)
+  const backend = (demo ?? remote) as Api
+  return backend.upload(toSafeFile(v))
+}
+
 export const api: Api = new Proxy(remote, {
-  get: (t, k) => (demo ? (demo as never)[k] : (t as never)[k]),
+  get: (t, k) => (k === 'upload' ? safeUpload : demo ? (demo as never)[k] : (t as never)[k]),
 })
 
 /**

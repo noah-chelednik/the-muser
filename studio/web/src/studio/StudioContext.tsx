@@ -14,7 +14,7 @@ export type ToastFn = (text: string, kind?: Toast['kind']) => void
 export const INITIAL: Project = {
   mixer: {},
   master: { gain_db: 0, normalize: true },
-  synth: { wave: 'sawtooth', cutoff: 0.65, reso: 0.15, attack: 0.01, release: 0.4, detune: 8, volume: 0.7, octave: 0 },
+  synth: { wave: 'sawtooth', cutoff: 0.65, reso: 0.15, attack: 0.01, release: 0.4, detune: 8, volume: 0.7, octave: 0, preset: 'saw-lead' },
   pads: { volume: 0.8, pitch: 0, tone: 0.5 },
   pattern: (() => {
     const p = Array.from({ length: 16 }, () => Array(16).fill(false) as boolean[])
@@ -23,6 +23,7 @@ export const INITIAL: Project = {
     for (let s = 0; s < 16; s += 2) p[4][s] = true
     return p
   })(),
+  keyNotes: [],
   bpm: 92,
 }
 
@@ -212,7 +213,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
   const addTrack = useCallback((t: Track) => setTracks((xs) => (xs.some((x) => x.id === t.id) ? xs : [t, ...xs])), [])
   const loadTrack = useCallback((t: Track, keep = false) => {
-    audio.ensure()
+    // Phones only allow the AudioContext to start inside a gesture; loading never creates it.
+    if (audio.gestured) audio.unlock()
     // a re-render of the same sound keeps the playhead where the listener is
     keepPos.current = keep
     setCurrent(t)

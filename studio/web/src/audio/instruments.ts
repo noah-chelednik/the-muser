@@ -1,7 +1,9 @@
 /** Synthesized drum pads, a polyphonic subtractive synth, and a step sequencer. */
-import type { PadParams, SynthParams } from '../types'
+import type { KeyNote, PadParams, SynthParams } from '../types'
 import { audio } from './engine'
-import { playPadSample } from './samples'
+import { padBank, padOut, playPadSample } from './samples'
+import { playNote } from './keys'
+export { noteOn, noteOff, midiToHz, allNotesOff } from './keys'
 
 export type PadDef = { name: string; key: string; color: string; play: (t: number, p: PadParams) => void }
 
@@ -14,11 +16,13 @@ function noiseBuffer(ctx: AudioContext, seconds: number) {
 let _noise: AudioBuffer | null = null
 const noise = (ctx: AudioContext) => (_noise ??= noiseBuffer(ctx, 2))
 
+/** Destination for the synthesized hit being built right now (the pad's own FX chain). */
+let hitDest: AudioNode | null = null
 function out(p: PadParams) {
   const ctx = audio.ensure()
   const g = ctx.createGain()
   g.gain.value = p.volume
-  g.connect(audio.instBus)
+  g.connect(hitDest ?? audio.instBus)
   return { ctx, g }
 }
 
@@ -136,54 +140,21 @@ const BASE_PADS: PadDef[] = [
   { name: 'Riser', key: 'v', color: '#3ef0ff', play: riser },
 ]
 
-/** Pads play their own sample when the sampler has put one there, otherwise the synthesized drum. */
-export const PADS: PadDef[] = BASE_PADS.map((d, i) => ({ ...d, play: (t, p) => { if (!playPadSample(i, t, p)) d.play(t, p) } }))
-
-// ---------------------------------------------------------------------------
-// Polyphonic synth
-// ---------------------------------------------------------------------------
-
-type Voice = { osc: OscillatorNode[]; env: GainNode; filter: BiquadFilterNode }
-const voices = new Map<number, Voice>()
-
-export const midiToHz = (n: number) => 440 * Math.pow(2, (n - 69) / 12)
-
-export function noteOn(note: number, s: SynthParams, velocity = 0.8) {
-  const ctx = audio.ensure()
-  noteOff(note, s, true)
-  const t = ctx.currentTime
-  const filter = ctx.createBiquadFilter()
-  filter.type = 'lowpass'
-  filter.frequency.value = 120 * Math.pow(2, s.cutoff * 7.5)
-  filter.Q.value = 0.5 + s.reso * 18
-  const env = ctx.createGain()
-  env.gain.setValueAtTime(0, t)
-  env.gain.linearRampToValueAtTime(velocity * s.volume * 0.35, t + Math.max(0.003, s.attack))
-  const f = midiToHz(note)
-  const osc = [-1, 1].map((sign) => {
-    const o = ctx.createOscillator()
-    o.type = s.wave
-    o.frequency.value = f
-    o.detune.value = sign * s.detune
-    o.connect(filter)
-    o.start(t)
-    return o
-  })
-  filter.connect(env).connect(audio.instBus)
-  voices.set(note, { osc, env, filter })
-}
-
-export function noteOff(note: number, s: SynthParams, immediate = false) {
-  const v = voices.get(note)
-  if (!v || !audio.ctx) return
-  voices.delete(note)
-  const t = audio.ctx.currentTime
-  const rel = immediate ? 0.01 : Math.max(0.02, s.release)
-  v.env.gain.cancelScheduledValues(t)
-  v.env.gain.setValueAtTime(v.env.gain.value, t)
-  v.env.gain.linearRampToValueAtTime(0, t + rel)
-  v.osc.forEach((o) => o.stop(t + rel + 0.05))
-}
+/**
+ * Pads play their own sample when one is loaded (library, upload or chop), otherwise the synthesized
+ * drum. Either way the hit goes through the pad's level, pitch and FX chain. `vel` is 0..1.
+ */
+export type LivePad = Omit<PadDef, 'play'> & { play: (t: number, p: PadParams, vel?: number) => void }
+export const PADS: LivePad[] = BASE_PADS.map((d, i): LivePad => ({
+  name: d.name, key: d.key, color: d.color,
+  play: (t: number, p: PadParams, vel: number = 1) => {
+    if (playPadSample(i, t, p, vel)) return
+    const st = padBank.settings(i)
+    hitDest = padOut(i)
+    try { d.play(t, { ...p, volume: p.volume * st.gain * vel, pitch: p.pitch + st.pitch }) } finally { hitDest = null }
+  },
+}))
+export const BASE_PAD_NAMES = BASE_PADS.map((d) => d.name)
 
 // ---------------------------------------------------------------------------
 // Step sequencer (look-ahead scheduler)
@@ -192,40 +163,82 @@ export function noteOff(note: number, s: SynthParams, immediate = false) {
 export class Sequencer {
   private timer: number | null = null
   private nextTime = 0
+  /** Recent (step, time) pairs so a live hit can be placed on the step the listener heard. */
+  private sched: { step: number; time: number }[] = []
   step = 0
   onStep: ((s: number) => void) | null = null
   getPattern: () => boolean[][] = () => []
   getBpm: () => number = () => 96
   getPad: () => PadParams = () => ({ volume: 0.8, pitch: 0, tone: 0.5 })
+  getKeyNotes: () => KeyNote[] = () => []
+  getSynth: (() => SynthParams) | null = null
+  /** Quarter-note click while recording. */
+  metronome = false
 
   get running() {
     return this.timer !== null
+  }
+
+  get stepSeconds() {
+    return 60 / this.getBpm() / 4
   }
 
   start() {
     const ctx = audio.ensure()
     if (this.timer !== null) return
     this.step = 0
+    this.sched = []
     this.nextTime = ctx.currentTime + 0.06
     this.timer = window.setInterval(() => this.tick(), 25)
+    this.tick()
   }
 
   stop() {
     if (this.timer !== null) window.clearInterval(this.timer)
     this.timer = null
+    this.sched = []
     this.onStep?.(-1)
   }
 
-  private tick() {
+  /** The 16th step nearest to audio time `t` (what a live hit at `t` should be written to). */
+  stepAt(t: number): number {
+    const past = this.sched.filter((x) => x.time <= t + 1e-4)
+    const last = past.length ? past[past.length - 1] : this.sched[0]
+    if (!last) return 0
+    const frac = (t - last.time) / this.stepSeconds
+    return ((last.step + Math.round(frac)) % 16 + 16) % 16
+  }
+
+  private click(t: number, accent: boolean) {
     const ctx = audio.ctx!
-    const spb = 60 / this.getBpm() / 4
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.frequency.value = accent ? 1760 : 1320
+    g.gain.setValueAtTime(0.0001, t)
+    g.gain.exponentialRampToValueAtTime(accent ? 0.18 : 0.1, t + 0.002)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05)
+    o.connect(g).connect(audio.instBus)
+    o.start(t)
+    o.stop(t + 0.06)
+  }
+
+  private tick() {
+    const ctx = audio.ctx
+    if (!ctx) return
+    const spb = this.stepSeconds
     while (this.nextTime < ctx.currentTime + 0.12) {
       const pattern = this.getPattern()
       const s = this.step
+      const t = this.nextTime
       pattern.forEach((row, pad) => {
-        if (row[s]) PADS[pad].play(this.nextTime, this.getPad())
+        if (row[s]) PADS[pad].play(t, this.getPad())
       })
-      const delay = Math.max(0, (this.nextTime - ctx.currentTime) * 1000)
+      const synth = this.getSynth?.()
+      if (synth) this.getKeyNotes().forEach((n) => { if (n.step === s) playNote(n.note, synth, n.vel, t, n.len * spb * 0.95) })
+      if (this.metronome && s % 4 === 0) this.click(t, s === 0)
+      this.sched.push({ step: s, time: t })
+      if (this.sched.length > 32) this.sched.shift()
+      const delay = Math.max(0, (t - ctx.currentTime) * 1000)
       window.setTimeout(() => this.onStep?.(s), delay)
       this.nextTime += spb
       this.step = (this.step + 1) % 16
