@@ -15,9 +15,9 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-from src.orchestrator.config import COMPOSITIONS_DIR, PROJECT_ROOT
+from src.orchestrator.config import COMPOSITIONS_DIR, USER_ROOT
 
-DATA_DIR = Path(os.environ.get("MUSER_STUDIO_DATA", PROJECT_ROOT / "studio_data")).resolve()
+DATA_DIR = Path(os.environ.get("MUSER_STUDIO_DATA", USER_ROOT / "studio_data")).resolve()
 TRACKS_DIR = DATA_DIR / "tracks"
 UPLOADS_DIR = DATA_DIR / "uploads"
 EXPORTS_DIR = DATA_DIR / "exports"

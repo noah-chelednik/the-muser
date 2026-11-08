@@ -27,10 +27,10 @@ export const padBank = {
 export const samplePlaybackRate = (s: PadSample, p?: PadParams) => s.rate * Math.pow(2, (s.pitch + (p?.pitch ?? 0)) / 12)
 
 /** Fire a pad sample. Returns false when the pad has none. */
-export function playPadSample(i: number, when: number, p: PadParams): boolean {
+export function playPadSample(i: number, when: number, p: PadParams, dest?: AudioNode): boolean {
   const s = bank[i]
   if (!s) return false
-  const ctx = audio.ensure()
+  const ctx = (dest?.context ?? audio.ensure()) as AudioContext
   const src = ctx.createBufferSource()
   src.buffer = s.buffer
   src.playbackRate.value = samplePlaybackRate(s, p)
@@ -43,10 +43,22 @@ export function playPadSample(i: number, when: number, p: PadParams): boolean {
   g.gain.setValueAtTime(v, t + Math.max(0, dur - 0.004))
   g.gain.linearRampToValueAtTime(0, t + dur)
   src.connect(g)
-  g.connect(audio.instBus)
+  g.connect(dest ?? audio.instBus)
   src.start(t)
   src.onended = () => { try { g.disconnect() } catch { /* gone */ } }
   return true
+}
+
+export async function loadPadBuffer(i: number, name: string, buffer: AudioBuffer) {
+  padBank.set(i, { name, buffer, pitch: 0, rate: 1, gain: 1 })
+  try { await saveKit('Autosave') } catch { /* private mode / no IDB */ }
+}
+
+export async function decodeAndLoadPad(i: number, name: string, data: ArrayBuffer) {
+  const ctx = audio.ensure()
+  const buffer = await ctx.decodeAudioData(data.slice(0))
+  await loadPadBuffer(i, name.replace(/\.[^.]+$/, ''), buffer)
+  return buffer
 }
 
 /** Audition outside the sequencer (sampler tab). */

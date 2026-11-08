@@ -18,7 +18,6 @@ export type MidiMapping = {
   target: MidiTarget
 }
 
-type MidiListener = (msg: MIDIMessageEvent) => void
 
 class MidiLearn {
   private access: MIDIAccess | null = null

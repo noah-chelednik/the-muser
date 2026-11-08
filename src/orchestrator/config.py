@@ -11,12 +11,17 @@ from pathlib import Path
 # Root directories
 # ---------------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODELS_DIR = PROJECT_ROOT / "models"
-VOICES_DIR = PROJECT_ROOT / "voices"
-SOUNDFONTS_DIR = PROJECT_ROOT / "soundfonts"
-COMPOSITIONS_DIR = PROJECT_ROOT / "compositions"
-RELEASES_DIR = PROJECT_ROOT / "releases"
-TRAINING_DATA_DIR = PROJECT_ROOT / "training_data"
+# Source checkouts keep user data next to the code. The desktop installer sets
+# MUSER_HOME to a per-user folder because the app bundle is read-only.
+USER_ROOT = (
+    Path(os.environ["MUSER_HOME"]).expanduser() if os.environ.get("MUSER_HOME") else PROJECT_ROOT
+)
+MODELS_DIR = USER_ROOT / "models"
+VOICES_DIR = USER_ROOT / "voices"
+SOUNDFONTS_DIR = USER_ROOT / "soundfonts"
+COMPOSITIONS_DIR = USER_ROOT / "compositions"
+RELEASES_DIR = USER_ROOT / "releases"
+TRAINING_DATA_DIR = USER_ROOT / "training_data"
 
 # ---------------------------------------------------------------------------
 # Model directories
@@ -123,7 +128,7 @@ MP3_BITRATE = os.environ.get("MUSER_MP3_BITRATE", "320k")
 # ---------------------------------------------------------------------------
 # Local tool paths (.local prefix for sudo-free installs)
 # ---------------------------------------------------------------------------
-LOCAL_DIR = PROJECT_ROOT / ".local"
+LOCAL_DIR = USER_ROOT / ".local"
 _lilypond_candidates = (
     sorted(LOCAL_DIR.glob("lilypond-*/bin/lilypond")) if LOCAL_DIR.exists() else []
 )

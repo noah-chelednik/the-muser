@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { PADS, noteOff, noteOn, sequencer } from '../audio/instruments'
-import { padBank } from '../audio/samples'
+import { cloneSteps, ensureBeat, syncActivePattern } from '../audio/arrange'
 import { audio } from '../audio/engine'
+import { PADS, noteOff, noteOn, sequencer } from '../audio/instruments'
+import { decodeAndLoadPad, padBank } from '../audio/samples'
+import * as soundfont from '../audio/soundfont'
 import { midi } from '../midi'
 import type { History } from '../state/history'
 import type { PadParams, Project, SynthParams } from '../types'
+import { Arranger } from './Arranger'
 import { Knob } from './Knob'
 
 type Props = { history: History<Project> }
@@ -20,7 +23,9 @@ const typing = (e: KeyboardEvent) => {
 }
 
 export function Deck({ history }: Props) {
-  const [tab, setTab] = useState<'pads' | 'keys'>('pads')
+  const [tab, setTab] = useState<'pads' | 'keys' | 'arrange'>('pads')
+  const [dropPad, setDropPad] = useState<number | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   useSyncExternalStore(padBank.subscribe, padBank.version)
   const padName = (i: number) => padBank.get(i)?.name ?? PADS[i].name
   const [hitPads, setHitPads] = useState<Set<number>>(new Set())
@@ -72,12 +77,36 @@ export function Deck({ history }: Props) {
     sequencer.getPattern = () => projRef.current.pattern
     sequencer.getBpm = () => projRef.current.bpm
     sequencer.getPad = () => projRef.current.pads
+    sequencer.getArrangement = () => {
+      const beat = ensureBeat(projRef.current)
+      return { arrangement: beat.arrangement!, patterns: beat.patterns! }
+    }
     sequencer.onStep = (s) => {
-      setStep(s)
-      if (s >= 0) projRef.current.pattern.forEach((row, p) => row[s] && flash(p))
+      setStep(s < 0 ? -1 : s % 16)
+      if (s >= 0) {
+        const st = s % 16
+        projRef.current.pattern.forEach((row, p) => row[st] && flash(p))
+      }
     }
     return () => sequencer.stop()
   }, [])
+
+  const loadPadFile = async (i: number, file: File) => {
+    const lower = file.name.toLowerCase()
+    try {
+      if (lower.endsWith('.sf3')) throw new Error('SF3 soundfonts are not supported yet. Use an .sf2 or .sfz.')
+      if (lower.endsWith('.sf2')) {
+        await soundfont.loadFile(file)
+        return
+      }
+      if (lower.endsWith('.sfz')) {
+        throw new Error('Load .sfz files from the scanned library so neighboring samples can be found.')
+      }
+      await decodeAndLoadPad(i, file.name, await file.arrayBuffer())
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Could not load file')
+    }
+  }
 
   // computer keyboard
   useEffect(() => {
@@ -87,7 +116,7 @@ export function Deck({ history }: Props) {
       if (tab === 'pads') {
         const i = PADS.findIndex((p) => p.key === k)
         if (i >= 0) { e.preventDefault(); hitPad(i) }
-      } else {
+      } else if (tab === 'keys') {
         const i = KEY_MAP.indexOf(k)
         if (i >= 0) { e.preventDefault(); on(base + i) }
         if (k === 'z') history.commit('Octave down', (s) => ({ ...s, synth: { ...s.synth, octave: Math.max(-2, s.synth.octave - 1) } }))
@@ -147,10 +176,12 @@ export function Deck({ history }: Props) {
   )
 
   const toggleStep = (pad: number, st: number) =>
-    history.commit(`${PADS[pad].name} step ${st + 1}`, (s) => ({
-      ...s,
-      pattern: s.pattern.map((row, p) => (p === pad ? row.map((v, i) => (i === st ? !v : v)) : row)),
-    }))
+    history.commit(`${PADS[pad].name} step ${st + 1}`, (s) => {
+      const pattern = s.pattern.map((row, p) => (p === pad ? row.map((v, i) => (i === st ? !v : v)) : row))
+      return syncActivePattern(s, pattern)
+    })
+
+  const beat = ensureBeat(proj)
 
   // 2 octaves + top C
   const keys = Array.from({ length: 25 }, (_, i) => base + i)
@@ -167,9 +198,16 @@ export function Deck({ history }: Props) {
           <button role="tab" aria-selected={tab === 'keys'} className={tab === 'keys' ? 'on' : ''} onClick={() => setTab('keys')}>
             Keys
           </button>
+          <button role="tab" aria-selected={tab === 'arrange'} className={tab === 'arrange' ? 'on' : ''} onClick={() => setTab('arrange')}>
+            Arrange
+          </button>
         </div>
         <div className="deck-hint">
-          {tab === 'pads' ? 'Keys 1-4 / Q-R / A-F / Z-V trigger pads · right-click pads or knobs for MIDI learn' : 'Keys A-; play notes, W E T Y U O P sharps, Z / X octave · right-click knobs for MIDI learn'}
+          {tab === 'pads'
+            ? 'Keys 1-4 / Q-R / A-F / Z-V trigger pads · drop a sample on a pad · right-click for MIDI learn'
+            : tab === 'keys'
+              ? `Keys A-; play notes, W E T Y U O P sharps, Z / X octave${soundfont.hasFont() ? ` · soundfont: ${soundfont.fontName()}` : ''}`
+              : 'Place patterns on tracks, set per-track and master effects, then export a WAV'}
         </div>
       </div>
 
@@ -179,9 +217,17 @@ export function Deck({ history }: Props) {
             {PADS.map((p, i) => (
               <button
                 key={p.name}
-                className={`pad ${hitPads.has(i) ? 'hit' : ''} ${selPad === i ? 'sel' : ''}`}
+                className={`pad ${hitPads.has(i) ? 'hit' : ''} ${selPad === i ? 'sel' : ''} ${dropPad === i ? 'drop' : ''}`}
                 onPointerDown={(e) => { e.preventDefault(); hitPad(i); setSelPad(i) }}
                 onContextMenu={(e) => { e.preventDefault(); midi.startLearn({ kind: 'pad', index: i }) }}
+                onDragOver={(e) => { e.preventDefault(); setDropPad(i) }}
+                onDragLeave={() => setDropPad((cur) => (cur === i ? null : cur))}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDropPad(null)
+                  const file = e.dataTransfer.files[0]
+                  if (file) void loadPadFile(i, file)
+                }}
               >
                 <span className="pad-name">{padName(i)}</span>
                 <span className="pad-key">{p.key.toUpperCase()}</span>
@@ -193,7 +239,8 @@ export function Deck({ history }: Props) {
               <button
                 className={`btn ${seqOn ? 'pri' : ''}`}
                 onClick={() => {
-                  if (sequencer.running) { sequencer.stop(); setSeqOn(false) } else { sequencer.start(); setSeqOn(true) }
+                  if (sequencer.running) { sequencer.stop(); setSeqOn(false) }
+                  else { sequencer.mode = 'pattern'; sequencer.start(); setSeqOn(true) }
                 }}
               >
                 {seqOn ? '■ Stop' : '▶ Play pattern'}
@@ -213,9 +260,36 @@ export function Deck({ history }: Props) {
                 onEnd={history.end}
                 onCommit={(v) => history.commit('BPM', (s) => ({ ...s, bpm: v }))}
               />
-              <button className="btn ghost" onClick={() => history.commit('Clear pattern', (s) => ({ ...s, pattern: s.pattern.map((r) => r.map(() => false)) }))}>
+              <button className="btn ghost" onClick={() => history.commit('Clear pattern', (s) => syncActivePattern(s, s.pattern.map((r) => r.map(() => false))))}>
                 Clear
               </button>
+              <select
+                className="select"
+                value={beat.activePatternId}
+                onChange={(e) => {
+                  const id = e.target.value
+                  history.commit('Select pattern', (s) => {
+                    const next = ensureBeat(s)
+                    const pat = next.patterns!.find((item) => item.id === id)
+                    if (!pat) return next
+                    return { ...next, activePatternId: id, pattern: cloneSteps(pat.steps) }
+                  })
+                }}
+              >
+                {beat.patterns!.map((pat) => <option key={pat.id} value={pat.id}>{pat.name}</option>)}
+              </select>
+              <button className="btn ghost" onClick={() => fileRef.current?.click()}>Load sample</button>
+              <input
+                ref={fileRef}
+                type="file"
+                hidden
+                accept="audio/*,.wav,.aiff,.aif,.flac,.mp3,.ogg,.sf2"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  e.target.value = ''
+                  if (file) void loadPadFile(selPad, file)
+                }}
+              />
               <div className="pad-knobs">
                 {padKnob('volume', 'Level', 0, 1.5, 0.8, (v) => `${Math.round(v * 100)}%`)}
                 {padKnob('pitch', 'Pitch', -12, 12, 0, (v) => `${v > 0 ? '+' : ''}${v.toFixed(0)}st`, 1)}
@@ -239,7 +313,7 @@ export function Deck({ history }: Props) {
             </div>
           </div>
         </div>
-      ) : (
+      ) : tab === 'keys' ? (
         <div className="deck-body keys-body">
           <div className="synth-controls">
             <div className="wave-select">
@@ -279,7 +353,10 @@ export function Deck({ history }: Props) {
             ))}
           </div>
         </div>
-      )}
+      ) : null}
+      <div hidden={tab !== 'arrange'}>
+        <Arranger history={history} />
+      </div>
     </section>
   )
 }

@@ -1,38 +1,74 @@
-# Windows Desktop Build & Installer
+# Windows desktop build and installer
 
-NoDAW Studio PRO can be packaged as a native Windows desktop application with a full installer.
+The Muser ships a real desktop app (`TheMuser.exe`) built with PyInstaller and a full Inno Setup installer (`muser.iss`). The installer creates Start Menu and optional desktop shortcuts, an uninstaller, and keeps user data in `%LOCALAPPDATA%\TheMuser` so uninstalling does not delete tracks or the sample library.
 
-## Options
+`nodaw-studio.iss` is an older starter script that copied the web `dist` folder plus a `.bat` launcher. Prefer `muser.iss`.
 
-### 1. Electron wrapper (recommended for the existing web UI)
+## What you need
 
-The Studio is already a Vite + React frontend served by the FastAPI backend.
+- Windows 10/11 x64
+- Node.js 20+
+- Python 3.10+
+- [Inno Setup 6](https://jrsoftware.org/isdl.php) (`ISCC.exe` on your PATH)
 
-```bash
-# In a new folder or monorepo
-npm create electron-app@latest nodaw-desktop --template=vite-typescript
-# Point the Electron main process at the built studio/web/dist and launch the Python server
-# as a child process (or bundle the Python runtime with PyInstaller).
+## Build
+
+From the repo root:
+
+```powershell
+.\packaging\windows\build-installer.ps1
 ```
 
-Use `electron-builder` or `electron-forge` to produce an NSIS or Inno Setup installer.
+That builds `studio/web`, bundles the Python server and UI with `packaging/muser.spec`, then compiles `packaging/windows/muser.iss`.
 
-### 2. PyInstaller + Inno Setup (single executable + installer)
+Output:
 
-Bundle the Python server and a minimal Chromium or use the system browser, then wrap with Inno Setup.
+- App folder: `dist/TheMuser/TheMuser.exe`
+- Installer: `dist/installer/TheMuser-Setup-1.1.0-win64.exe`
 
-See `nodaw-studio.iss` for a starter Inno Setup script.
+You can also compile the installer yourself after a PyInstaller run:
 
-## Building the installer
+```powershell
+iscc /DAppVersion=1.1.0 packaging\windows\muser.iss
+```
 
-1. Build the web UI: `cd studio/web && npm run build`
-2. Create a PyInstaller spec that includes the server, .venv dependencies, and the dist folder.
-3. Run Inno Setup Compiler on `nodaw-studio.iss`.
+Optional CI: add `.github/workflows/desktop-installers.yml` on a machine whose GitHub token has the `workflow` scope, then dispatch it or push a `v*` tag:
 
-The resulting `NoDAWStudio-Setup.exe` installs the app, creates Start Menu and Desktop shortcuts, and registers the file association for `.nodaw` projects.
+```yaml
+name: Windows installer
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: npm, cache-dependency-path: studio/web/package-lock.json }
+      - name: Build web UI
+        working-directory: studio/web
+        run: |
+          npm ci
+          npm run build
+      - name: Bundle desktop app
+        run: |
+          python -m pip install --disable-pip-version-check pyinstaller
+          python -m PyInstaller packaging/muser.spec --noconfirm
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Compile installer
+        run: iscc /DAppVersion=1.1.0 packaging\windows\muser.iss
+      - uses: actions/upload-artifact@v4
+        with: { name: TheMuser-Setup, path: dist/installer/*.exe }
+```
 
-## MIDI & Sample Library
 
-- MIDI learn works in the desktop build the same as the browser (Web MIDI API).
-- The drive scanner lives in the Python backend and is available via `/api/library/scan` and `/api/library/search`.
-- Samples assigned to pads persist in IndexedDB (browser) or can be extended to a local database for the desktop build.
+## MIDI and the sample library
+
+- MIDI learn works in the desktop window the same as in the browser (Web MIDI).
+- Scan folders from the Sample Library pane. Indexed files are served only through `/api/library/file` (path must already be in the library database).
+- Pad kits still persist in IndexedDB inside the desktop webview, with an Autosave kit written whenever you load a sample onto a pad.
