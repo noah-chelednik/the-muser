@@ -22,3 +22,6 @@
 @media (max-width: 980px) {
   .arranger { grid-template-columns: 1fr; }
 }
+/* clips sit on the same row as the bar cells; the track name input fits its 88px column */
+.arr-lane > .arr-cell, .arr-lane > .arr-clip { grid-row: 1; }
+.arr-label input { width: 100%; min-width: 0; background: transparent; border: 0; color: inherit; font: inherit; padding: 0; }
