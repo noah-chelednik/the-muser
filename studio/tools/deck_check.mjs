@@ -64,6 +64,11 @@ async function run(skin, devName, opts = {}) {
     if (!sessionStorage.getItem('deck-init')) { sessionStorage.setItem('deck-init', '1'); for (const k of Object.keys(localStorage)) localStorage.removeItem(k); try { indexedDB.deleteDatabase('muser-kits-v1') } catch {} }
     localStorage.setItem('muser.skin', s)
     if (o.noMidi) { try { delete Navigator.prototype.requestMIDIAccess } catch {} ; Object.defineProperty(navigator, 'requestMIDIAccess', { value: undefined, configurable: true }) }
+    if (o.deadDest) {
+      // Simulate Safari's "running but the speakers get nothing": every connection to ctx.destination is dropped.
+      const conn = AudioNode.prototype.connect
+      AudioNode.prototype.connect = function (d, ...r) { if (d instanceof AudioDestinationNode) { window.__deadDestHits = (window.__deadDestHits || 0) + 1; return d } return conn.call(this, d, ...r) }
+    }
     if (o.stuck) {
       // Simulate an iPhone where Web Audio never leaves "suspended" after the tap.
       const Orig = window.AudioContext
@@ -80,6 +85,26 @@ async function run(skin, devName, opts = {}) {
   const shot = async (n) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${tag}-${n}.png` }) }
   const A = (fn, arg) => page.evaluate(fn, arg)
   const maxRms = async (ms = 900) => { let m = 0; const end = Date.now() + ms; while (Date.now() < end) { m = Math.max(m, await A(() => window.__muser.audio.outputRms())); await page.waitForTimeout(40) } return m }
+  // What the phone's <audio> output element carries: capture its MediaStream in a second context.
+  const capRms = async (ms = 900) => {
+    await A(async () => {
+      const a = window.__muser.audio
+      if (!a.streamEl?.srcObject) throw new Error('no stream element')
+      if (!window.__cap || window.__cap.stream !== a.streamEl.srcObject) {
+        const c = new AudioContext(); const an = c.createAnalyser(); an.fftSize = 2048
+        c.createMediaStreamSource(a.streamEl.srcObject).connect(an)
+        window.__cap = { c, an, stream: a.streamEl.srcObject, buf: new Float32Array(2048) }
+      }
+      await window.__cap.c.resume()
+    })
+    let m = 0; const end = Date.now() + ms
+    while (Date.now() < end) {
+      m = Math.max(m, await A(() => { const { an, buf } = window.__cap; an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; return Math.sqrt(s / buf.length) }))
+      await page.waitForTimeout(40)
+    }
+    return m
+  }
+  const routeInfo = () => A(() => { const a = window.__muser.audio; return { want: a.wantRoute, route: a.route, paused: a.streamEl ? a.streamEl.paused : null, state: a.state } })
   const overflow = () => A(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth }))
   const noOverflow = async (where) => { const o = await overflow(); must(o.sw <= o.iw + 1, `${where}: page scrolls sideways, scrollWidth ${o.sw} > ${o.iw}`) }
 
@@ -111,6 +136,32 @@ async function run(skin, devName, opts = {}) {
     await step('desktop: no first-run gate', async () => { must((await T('sound-gate').count()) === 0, 'gate shown on desktop') })
   }
   await step('no horizontal page scroll (Easy)', () => noOverflow('Easy'))
+
+  if (opts.deadDest) {
+    await step('destination dead, generated beat still reaches the phone <audio> output', async () => {
+      const r = await routeInfo(); must(r.route === 'stream' && r.paused === false, 'stream route not live: ' + JSON.stringify(r))
+      await T('prompt').fill('boom bap')
+      await press(V('make'))
+      await page.waitForFunction(() => document.querySelector('[data-testid=make]')?.getAttribute('data-phase') === 'ready', null, { timeout: 120000 })
+      await press(V('mode-advanced')); await page.waitForTimeout(600)
+      if (!(await A(() => window.__muser.audio.playing))) await press(V('play'))
+      await page.waitForTimeout(800)
+      const m = await capRms(1500)
+      must(m > 0.002, 'generated playback silent on the <audio> output, rms ' + m.toFixed(5))
+      await press(V('play')).catch(() => {})
+      return `rms ${m.toFixed(3)} with every ctx.destination connection dropped`
+    })
+    await step('destination dead: pad, key and pattern still reach the <audio> output', async () => {
+      await press(T('beats-open')); await T('beats-sheet').waitFor()
+      const d = (id) => page.locator(`[data-testid=beats-sheet] [data-testid=${id}]`).first()
+      await press(d('pad-0')); const pad = await capRms(600)
+      await press(d('deck-keys')); await press(d('key-60')); const key = await capRms(600)
+      await press(d('deck-pads')); if ((await d('step-0-0').getAttribute('aria-pressed')) !== 'true') await press(d('step-0-0')); await press(d('seq-play')); const seq = await capRms(1500); await press(d('seq-play'))
+      must(pad > 0.003 && key > 0.002 && seq > 0.003, `pad ${pad.toFixed(4)} key ${key.toFixed(4)} pattern ${seq.toFixed(4)}`)
+      return `pad ${pad.toFixed(3)}, key ${key.toFixed(3)}, pattern ${seq.toFixed(3)}`
+    })
+    await browser.close(); return
+  }
 
   if (opts.stuck) {
     await step('Web Audio held: a generated track still plays through the media element', async () => {
@@ -211,6 +262,27 @@ async function run(skin, devName, opts = {}) {
     } finally { await press(deck('deck-pads')) }
   })
 
+  if ((await routeInfo()).want === 'stream') {
+    await step('iPhone output: after a library preview, pad, key and pattern play come out of the <audio> element', async () => {
+      const r = await routeInfo(); must(r.route === 'stream' && r.paused === false, 'stream route not live: ' + JSON.stringify(r))
+      const dg = await A(() => window.__muser.audio.directGain?.gain.value)
+      await press(deck('pad-0')); const pad = await capRms(600)
+      await press(deck('deck-keys')); await press(deck('key-60')); const key = await capRms(600)
+      await press(deck('deck-pads'))
+      if ((await deck('step-0-0').getAttribute('aria-pressed')) !== 'true') await press(deck('step-0-0'))
+      await press(deck('seq-play')); const seq = await capRms(1500); await press(deck('seq-play'))
+      must(pad > 0.003, 'pad silent on the <audio> output ' + pad.toFixed(5))
+      must(key > 0.002, 'key silent on the <audio> output ' + key.toFixed(5))
+      must(seq > 0.003, 'pattern silent on the <audio> output ' + seq.toFixed(5))
+      must(dg !== undefined && dg < 0.01, 'ctx.destination still open on the stream route (double play): ' + dg)
+      return `pad ${pad.toFixed(3)}, key ${key.toFixed(3)}, pattern ${seq.toFixed(3)}, direct gain ${dg.toFixed(3)}`
+    })
+  } else {
+    await step('desktop/Android output: direct route, no <audio> stream element', async () => {
+      const r = await routeInfo(); must(r.route === 'direct' && r.paused === null, JSON.stringify(r))
+    })
+  }
+
   await step('per-pad FX: a low-pass on the hat pad changes only that pad', async () => {
     await press(deck('pad-4')); await page.waitForTimeout(300)
     const dry = []; for (let i = 0; i < 3; i++) { await press(deck('pad-4')); dry.push(await maxRms(450)) }
@@ -306,6 +378,8 @@ if (!process.env.ONLY_EXTRA) for (const skin of SKINS) for (const d of DEVICES) 
 if (!process.env.SKIP_EXTRA) {
   console.log('\n== iPhone without Web MIDI (Safari has none)')
   await run('cathode', 'iPhone 14', { noMidi: true, tag: 'nomidi' }).catch((e) => { failed++; console.log('  CRASH', e.message) })
+  console.log('\n== iPhone with a dead ctx.destination (running but silent): everything via the <audio> output')
+  await run('cathode', 'iPhone 14', { deadDest: true, tag: 'deaddest' }).catch((e) => { failed++; console.log('  CRASH', e.message) })
   console.log('\n== Web Audio stuck suspended after the tap (media element fallback)')
   await run('cathode', 'iPhone 14', { stuck: true, tag: 'stuck' }).catch((e) => { failed++; console.log('  CRASH', e.message) })
 }

@@ -26,6 +26,26 @@ export const isTouchDevice = () => typeof window !== 'undefined' && (('ontouchen
 const isAppleTouch = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints ?? 0) > 1)
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } }
+
+/**
+ * How the mix leaves the AudioContext.
+ * - 'direct': ctx.destination (desktop, Android).
+ * - 'stream': a MediaStreamAudioDestinationNode played by an <audio> element. iPhone and iPad default
+ *   to this: Safari can report a running AudioContext whose destination is muted (ringer switch,
+ *   audio session category) while <audio> elements stay audible, which is exactly how the library
+ *   previews were heard and the pads, keys and generated beats were not.
+ * Override with localStorage 'nodaw-audio-route' = 'direct' | 'stream' or ?route=direct|stream.
+ */
+export type OutRoute = 'direct' | 'stream'
+function preferredRoute(): OutRoute {
+  try {
+    const q = new URLSearchParams(location.search).get('route')
+    if (q === 'direct' || q === 'stream') { localStorage.setItem('nodaw-audio-route', q); return q }
+    const v = localStorage.getItem('nodaw-audio-route')
+    if (v === 'direct' || v === 'stream') return v
+  } catch { /* storage blocked */ }
+  return isAppleTouch() ? 'stream' : 'direct'
+}
 const AC: typeof AudioContext = (window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)
 
 class StudioAudio {
@@ -56,6 +76,14 @@ class StudioAudio {
   unlocked = false
   private listeners = new Set<Listener>()
   private keepAlive: HTMLAudioElement | null = null
+  /** Gain into ctx.destination: 1 on the direct route, 0 while the stream element carries the sound. */
+  private directGain: GainNode | null = null
+  private streamDest: MediaStreamAudioDestinationNode | null = null
+  /** The <audio> element that plays the mix on the 'stream' route (exposed for the automated checks). */
+  streamEl: HTMLAudioElement | null = null
+  /** Route that is live right now ('stream' only once its element is actually playing). */
+  route: OutRoute = 'direct'
+  readonly wantRoute: OutRoute = typeof window !== 'undefined' ? preferredRoute() : 'direct'
   /** Media element primed inside a gesture, used to play a bounce when Web Audio stays suspended. */
   private fallbackEl: HTMLAudioElement | null = null
   private fallbackUrl = ''
@@ -102,12 +130,18 @@ class StudioAudio {
       this.masterChain.output.connect(this.master)
       this.master.connect(this.limiter)
       this.limiter.connect(this.masterAnalyser)
-      this.masterAnalyser.connect(ctx.destination)
+      this.directGain = ctx.createGain()
+      this.masterAnalyser.connect(this.directGain)
+      this.directGain.connect(ctx.destination)
       this.masterAnalyser.connect(this.outAnalyser)
       ctx.onstatechange = () => {
         this.onState()
       }
-      const wake = () => { if (document.visibilityState === 'visible') void this.resume() }
+      const wake = () => {
+        if (document.visibilityState !== 'visible') return
+        void this.resume()
+        if (this.streamEl?.paused && this.gestured) void this.streamEl.play().catch(() => undefined)
+      }
       document.addEventListener('visibilitychange', wake)
       window.addEventListener('pageshow', wake)
       window.addEventListener('focus', wake)
@@ -186,6 +220,7 @@ class StudioAudio {
         } catch { /* ignore */ }
       } else if (this.keepAlive.paused) void this.keepAlive.play().catch(() => undefined)
     }
+    if (this.wantRoute === 'stream') this.startStreamRoute(ctx)
     // Prime the fallback media element inside this gesture so a later play() of a bounce is allowed.
     if (!this.fallbackEl && isTouchDevice()) {
       try {
@@ -199,6 +234,50 @@ class StudioAudio {
         f.onended = () => { if (this.path === 'media' && !f.loop) { this.playing = false; this.offset = 0; this.emit() } }
       } catch { /* ignore */ }
     }
+  }
+
+  /**
+   * 'stream' route: send the mix to a MediaStream and play it with an <audio> element started inside
+   * this gesture. ctx.destination is only muted once the element is really playing; if it pauses
+   * (another app, a call, Safari pausing media) the direct path comes back until the next tap restarts it.
+   */
+  private startStreamRoute(ctx: AudioContext) {
+    if (typeof ctx.createMediaStreamDestination !== 'function') return
+    try {
+      if (!this.streamDest) {
+        this.streamDest = ctx.createMediaStreamDestination()
+        this.masterAnalyser.connect(this.streamDest)
+        const el = document.createElement('audio')
+        el.setAttribute('playsinline', '')
+        el.setAttribute('webkit-playsinline', '')
+        el.setAttribute('x-webkit-airplay', 'deny')
+        el.autoplay = false
+        el.srcObject = this.streamDest.stream
+        el.addEventListener('playing', () => this.setRoute('stream'))
+        el.addEventListener('pause', () => this.setRoute('direct'))
+        el.addEventListener('ended', () => this.setRoute('direct'))
+        el.addEventListener('error', () => this.setRoute('direct'))
+        el.style.display = 'none'
+        document.body.appendChild(el)
+        this.streamEl = el
+      }
+      const el = this.streamEl!
+      if (el.paused) void el.play().then(() => this.setRoute('stream')).catch(() => this.setRoute('direct'))
+    } catch {
+      this.setRoute('direct')
+    }
+  }
+
+  private setRoute(r: OutRoute) {
+    if (r === 'stream' && (!this.streamEl || this.streamEl.paused)) r = 'direct'
+    this.route = r
+    const g = this.directGain
+    if (g && this.ctx) {
+      const t = this.ctx.currentTime
+      g.gain.cancelScheduledValues(t)
+      g.gain.setTargetAtTime(r === 'stream' ? 0 : 1, t, 0.01)
+    }
+    this.emit()
   }
 
   /**
