@@ -5,6 +5,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { padBank } from '../audio/samples'
+import { validateAudioFile } from '../audio/upload'
 import { PADS } from '../audio/instruments'
 
 type LibItem = {
@@ -62,18 +63,21 @@ export function SampleLibrary({ onAssign }: Props) {
     }
   }
 
-  const assign = (item: LibItem) => {
+  const [assignErr, setAssignErr] = useState('')
+  const assign = async (item: LibItem) => {
     if (item.type !== 'sample') return
-    // Placeholder: real implementation would fetch + decode the file via /files proxy or File API
-    // For now mark the pad name so the user sees the assignment intent
-    padBank.set(targetPad, {
-      name: item.name,
-      buffer: new AudioBuffer({ length: 1, sampleRate: 44100 }), // stub until full fetch
-      pitch: 0,
-      rate: 1,
-      gain: 1,
-    })
-    onAssign?.(item, targetPad)
+    setAssignErr('')
+    try {
+      // the server only serves files its scanner indexed; the bytes still go through the upload guard
+      const r = await fetch(`/api/library/file?path=${encodeURIComponent(item.path)}`)
+      if (!r.ok) throw new Error('The file is no longer in the library. Scan again.')
+      const blob = await r.blob()
+      const v = await validateAudioFile(new File([blob], item.path.split(/[\\/]/).pop() || 'sample.wav', { type: blob.type || '' }))
+      padBank.set(targetPad, { name: v.name, buffer: v.buffer, pitch: 0, rate: 1, gain: 1, source: { kind: 'upload' } })
+      onAssign?.(item, targetPad)
+    } catch (e) {
+      setAssignErr((e as Error).message)
+    }
   }
 
   return (
@@ -134,7 +138,8 @@ export function SampleLibrary({ onAssign }: Props) {
               {PADS.map((p, i) => <option key={i} value={i}>{i + 1} {p.name}</option>)}
             </select>
           </label>
-          <button className="btn pri" onClick={() => assign(selected)}>Load onto pad</button>
+          <button className="btn pri" onClick={() => void assign(selected)}>Load onto pad</button>
+          {assignErr && <p className="nd-err" role="alert">{assignErr}</p>}
         </div>
       )}
     </section>

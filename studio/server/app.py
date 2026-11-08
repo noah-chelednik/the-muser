@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import logging
-import shutil
-import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -14,7 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import agent_bridge, capabilities, engine
-from .store import AUDIO_EXT, UPLOADS_DIR, jobs, resolve_file, tracks
+from .store import UPLOADS_DIR, jobs, resolve_file, tracks
+from .upload_guard import UploadRejected, sanitize_title, save_upload
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("studio")
@@ -156,12 +155,12 @@ def job(jid: str) -> dict:
 
 @app.post("/api/upload")
 async def upload(file: UploadFile = File(...), title: str = Form("")) -> dict:
-    suffix = Path(file.filename or "audio.wav").suffix.lower()
-    if suffix not in AUDIO_EXT:
-        raise HTTPException(400, f"Unsupported file type {suffix}")
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, dir=UPLOADS_DIR) as tmp:
-        shutil.copyfileobj(file.file, tmp)
-    t = engine.import_upload(Path(tmp.name), title or Path(file.filename or "upload").stem)
+    # allowlist + MIME + magic bytes + streamed size cap + real decode; random stored name (upload_guard)
+    try:
+        stored, clean = save_upload(file.file, file.filename, file.content_type, UPLOADS_DIR)
+    except UploadRejected as e:
+        raise HTTPException(400, str(e)) from None
+    t = engine.import_upload(stored, sanitize_title(title) if title else clean)
     return {"track": t.to_public()}
 
 

@@ -102,6 +102,21 @@ def search(query: str = "", kind: str | None = None, limit: int = 200) -> list[d
     return [dict(r) for r in rows]
 
 
+def indexed_file(path: str) -> Path | None:
+    """Resolve a path only if it is an indexed sample with an audio extension that still exists.
+    The file route uses this so it can never read arbitrary files."""
+    with _lock:
+        conn = _connect()
+        row = conn.execute("SELECT path FROM items WHERE path = ? AND type = 'sample'", (path,)).fetchone()
+        conn.close()
+    if not row:
+        return None
+    p = Path(row["path"])
+    if p.suffix.lower() not in AUDIO_EXT or not p.is_file():
+        return None
+    return p
+
+
 def get_stats() -> dict:
     with _lock:
         conn = _connect()

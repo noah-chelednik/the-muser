@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { ACCEPT } from '../audio/upload'
 import type { Track } from '../types'
 
 type Props = {
@@ -27,7 +28,7 @@ export function Library({ tracks, currentId, onSelect, onDelete, onUpload }: Pro
       <div className="panel-head">
         <h2>Library</h2>
         <button className="btn ghost small" onClick={() => file.current?.click()}>+ Import audio</button>
-        <input ref={file} type="file" accept="audio/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = '' }} />
+        <input ref={file} type="file" accept={ACCEPT} hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = '' }} />
       </div>
       <div className="lib-list">
         {tracks.length === 0 && <div className="muted pad-s">No tracks yet. Drop an audio file here or ask the composer.</div>}

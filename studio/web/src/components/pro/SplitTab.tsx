@@ -6,6 +6,7 @@ import { BrowserSeparator, MODELS, MODEL_ORDER, detectSepCaps, formatBytes, isMo
 import { useStudio } from '../../studio/StudioContext'
 import type { Track } from '../../types'
 import { Field } from './Tabs'
+import { ACCEPT, toSafeFile, validateAudioFile } from '../../audio/upload'
 
 const COLORS: Record<string, string> = { drums: '#ff7a59', bass: '#7c5cff', vocals: '#ffd166', other: '#4cc9f0', instrumental: '#4cc9f0' }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -61,13 +62,13 @@ export function SplitTab() {
     if (!f) return
     setError(''); setDone(null); setPhase('decoding')
     try {
-      const ab = await f.arrayBuffer()
-      const url = URL.createObjectURL(new Blob([ab.slice(0)], { type: f.type || 'audio/mpeg' }))
-      const buffer = await audio.decodeBytes(ab)
-      setClip({ name: f.name.replace(/\.[^.]+$/, ''), buffer, url, fromUpload: true })
+      // type, size, magic bytes and a real decode (audio/upload.ts) before anything else
+      const v = await validateAudioFile(f)
+      const url = URL.createObjectURL(new Blob([v.bytes], { type: toSafeFile(v).type }))
+      setClip({ name: v.name, buffer: v.buffer, url, fromUpload: true })
       setStart(0)
-    } catch {
-      setError(`This browser could not decode ${f.name}. Try an mp3, wav or m4a; some phones cannot read FLAC or OGG.`)
+    } catch (e) {
+      setError((e as Error).message)
     } finally { setPhase('idle') }
   }
 
@@ -141,7 +142,7 @@ export function SplitTab() {
           <div className="btn-row">
             <label className="btn small" data-testid="split-pick">
               Choose a file
-              <input className="sr-file" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = '' }} data-testid="split-file" />
+              <input className="sr-file" type="file" accept={ACCEPT} onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = '' }} data-testid="split-file" />
             </label>
             {clip && <button className="btn small ghost" onClick={() => { setClip(null); setDone(null) }}>Use the loaded track</button>}
           </div>

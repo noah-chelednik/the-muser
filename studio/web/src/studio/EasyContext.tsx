@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ACCEPT } from '../audio/upload'
 import { api, waitJob } from '../api'
 import type { FinishTarget, MacroKey, Preset, Slider, Track } from '../types'
 import { useStudio } from './StudioContext'
@@ -281,8 +282,8 @@ export function EasyProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={value}>
       {children}
-      <input ref={upload} data-testid="easy-upload" type="file" accept="audio/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void onUpload(f); e.target.value = '' }} />
-      <input ref={refUpload} data-testid="easy-reference" type="file" accept="audio/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void onReference(f); e.target.value = '' }} />
+      <input ref={upload} data-testid="easy-upload" type="file" accept={ACCEPT} hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void onUpload(f); e.target.value = '' }} />
+      <input ref={refUpload} data-testid="easy-reference" type="file" accept={ACCEPT} hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void onReference(f); e.target.value = '' }} />
     </Ctx.Provider>
   )
 }

@@ -9,6 +9,7 @@ import { bufferToWav, download, safeName } from '../../audio/wav'
 import { useStudio } from '../../studio/StudioContext'
 import { DEFAULT_STEM } from '../../types'
 import { Field } from './Tabs'
+import { ACCEPT } from '../../audio/upload'
 import { RegionWave, type Grid } from './RegionWave'
 
 type Change = { id: string; prev: AudioBuffer; next: AudioBuffer }
@@ -32,7 +33,8 @@ function sumBuffers(bufs: AudioBuffer[]): AudioBuffer | undefined {
 }
 
 export function SamplerTab() {
-  const { channels, current, buffersVersion, toast, mixer, master } = useStudio()
+  const { channels, current, buffersVersion, toast, mixer, master, uploadFile } = useStudio()
+  const upRef = useRef<HTMLInputElement>(null)
   const [src, setSrc] = useState<string>(ALL)
   const [region, setRegion] = useState<Region | null>(null)
   const [markers, setMarkers] = useState<number[]>([])
@@ -174,7 +176,7 @@ export function SamplerTab() {
   const putPad = (i: number, buf: AudioBuffer, name: string) => {
     const click = fadeBuffer(buf, null, 0.002, 0.008)
     const prev = padBank.get(i)
-    padBank.set(i, { name, buffer: click, pitch: prev?.pitch ?? 0, rate: prev?.rate ?? 1, gain: prev?.gain ?? 1 })
+    padBank.set(i, { name, buffer: click, pitch: prev?.pitch ?? 0, rate: prev?.rate ?? 1, gain: prev?.gain ?? 1, source: { kind: 'chop' } })
   }
   const sendRegion = async () => {
     if (!needRegion('send to a pad')) return
@@ -218,10 +220,18 @@ export function SamplerTab() {
     try { const n = await saveKit(kitName.trim() || 'My kit'); toast(`Saved kit with ${n} sample${n === 1 ? '' : 's'}`, 'ok'); refreshKits() } catch (e) { toast(`Could not save: ${(e as Error).message}`, 'error') }
   }
 
-  if (!channels.length) return <p className="muted pad-s">Load, generate or import a track first. The sampler cuts regions out of it and puts them on the pads.</p>
+  const uploader = (
+    <div className="sp-upload">
+      <button className="btn small pri" onClick={() => upRef.current?.click()} data-testid="sampler-upload-btn">Upload audio to edit</button>
+      <input ref={upRef} type="file" accept={ACCEPT} hidden data-testid="sampler-upload" onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadFile(f); e.target.value = '' }} />
+      <span className="muted">WAV, MP3, FLAC, OGG, AIFF, M4A or WebM up to 40 MB. Checked and decoded in your browser before use.</span>
+    </div>
+  )
+  if (!channels.length) return <div className="pro-form sampler" data-testid="sampler">{uploader}<p className="muted pad-s">Upload audio, or load or generate a track. The sampler cuts regions out of it and puts them on the pads.</p></div>
 
   return (
     <div className="pro-form sampler" data-testid="sampler">
+      {uploader}
       <div className="field-row">
         {!single && (
           <Field label="Source">
