@@ -196,9 +196,9 @@ body:not(.browser-demo) .beats-fab { bottom: calc(16px + env(safe-area-inset-bot
 .nd-synth > summary::after { content: '+'; margin-left: auto; font-size: 16px; }
 .nd-synth[open] > summary::after { content: '−'; }
 /* touch screens: every target at least 44px */
-@media (pointer: coarse) {
-  .nd-btn.small, .nd-chip, .nd-seg.small button, .nd-midi select, .nd-seq-label, .nd-step, .nd-roll-cell { min-height: var(--tap); }
-  .nd-seq-label { min-width: var(--tap); }
+@media (pointer: coarse), (max-width: 820px) {
+  .nd-btn.small, .nd-chip, .nd-seg.small button, .nd-midi select, button.nd-seq-label, .nd-step, .nd-roll-cell { min-height: var(--tap); }
+  span.nd-seq-label { display: block; min-height: 0; padding-top: 4px; }
   .nd-roll-cells { grid-template-columns: repeat(16, minmax(40px, 1fr)); }
   .nd-roll-row { grid-template-columns: 44px max-content; }
   .nd-slot-tools .nd-icon { min-width: var(--tap); }

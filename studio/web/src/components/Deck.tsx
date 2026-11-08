@@ -307,7 +307,9 @@ export function Deck({ history }: Props) {
               <div className="nd-seq-rows" style={{ ['--steps' as string]: steps.length }}>
                 {rows.map((pad) => (
                   <div className={`nd-seq-row ${pad === selPad ? 'sel' : ''}`} key={pad} data-testid={`seq-row-${pad}`}>
-                    <button className="nd-seq-label" onClick={() => setSelPad(pad)}>{pad + 1} {padName(pad)}</button>
+                    {narrow
+                      ? <span className="nd-seq-label">{pad + 1} {padName(pad)}</span>
+                      : <button className="nd-seq-label" onClick={() => setSelPad(pad)}>{pad + 1} {padName(pad)}</button>}
                     <div className="nd-steps">
                       {steps.map((st) => (
                         <button
