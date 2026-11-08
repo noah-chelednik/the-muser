@@ -104,6 +104,21 @@ Notes: Terrain uses WebGL2 and falls back to a flat 2D spectrum if it is missing
 
 ---
 
+## Beats: pads, keys, sounds (all skins, phone and desktop)
+
+Tap the **Beats** button (bottom right) to open the beat maker.
+
+- **Phones:** the first visit shows "Tap to enable sound". The tap starts audio and plays a short chime that is measured at the output. If your iPhone is on silent, flip the ring switch. If Web Audio stays blocked, playback falls back to a media element that plays a bounce of the mix.
+- **Pads:** 16 pads, a step sequencer (8 steps per page on phones), and a pad editor. In the editor you can change the sound, upload your own, go back to the synth hit, set level and pitch, and build an FX chain: Filter, EQ, Compressor, Saturation, Bitcrush, Delay, Reverb, Width, Pan. You can add, remove, bypass and reorder effects. Kits, sounds and FX save to this browser (IndexedDB).
+- **Keys:** 50 presets in a grid (keys, organ, bass, lead, pad, pluck, bell, strings, brass, FX), plus a sampler mode that plays the selected pad or a library sound across the keyboard.
+- **Sounds:** 251 CC0 one-shots. Filter by type and genre, preview, then press "Pad N" to load one, or "Keys" to play it on the keyboard. Credits: `studio/web/public/library/ATTRIBUTIONS.md`.
+- **Record:** press Rec. Pad hits, key notes and MIDI notes are written into the pattern and the key roll, quantized to the step grid. Click toggles a metronome.
+- **MIDI:** desktop Chrome and Edge. Pads default to notes 36 to 51 (and channel 10), keys play chromatically, and right-click a pad to MIDI learn a different note. iPhone and iPad Safari have no Web MIDI.
+
+### Upload security
+
+Uploads are checked in the browser before anything else: extension allowlist (wav, mp3, flac, ogg, aiff, m4a, webm), MIME allowlist, magic bytes that must match the extension, a 40 MB cap, a 12 minute cap, and a real decode with `decodeAudioData`. Files are never executed or written to a web path; names are sanitized for display only. The local server route (`/api/upload`) repeats the checks with a streamed size cap, random storage names, a decode check and owner-only permissions (`studio/server/upload_guard.py`).
+
 ## Easy mode and Advanced mode
 
 | | Easy mode (default) | Advanced mode |
