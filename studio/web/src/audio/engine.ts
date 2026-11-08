@@ -436,28 +436,41 @@ class StudioAudio {
    * Fallback for phones where Web Audio stays suspended after a tap: bounce what you would hear
    * (same chains, OfflineAudioContext) to WAV and play it through the media element primed in a gesture.
    */
+  private mediaSeq = 0
+  private fallbackKey = ''
   private async playViaMedia() {
     const el = this.fallbackEl
     if (!el || !this.channels.size) return
+    const seq = ++this.mediaSeq
     try {
       const r = this.region
-      const buf = await this.bounce({ mixer: this.lastMixer, masterGainDb: this.lastMaster.gain_db, limiter: this.lastMaster.limiter, range: r, tail: 0, sampleRate: 44100 })
-      if (!this.playing) return
-      if (this.fallbackUrl) URL.revokeObjectURL(this.fallbackUrl)
-      this.fallbackUrl = URL.createObjectURL(bufferToWav(buf, 16))
+      const key = JSON.stringify([
+        Array.from(this.channels, ([id, c]) => [id, c.buffer.length]),
+        this.lastMixer, this.lastMaster, r,
+      ])
+      if (key !== this.fallbackKey || !this.fallbackUrl) {
+        const buf = await this.bounce({ mixer: this.lastMixer, masterGainDb: this.lastMaster.gain_db, limiter: this.lastMaster.limiter, range: r, tail: 0, sampleRate: 44100 })
+        if (!this.playing || seq !== this.mediaSeq) return
+        if (this.fallbackUrl) URL.revokeObjectURL(this.fallbackUrl)
+        this.fallbackUrl = URL.createObjectURL(bufferToWav(buf, 16))
+        this.fallbackKey = key
+      }
+      if (!this.playing || seq !== this.mediaSeq) return
       el.loop = this.loop
-      el.src = this.fallbackUrl
+      if (el.src !== this.fallbackUrl) el.src = this.fallbackUrl
       el.currentTime = Math.max(0, this.offset - (r?.start ?? 0))
       await el.play()
+      if (seq !== this.mediaSeq) return
       this.path = 'media'
       this.blocked = false
     } catch {
-      this.blocked = true
+      if (seq === this.mediaSeq) this.blocked = true
     }
     this.emit()
   }
 
   private stopMedia() {
+    this.mediaSeq++
     if (this.path !== 'media') return
     try { this.fallbackEl?.pause() } catch { /* ignore */ }
     this.path = 'webaudio'

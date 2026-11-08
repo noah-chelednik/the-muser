@@ -55,7 +55,8 @@ export function SoundBrowser({ pad, setPad, onAssigned, onKeys }: Props) {
     if (playing === id) { a.pause(); setPlaying(''); return }
     a.src = url
     a.currentTime = 0
-    void a.play().then(() => setPlaying(id)).catch(() => setPlaying(''))
+    setPlaying(id)
+    void a.play().catch(() => setPlaying((p) => (p === id ? '' : p)))
   }
   const previewUser = (u: UserSound) => {
     // user sounds live as decoded planes: audition through Web Audio

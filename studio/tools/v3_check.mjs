@@ -75,6 +75,8 @@ async function run(skin, devName) {
   await page.goto(`${BASE}/?demo=1`, { waitUntil: 'domcontentloaded' })
   await page.evaluate((s) => { for (const k of Object.keys(localStorage)) if (!/skin/.test(k)) localStorage.removeItem(k); localStorage.setItem('muser.skin', s) }, skin)
   await page.reload({ waitUntil: 'networkidle' })
+  const gate = T('sound-gate')
+  if (await gate.waitFor({ timeout: 4000 }).then(() => true, () => false)) { await press(gate); await page.locator('[data-testid=sound-gate-sheet]').waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {}) }
   await T('prompt').waitFor({ timeout: 90000 })
 
   await step('skin applied, cross-origin isolated', async () => {

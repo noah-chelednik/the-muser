@@ -112,7 +112,8 @@ async function run(skin, devName, opts = {}) {
       await press(V('make'))
       await page.waitForFunction(() => document.querySelector('[data-testid=make]')?.getAttribute('data-phase') === 'ready', null, { timeout: 120000 })
       await press(V('mode-advanced')); await page.waitForTimeout(600)
-      await press(V('play')); await page.waitForTimeout(2500)
+      await press(V('play'))
+      await page.waitForFunction(() => { const el = window.__muser.audio.fallbackEl; return el && !el.paused && el.currentTime > 0.3 && el.src.startsWith('blob:') }, null, { timeout: 20000 }).catch(() => {})
       const s = await A(() => { const a = window.__muser.audio; const el = a.fallbackEl; return { state: a.state, path: a.path, playing: a.playing, paused: el?.paused, t: el?.currentTime, src: (el?.src || '').slice(0, 5) } })
       must(s.state !== 'running', 'context is running, the simulation failed')
       must(s.path === 'media' && s.paused === false && s.t > 0.2 && s.src === 'blob:', 'media fallback not playing: ' + JSON.stringify(s))
@@ -194,11 +195,14 @@ async function run(skin, devName, opts = {}) {
   })
   await step('library preview uses an <audio> element', async () => {
     await press(deck('deck-sounds')); await page.waitForTimeout(300)
-    await press(page.locator('[data-testid=beats-sheet] [data-testid=lib-preview]').first()); await page.waitForTimeout(500)
-    const playing = await page.locator('[data-testid=beats-sheet] .nd-row.playing').count()
-    must(playing === 1, 'preview row not playing')
-    await press(page.locator('[data-testid=beats-sheet] [data-testid=lib-preview]').first())
-    await press(deck('deck-pads'))
+    try {
+      await A(() => { window.__prev = []; const pl = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { const s = this.src; const r = pl.call(this); r.then(() => window.__prev.push(s), () => {}); return r } })
+      await press(page.locator('[data-testid=beats-sheet] [data-testid=lib-preview]').first())
+      await page.waitForFunction(() => window.__prev.some((s) => s.includes('/library/audio/')), null, { timeout: 8000 }).catch(() => {})
+      const ok = await A(() => window.__prev.some((s) => s.includes('/library/audio/')))
+      must(ok, 'preview <audio> did not play')
+      if (await page.locator('[data-testid=beats-sheet] .nd-row.playing').count()) await press(page.locator('[data-testid=beats-sheet] [data-testid=lib-preview]').first())
+    } finally { await press(deck('deck-pads')) }
   })
 
   await step('per-pad FX: a low-pass on the hat pad changes only that pad', async () => {
@@ -292,7 +296,7 @@ async function run(skin, devName, opts = {}) {
   await browser.close()
 }
 
-for (const skin of SKINS) for (const d of DEVICES) { console.log(`\n== ${skin} / ${d}`); await run(skin, d).catch((e) => { failed++; console.log('  CRASH', e.message) }) }
+if (!process.env.ONLY_EXTRA) for (const skin of SKINS) for (const d of DEVICES) { console.log(`\n== ${skin} / ${d}`); await run(skin, d).catch((e) => { failed++; console.log('  CRASH', e.message) }) }
 if (!process.env.SKIP_EXTRA) {
   console.log('\n== iPhone without Web MIDI (Safari has none)')
   await run('cathode', 'iPhone 14', { noMidi: true, tag: 'nomidi' }).catch((e) => { failed++; console.log('  CRASH', e.message) })
