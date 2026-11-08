@@ -212,7 +212,10 @@ class StudioAudio {
     if (ctx.state !== 'running') await this.resume()
     let rms = 0
     if ((ctx.state as string) === 'running') {
-      const t = ctx.currentTime + 0.02
+      // a fresh context can take a few hundred ms before its clock moves (device start-up)
+      const c0 = ctx.currentTime
+      for (let i = 0; i < 40 && ctx.currentTime === c0; i++) await new Promise((r) => setTimeout(r, 20))
+      const t = ctx.currentTime + 0.03
       ;[[659.25, 0], [987.77, 0.11]].forEach(([f, dt]) => {
         const o = ctx.createOscillator()
         const g = ctx.createGain()
@@ -225,9 +228,10 @@ class StudioAudio {
         o.start(t + dt)
         o.stop(t + dt + 0.25)
       })
-      for (let i = 0; i < 14; i++) {
-        await new Promise((r) => setTimeout(r, 25))
+      for (let i = 0; i < 50; i++) {
+        await new Promise((r) => setTimeout(r, 20))
         rms = Math.max(rms, this.outputRms())
+        if (rms > 0.01 && ctx.currentTime > t + 0.15) break
       }
       this.path = 'webaudio'
     } else if (this.fallbackEl) {

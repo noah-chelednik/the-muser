@@ -358,25 +358,11 @@ export function Deck({ history }: Props) {
             <p className="nd-hint">{KEY_PRESETS.length} presets, all synthesized in the browser. <b>{cur?.name ?? 'Custom'}</b> is loaded.</p>
           </div>
 
-          <div className="nd-synth">
-            <div className="nd-seg" role="group" aria-label="Wave">
-              {WAVES.map((w) => <button key={w} className={proj.synth.wave === w ? 'on' : ''} onClick={() => setSynth(`Wave ${w}`, { wave: w })}>{w.slice(0, 3).toUpperCase()}</button>)}
-            </div>
-            <div className="nd-synth-sliders">
-              <Slider label="Cutoff" value={proj.synth.cutoff} min={0} max={1} format={(v) => `${Math.round(120 * Math.pow(2, v * 7.5))} Hz`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, cutoff: v } }))} />
-              <Slider label="Reso" value={proj.synth.reso} min={0} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, reso: v } }))} />
-              <Slider label="Attack" value={proj.synth.attack} min={0.002} max={1.5} log format={(v) => `${Math.round(v * 1000)} ms`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, attack: v } }))} />
-              <Slider label="Release" value={proj.synth.release} min={0.02} max={3} log format={(v) => `${v.toFixed(2)} s`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, release: v } }))} />
-              <Slider label="Detune" value={proj.synth.detune} min={0} max={30} format={(v) => `${v.toFixed(0)} c`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, detune: v } }))} />
-              <Slider label="Level" value={proj.synth.volume} min={0} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, volume: v } }))} />
-            </div>
-            <div className="nd-oct">
+          <div className="nd-oct">
               <button className="nd-icon" aria-label="Octave down" onClick={() => setSynth('Octave down', { octave: Math.max(-2, proj.synth.octave - 1) })} data-testid="oct-down">−</button>
               <span>Octave {proj.synth.octave >= 0 ? '+' : ''}{proj.synth.octave}</span>
               <button className="nd-icon" aria-label="Octave up" onClick={() => setSynth('Octave up', { octave: Math.min(2, proj.synth.octave + 1) })} data-testid="oct-up">+</button>
             </div>
-          </div>
-
           <div
             className="nd-piano"
             data-testid="piano"
@@ -420,6 +406,20 @@ export function Deck({ history }: Props) {
               </div>
             ) : <p className="nd-muted">Nothing recorded yet.</p>}
           </div>
+          <details className="nd-synth" open={!narrow}>
+            <summary>Shape the sound</summary>
+            <div className="nd-seg" role="group" aria-label="Wave">
+              {WAVES.map((w) => <button key={w} className={proj.synth.wave === w ? 'on' : ''} onClick={() => setSynth(`Wave ${w}`, { wave: w })}>{w.slice(0, 3).toUpperCase()}</button>)}
+            </div>
+            <div className="nd-synth-sliders">
+              <Slider label="Cutoff" value={proj.synth.cutoff} min={0} max={1} format={(v) => `${Math.round(120 * Math.pow(2, v * 7.5))} Hz`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, cutoff: v } }))} />
+              <Slider label="Reso" value={proj.synth.reso} min={0} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, reso: v } }))} />
+              <Slider label="Attack" value={proj.synth.attack} min={0.002} max={1.5} log format={(v) => `${Math.round(v * 1000)} ms`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, attack: v } }))} />
+              <Slider label="Release" value={proj.synth.release} min={0.02} max={3} log format={(v) => `${v.toFixed(2)} s`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, release: v } }))} />
+              <Slider label="Detune" value={proj.synth.detune} min={0} max={30} format={(v) => `${v.toFixed(0)} c`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, detune: v } }))} />
+              <Slider label="Level" value={proj.synth.volume} min={0} max={1} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => history.preview((s) => ({ ...s, synth: { ...s.synth, volume: v } }))} />
+            </div>
+          </details>
         </div>
       )}
     </section>
